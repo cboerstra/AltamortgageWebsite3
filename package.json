@@ -7,7 +7,9 @@
     "passenger": "node app.js",
     "build": "next build",
     "deploy:build": "npm ci --include=dev && next build && npm prune --omit=dev",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=20.0.0"
@@ -39,6 +41,8 @@
   },
   "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.2.6"
+    "eslint-config-next": "16.2.6",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.7"
   }
 }

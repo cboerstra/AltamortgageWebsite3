@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MESSAGE xmlns="http://www.mismo.org/residential/2009/schemas" xmlns:xlink="http://www.w3.org/1999/xlink" MISMOReferenceModelIdentifier="3.4.0322">
+  <ABOUT_VERSIONS>
+    <ABOUT_VERSION>
+      <AboutVersionIdentifier>3.4.0322</AboutVersionIdentifier>
+      <CreatedDatetime>2026-09-08T14:30:12.000Z</CreatedDatetime>
+    </ABOUT_VERSION>
+  </ABOUT_VERSIONS>
+  <DEAL_SETS>
+    <DEAL_SET SequenceNumber="1">
+      <DEALS>
+        <DEAL SequenceNumber="1">
+          <COLLATERALS>
+            <COLLATERAL SequenceNumber="1">
+              <SUBJECT_PROPERTY>
+                <PROPERTY_DETAIL>
+                  <AttachmentType>Attached</AttachmentType>
+                  <FinancedUnitCount>1</FinancedUnitCount>
+                  <ManufacturedHomeIndicator>false</ManufacturedHomeIndicator>
+                  <PropertyUsageType>PrimaryResidence</PropertyUsageType>
+                </PROPERTY_DETAIL>
+                <PROJECT>
+                  <PROJECT_DETAIL>
+                    <ProjectType>Condominium</ProjectType>
+                  </PROJECT_DETAIL>
+                </PROJECT>
+                <PROPERTY_VALUATIONS>
+                  <PROPERTY_VALUATION>
+                    <PROPERTY_VALUATION_DETAIL>
+                      <PropertyValuationAmount>545000.00</PropertyValuationAmount>
+                      <PropertyValuationMethodType>None</PropertyValuationMethodType>
+                    </PROPERTY_VALUATION_DETAIL>
+                  </PROPERTY_VALUATION>
+                </PROPERTY_VALUATIONS>
+              </SUBJECT_PROPERTY>
+            </COLLATERAL>
+          </COLLATERALS>
+          <LOANS>
+            <LOAN xlink:label="Loan1" LoanRoleType="SubjectLoan">
+              <LOAN_DETAIL>
+                <ApplicationReceivedDate>2026-09-08</ApplicationReceivedDate>
+              </LOAN_DETAIL>
+              <LOAN_IDENTIFIERS>
+                <LOAN_IDENTIFIER>
+                  <LoanIdentifier>ALT-K7M2Q</LoanIdentifier>
+                  <LoanIdentifierType>LenderLoan</LoanIdentifierType>
+                </LOAN_IDENTIFIER>
+              </LOAN_IDENTIFIERS>
+              <TERMS_OF_LOAN>
+                <BaseLoanAmount>436000.00</BaseLoanAmount>
+                <LienPriorityType>FirstLien</LienPriorityType>
+                <LoanPurposeType>Purchase</LoanPurposeType>
+              </TERMS_OF_LOAN>
+              <DOWN_PAYMENTS>
+                <DOWN_PAYMENT>
+                  <DownPaymentAmount>109000.00</DownPaymentAmount>
+                </DOWN_PAYMENT>
+              </DOWN_PAYMENTS>
+            </LOAN>
+          </LOANS>
+          <PARTIES>
+            <PARTY xlink:label="Party1" SequenceNumber="1">
+              <INDIVIDUAL>
+                <NAME>
+                  <FirstName>Dana</FirstName>
+                  <LastName>O'Brien &amp; Sons</LastName>
+                  <MiddleName>Lee</MiddleName>
+                  <SuffixName>Jr.</SuffixName>
+                </NAME>
+                <CONTACT_POINTS>
+                  <CONTACT_POINT SequenceNumber="1">
+                    <CONTACT_POINT_EMAIL>
+                      <ContactPointEmailValue>dana.obrien@example.com</ContactPointEmailValue>
+                    </CONTACT_POINT_EMAIL>
+                    <CONTACT_POINT_DETAIL>
+                      <ContactPointRoleType>Home</ContactPointRoleType>
+                    </CONTACT_POINT_DETAIL>
+                  </CONTACT_POINT>
+                  <CONTACT_POINT SequenceNumber="2">
+                    <CONTACT_POINT_TELEPHONE>
+                      <ContactPointTelephoneValue>8015550147</ContactPointTelephoneValue>
+                    </CONTACT_POINT_TELEPHONE>
+                    <CONTACT_POINT_DETAIL>
+                      <ContactPointRoleType>Mobile</ContactPointRoleType>
+                    </CONTACT_POINT_DETAIL>
+                  </CONTACT_POINT>
+                </CONTACT_POINTS>
+              </INDIVIDUAL>
+              <ROLES>
+                <ROLE SequenceNumber="1">
+                  <BORROWER>
+                    <BORROWER_DETAIL>
+                      <BorrowerBirthDate>1985-04-17</BorrowerBirthDate>
+                      <CitizenshipResidencyType>USCitizen</CitizenshipResidencyType>
+                      <MaritalStatusType>Married</MaritalStatusType>
+                      <SelfDeclaredMilitaryServiceIndicator>true</SelfDeclaredMilitaryServiceIndicator>
+                    </BORROWER_DETAIL>
+                    <CURRENT_INCOME>
+                      <CURRENT_INCOME_ITEMS>
+                        <CURRENT_INCOME_ITEM SequenceNumber="1">
+                          <CURRENT_INCOME_ITEM_DETAIL>
+                            <CurrentIncomeMonthlyTotalAmount>9400.00</CurrentIncomeMonthlyTotalAmount>
+                            <IncomeType>Base</IncomeType>
+                          </CURRENT_INCOME_ITEM_DETAIL>
+                        </CURRENT_INCOME_ITEM>
+                      </CURRENT_INCOME_ITEMS>
+                    </CURRENT_INCOME>
+                    <DECLARATION>
+                      <DECLARATION_DETAIL>
+                        <BankruptcyIndicator>false</BankruptcyIndicator>
+                        <BorrowedDownPaymentIndicator>false</BorrowedDownPaymentIndicator>
+                        <HomeownerPastThreeYearsType>Yes</HomeownerPastThreeYearsType>
+                        <IntentToOccupySubjectPropertyIndicator>true</IntentToOccupySubjectPropertyIndicator>
+                        <OutstandingJudgmentsIndicator>false</OutstandingJudgmentsIndicator>
+                        <PriorPropertyForeclosureCompletedIndicator>false</PriorPropertyForeclosureCompletedIndicator>
+                      </DECLARATION_DETAIL>
+                    </DECLARATION>
+                    <EMPLOYERS>
+                      <EMPLOYER SequenceNumber="1">
+                        <LEGAL_ENTITY>
+                          <LEGAL_ENTITY_DETAIL>
+                            <FullName>Wasatch Analytics</FullName>
+                          </LEGAL_ENTITY_DETAIL>
+                        </LEGAL_ENTITY>
+                        <EMPLOYMENT>
+                          <EmploymentBorrowerSelfEmployedIndicator>false</EmploymentBorrowerSelfEmployedIndicator>
+                          <EmploymentClassificationType>Primary</EmploymentClassificationType>
+                          <EmploymentPositionDescription>Senior Analyst</EmploymentPositionDescription>
+                          <EmploymentStatusType>Current</EmploymentStatusType>
+                          <EmploymentTimeInLineOfWorkMonthsCount>72</EmploymentTimeInLineOfWorkMonthsCount>
+                        </EMPLOYMENT>
+                      </EMPLOYER>
+                    </EMPLOYERS>
+                    <LIABILITIES>
+                      <LIABILITY SequenceNumber="1">
+                        <LIABILITY_DETAIL>
+                          <LiabilityDescription>Auto loan</LiabilityDescription>
+                          <LiabilityMonthlyPaymentAmount>415.00</LiabilityMonthlyPaymentAmount>
+                          <LiabilityType>Installment</LiabilityType>
+                        </LIABILITY_DETAIL>
+                      </LIABILITY>
+                      <LIABILITY SequenceNumber="2">
+                        <LIABILITY_DETAIL>
+                          <LiabilityDescription>Student loan</LiabilityDescription>
+                          <LiabilityMonthlyPaymentAmount>260.00</LiabilityMonthlyPaymentAmount>
+                          <LiabilityType>Installment</LiabilityType>
+                        </LIABILITY_DETAIL>
+                      </LIABILITY>
+                      <LIABILITY SequenceNumber="3">
+                        <LIABILITY_DETAIL>
+                          <LiabilityDescription>Credit cards</LiabilityDescription>
+                          <LiabilityMonthlyPaymentAmount>130.00</LiabilityMonthlyPaymentAmount>
+                          <LiabilityType>Revolving</LiabilityType>
+                        </LIABILITY_DETAIL>
+                      </LIABILITY>
+                    </LIABILITIES>
+                    <RESIDENCES>
+                      <RESIDENCE SequenceNumber="1">
+                        <ADDRESS>
+                          <AddressLineText>1490 S &lt;Main&gt; St Apt 4</AddressLineText>
+                          <CityName>Salt Lake City</CityName>
+                          <CountryCode>US</CountryCode>
+                          <PostalCode>84115</PostalCode>
+                          <StateCode>UT</StateCode>
+                        </ADDRESS>
+                        <RESIDENCE_DETAIL>
+                          <BorrowerResidencyBasisType>Rent</BorrowerResidencyBasisType>
+                          <BorrowerResidencyDurationMonthsCount>42</BorrowerResidencyDurationMonthsCount>
+                          <BorrowerResidencyType>Current</BorrowerResidencyType>
+                          <MonthlyRentAmount>1850.00</MonthlyRentAmount>
+                        </RESIDENCE_DETAIL>
+                      </RESIDENCE>
+                    </RESIDENCES>
+                  </BORROWER>
+                  <ROLE_DETAIL>
+                    <PartyRoleType>Borrower</PartyRoleType>
+                  </ROLE_DETAIL>
+                </ROLE>
+              </ROLES>
+              <TAXPAYER_IDENTIFIERS>
+                <TAXPAYER_IDENTIFIER>
+                  <TaxpayerIdentifierType>SocialSecurityNumber</TaxpayerIdentifierType>
+                  <TaxpayerIdentifierValue>XXX-XX-6789</TaxpayerIdentifierValue>
+                </TAXPAYER_IDENTIFIER>
+              </TAXPAYER_IDENTIFIERS>
+            </PARTY>
+          </PARTIES>
+          <RELATIONSHIPS>
+            <RELATIONSHIP SequenceNumber="1" xlink:from="Party1" xlink:to="Loan1" xlink:arcrole="urn:fdc:Meta:2009:arcrole:PartyToLoan" />
+          </RELATIONSHIPS>
+        </DEAL>
+      </DEALS>
+    </DEAL_SET>
+  </DEAL_SETS>
+  <EXTENSION>
+    <OTHER>
+      <alta:APPLICATION_METADATA xmlns:alta="http://altamortgagegroup.net/schemas/application/1.0">
+        <alta:ReferenceNumber>ALT-K7M2Q</alta:ReferenceNumber>
+        <alta:SubmittedDatetime>2026-09-08T14:30:12.000Z</alta:SubmittedDatetime>
+        <alta:SourcePage>/apply</alta:SourcePage>
+        <alta:LoanPurposeLabel>Purchase</alta:LoanPurposeLabel>
+        <alta:PropertyTypeLabel>Condominium</alta:PropertyTypeLabel>
+        <alta:PropertyUseLabel>Primary Residence</alta:PropertyUseLabel>
+        <alta:MaritalStatusLabel>Married</alta:MaritalStatusLabel>
+        <alta:CitizenshipLabel>U.S. Citizen</alta:CitizenshipLabel>
+        <alta:EmploymentStatusLabel>Employed</alta:EmploymentStatusLabel>
+        <alta:EmployerName>Wasatch Analytics</alta:EmployerName>
+        <alta:HousingStatusLabel>Rent</alta:HousingStatusLabel>
+        <alta:SelfReportedCreditScoreRange>Excellent (740+)</alta:SelfReportedCreditScoreRange>
+        <alta:FirstTimeHomebuyerIndicator>false</alta:FirstTimeHomebuyerIndicator>
+        <alta:VeteranIndicator>true</alta:VeteranIndicator>
+        <alta:TaxpayerIdentifierLastFour>6789</alta:TaxpayerIdentifierLastFour>
+        <alta:CONSENT>
+          <alta:AuthorizationGivenIndicator>true</alta:AuthorizationGivenIndicator>
+          <alta:ElectronicSignatureName>Dana Lee O'Brien</alta:ElectronicSignatureName>
+          <alta:ElectronicSignatureDate>2026-09-08</alta:ElectronicSignatureDate>
+        </alta:CONSENT>
+      </alta:APPLICATION_METADATA>
+    </OTHER>
+  </EXTENSION>
+</MESSAGE>

@@ -5,7 +5,7 @@
 // site work without a database during early setup — leads still go to CRM
 // and email, but persistence is skipped.
 
-import mysql, { Pool, ResultSetHeader } from "mysql2/promise";
+import mysql, { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 let pool: Pool | null = null;
 let configWarned = false;
@@ -93,7 +93,14 @@ export interface ApplicationRecord {
   veteran?: boolean;
   firstTimeBuyer?: boolean;
   rawPayload: Record<string, unknown>;
+  /** Path to the generated MISMO document, relative to MISMO_STORAGE_DIR. */
+  mismoPath?: string;
+  mismoSha256?: string;
+  mismoStatus?: MismoStatus;
+  mismoError?: string;
 }
+
+export type MismoStatus = "pending" | "written" | "failed" | "skipped";
 
 /**
  * Insert a lead row. Returns the new lead id, or null if DB not configured.
@@ -151,8 +158,9 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
         years_at_address, housing_status, monthly_housing_payment,
         employment_status, employer_name, job_title, years_at_job,
         monthly_income, credit_score_range, us_citizen, veteran,
-        first_time_buyer, raw_payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        first_time_buyer, raw_payload,
+        mismo_path, mismo_sha256, mismo_status, mismo_error
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         app.refNumber,
         app.loanPurpose,
@@ -188,6 +196,10 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
         app.veteran ? 1 : 0,
         app.firstTimeBuyer ? 1 : 0,
         JSON.stringify(app.rawPayload),
+        app.mismoPath || null,
+        app.mismoSha256 || null,
+        app.mismoStatus || "pending",
+        app.mismoError || null,
       ]
     );
     return result.insertId;
@@ -197,25 +209,63 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
   }
 }
 
+/**
+ * Whether a reference number is already taken.
+ *
+ * Returns false when the database is not configured — there is nothing to
+ * collide with, and the caller must not block a submission on an optional
+ * dependency being absent.
+ */
+export async function refNumberExists(refNumber: string): Promise<boolean> {
+  const p = getPool();
+  if (!p) return false;
+
+  try {
+    const [rows] = await p.execute<RowDataPacket[]>(
+      "SELECT 1 FROM applications WHERE ref_number = ? LIMIT 1",
+      [refNumber]
+    );
+    return rows.length > 0;
+  } catch (err) {
+    console.error("refNumberExists error:", err);
+    return false;
+  }
+}
+
 export type DeliveryStatus = "pending" | "sent" | "failed" | "skipped";
 
 /**
  * Update the CRM + email delivery status on an existing row.
+ *
+ * The MISMO columns exist only on `applications`, so they are updated only
+ * when a status is supplied.
  */
 export async function updateDeliveryStatus(
   table: "leads" | "applications",
   id: number,
   crm: { status: DeliveryStatus; response?: string },
-  email: { status: DeliveryStatus; error?: string }
+  email: { status: DeliveryStatus; error?: string },
+  mismo?: { status: MismoStatus; path?: string; sha256?: string; error?: string }
 ): Promise<void> {
   const p = getPool();
   if (!p) return;
 
+  const columns = ["crm_status = ?", "crm_response = ?", "email_status = ?", "email_error = ?"];
+  const values: (string | number | null)[] = [
+    crm.status,
+    crm.response || null,
+    email.status,
+    email.error || null,
+  ];
+
+  if (mismo && table === "applications") {
+    columns.push("mismo_status = ?", "mismo_path = ?", "mismo_sha256 = ?", "mismo_error = ?");
+    values.push(mismo.status, mismo.path || null, mismo.sha256 || null, mismo.error || null);
+  }
+  values.push(id);
+
   try {
-    await p.execute(
-      `UPDATE ${table} SET crm_status = ?, crm_response = ?, email_status = ?, email_error = ? WHERE id = ?`,
-      [crm.status, crm.response || null, email.status, email.error || null, id]
-    );
+    await p.execute(`UPDATE ${table} SET ${columns.join(", ")} WHERE id = ?`, values);
   } catch (err) {
     console.error(`updateDeliveryStatus(${table}, ${id}) error:`, err);
   }

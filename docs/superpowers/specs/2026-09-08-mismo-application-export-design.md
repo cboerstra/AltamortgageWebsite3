@@ -151,9 +151,19 @@ date, consent timestamp, and the MISMO filename.
 ### Supporting fixes
 
 - `email.ts`: attachment support; the `Object.entries` dump replaced with an
-  explicit allowlist of fields.
+  explicit allowlist of fields, and HTML escaping of applicant values, which
+  previously went into the notification table unescaped.
+- A shared `application-summary.ts` feeds both the CRM note and the email, so
+  the two cannot drift apart.
 - Wizard `localStorage`: 24-hour TTL and a schema-version key; a visible
-  "clear saved progress" control.
+  "clear saved progress" control. The storage moves into its own
+  `draft-storage.ts` exposing a subscribable store, so the wizard reads it
+  during render via `useSyncExternalStore` rather than syncing it into state
+  from an effect.
+- `.env.example`: rewritten. It claimed the CRM "sends the confirmation email,
+  so no SMTP/database config is needed here" — which is why neither was ever
+  configured, and therefore why nothing was persisted. That sentence is the
+  root cause of defect 1.
 - `crm.ts`: correct the stale comments claiming Vercel deployment and claiming
   the CRM sends a confirmation email. It does not.
 - `smsConsent: false` stays hardcoded — the form collects no SMS consent, so
@@ -168,8 +178,15 @@ date, consent timestamp, and the MISMO filename.
 
 - `map` translation, including every enum branch.
 - XML escaping: ampersand, angle brackets, quotes, control characters.
-- A golden-file build test over a complete fixture application.
+- A golden-file build test over a complete fixture application. Regenerate it
+  with `npx vite-node scripts/generate-mismo-golden.ts` and read the diff — a
+  silently blessed golden file is worse than none.
 - `store` against a tmpdir: atomicity, path shape, hash, `.htaccess` creation.
+- Route contract tests for `POST /api/applications`. These are hermetic: with
+  `CRM_*`, `SMTP_*` and `DB_*` unset, every outbound path short-circuits to
+  "skipped" without touching the network. That is precisely the misconfigured
+  production shape that used to answer 200 while dropping the application, so
+  the 502 case is asserted directly.
 
 Structure and the golden file are asserted. XSD validation is available as a
 follow-on if the licensed schema is supplied locally.

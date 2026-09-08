@@ -1,11 +1,15 @@
 // Forwards website leads + applications to the Alta Mortgage CRM.
 //
-// The CRM (altamortgagecrm.net) exposes POST /api/website-lead which creates
-// the lead in the CRM database, logs activity, notifies admins by SMS, and
-// sends the confirmation email. The CRM is the single source of truth — the
-// website just forwards into it.
+// The CRM (altamortgagecrm.net) exposes POST /api/website-lead, which creates
+// the lead, logs an activity note, notifies the owner, and texts the admins.
+// It does NOT send the applicant a confirmation email — nothing in this system
+// does. Do not tell an applicant to expect one.
 //
-// Required env vars (set in Vercel):
+// This forward is BEST EFFORT and is skipped entirely when unconfigured, so it
+// is not a system of record. /api/applications persists to disk and MySQL
+// before calling here, and decides success on that basis.
+//
+// Required env vars (set in the cPanel Node.js app environment):
 //   CRM_API_URL  = https://altamortgagecrm.net/api/website-lead
 //   CRM_API_KEY  = (must match WEBSITE_API_KEY on the CRM server)
 

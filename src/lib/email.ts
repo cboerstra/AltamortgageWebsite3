@@ -1,10 +1,17 @@
 import nodemailer from "nodemailer";
+import type { SummarySection } from "@/lib/application-summary";
 
 let transporter: nodemailer.Transporter | null = null;
 
 export interface EmailResult {
   status: "sent" | "failed" | "skipped";
   error?: string;
+}
+
+export interface EmailAttachment {
+  filename: string;
+  content: string | Buffer;
+  contentType?: string;
 }
 
 function getTransporter(): nodemailer.Transporter | null {
@@ -28,6 +35,39 @@ function getTransporter(): nodemailer.Transporter | null {
   return transporter;
 }
 
+/**
+ * Applicant-supplied values end up inside an HTML table, so they must be
+ * escaped. Without this, a name containing markup breaks the layout of the
+ * notification — or worse in a mail client that renders it.
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+const CELL = "padding:8px;border:1px solid #ddd";
+
+function renderSections(sections: SummarySection[]): string {
+  return sections
+    .map((section) => {
+      const rows = section.rows
+        .map(
+          (row) =>
+            `<tr><td style="${CELL};font-weight:bold;width:40%">${escapeHtml(row.label)}</td>` +
+            `<td style="${CELL}">${escapeHtml(row.value)}</td></tr>`
+        )
+        .join("");
+      return (
+        `<h3 style="margin:24px 0 8px">${escapeHtml(section.title)}</h3>` +
+        `<table style="border-collapse:collapse;width:100%">${rows}</table>`
+      );
+    })
+    .join("");
+}
+
 export async function sendLeadNotification(
   lead: Record<string, unknown>
 ): Promise<EmailResult> {
@@ -49,7 +89,9 @@ export async function sendLeadNotification(
             .filter(([, v]) => v !== undefined && v !== null && v !== "")
             .map(
               ([k, v]) =>
-                `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">${k}</td><td style="padding:8px;border:1px solid #ddd">${typeof v === "object" ? JSON.stringify(v) : v}</td></tr>`
+                `<tr><td style="${CELL};font-weight:bold">${escapeHtml(k)}</td><td style="${CELL}">${escapeHtml(
+                  typeof v === "object" ? JSON.stringify(v) : String(v)
+                )}</td></tr>`
             )
             .join("")}
         </table>
@@ -63,10 +105,19 @@ export async function sendLeadNotification(
   }
 }
 
-export async function sendApplicationNotification(
-  application: Record<string, unknown>,
-  referenceNumber: string
-): Promise<EmailResult> {
+/**
+ * Notify the loan officer of a new application, with the MISMO document
+ * attached.
+ *
+ * Takes a curated section list rather than the raw payload: the SSN and any
+ * future sensitive field cannot reach this function to begin with.
+ */
+export async function sendApplicationNotification(input: {
+  sections: SummarySection[];
+  referenceNumber: string;
+  applicantName: string;
+  attachments?: EmailAttachment[];
+}): Promise<EmailResult> {
   const t = getTransporter();
   const to = process.env.NOTIFICATION_EMAIL;
   if (!t || !to) {
@@ -77,20 +128,14 @@ export async function sendApplicationNotification(
     await t.sendMail({
       from: process.env.SMTP_USER,
       to,
-      subject: `New Application — ${application.firstName} ${application.lastName} — ${referenceNumber}`,
+      subject: `New Application — ${input.applicantName} — ${input.referenceNumber}`,
       html: `
-        <h2>New Mortgage Application — ${referenceNumber}</h2>
-        <table style="border-collapse:collapse;width:100%">
-          ${Object.entries(application)
-            .filter(([k, v]) => v !== undefined && v !== null && v !== "" && k !== "ssn")
-            .map(
-              ([k, v]) =>
-                `<tr><td style="padding:8px;border:1px solid #ddd;font-weight:bold">${k}</td><td style="padding:8px;border:1px solid #ddd">${typeof v === "object" ? JSON.stringify(v) : v}</td></tr>`
-            )
-            .join("")}
-        </table>
-        <p><em>SSN is redacted from email notifications for security.</em></p>
+        <h2>New Mortgage Application — ${escapeHtml(input.referenceNumber)}</h2>
+        ${renderSections(input.sections)}
+        <p style="margin-top:24px"><em>The full SSN is never stored or emailed. Only the
+        last four digits appear above.</em></p>
       `,
+      attachments: input.attachments,
     });
     return { status: "sent" };
   } catch (err) {

@@ -96,6 +96,13 @@ CREATE TABLE IF NOT EXISTS applications (
   -- Full payload (everything except SSN, for completeness)
   raw_payload JSON NOT NULL,
 
+  -- MISMO v3.4 document generated for this application.
+  -- mismo_path is relative to MISMO_STORAGE_DIR, not an absolute path.
+  mismo_path VARCHAR(500),
+  mismo_sha256 CHAR(64),
+  mismo_status ENUM('pending','written','failed','skipped') NOT NULL DEFAULT 'pending',
+  mismo_error TEXT,
+
   -- Delivery status
   crm_status ENUM('pending','sent','failed','skipped') NOT NULL DEFAULT 'pending',
   crm_response TEXT,
@@ -108,5 +115,6 @@ CREATE TABLE IF NOT EXISTS applications (
   INDEX idx_email (email),
   INDEX idx_created_at (created_at),
   INDEX idx_crm_status (crm_status),
-  INDEX idx_email_status (email_status)
+  INDEX idx_email_status (email_status),
+  INDEX idx_mismo_status (mismo_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
