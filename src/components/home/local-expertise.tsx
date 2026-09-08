@@ -1,5 +1,6 @@
 import { MapPin } from "lucide-react";
 import { SERVICE_AREAS } from "@/lib/constants";
+import { ServiceAreaMap } from "@/components/graphics/service-area-map";
 
 export function LocalExpertise() {
   return (
@@ -34,16 +35,7 @@ export function LocalExpertise() {
           </div>
 
           <div className="hidden lg:flex justify-center" aria-hidden="true">
-            <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M80 40H320V360H200V280H80V40Z" fill="#F0F4F8" stroke="#E5E7EB" strokeWidth="2" />
-              <rect x="140" y="60" width="80" height="50" rx="4" fill="#003087" opacity="0.2" stroke="#003087" strokeWidth="2" />
-              <text x="180" y="90" textAnchor="middle" className="text-xs font-semibold" fill="#003087">Weber</text>
-              <rect x="140" y="110" width="80" height="50" rx="4" fill="#00A86B" opacity="0.2" stroke="#00A86B" strokeWidth="2" />
-              <text x="180" y="140" textAnchor="middle" className="text-xs font-semibold" fill="#00A86B">Davis</text>
-              <circle cx="160" cy="80" r="4" fill="#003087" />
-              <circle cx="170" cy="130" r="4" fill="#00A86B" />
-              <circle cx="190" cy="75" r="4" fill="#003087" />
-            </svg>
+            <ServiceAreaMap />
           </div>
         </div>
       </div>
