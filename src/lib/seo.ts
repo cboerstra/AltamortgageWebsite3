@@ -1,4 +1,5 @@
 import { COMPANY, SERVICE_AREAS } from "./constants";
+import { IMAGES, absoluteImageUrl } from "./images";
 
 export function generateOrganizationSchema() {
   return {
@@ -6,7 +7,7 @@ export function generateOrganizationSchema() {
     "@type": "Organization",
     name: COMPANY.name,
     url: `https://${COMPANY.domain}`,
-    logo: `https://${COMPANY.domain}/images/logo.png`,
+    logo: absoluteImageUrl(IMAGES.logoFull),
     contactPoint: {
       "@type": "ContactPoint",
       telephone: COMPANY.phone,

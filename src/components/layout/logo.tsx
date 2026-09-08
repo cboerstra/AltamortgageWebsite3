@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { IMAGES } from "@/lib/images";
 
 interface LogoProps {
   /** Tailwind classes applied to the outer link */
@@ -26,7 +27,7 @@ export function Logo({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/logo.jpg"
+        src={IMAGES.logoFull}
         alt="Alta Mortgage Group"
         height={height}
         className={variant === "white" ? "brightness-0 invert" : ""}
