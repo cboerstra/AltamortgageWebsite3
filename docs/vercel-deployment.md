@@ -15,7 +15,7 @@ Total time: ~5 minutes.
 2. Click **Sign Up** → **Continue with GitHub** (use the same GitHub account that owns the repo)
 3. Authorize Vercel when prompted
 4. On your Vercel dashboard, click **Add New… → Project**
-5. Find **`cboerstra/AltaMortgageWebsite2`** in the list → click **Import**
+5. Find **`cboerstra/AltamortgageWebsite3`** in the list → click **Import**
    - If you don't see it, click **Adjust GitHub App Permissions** and grant access to the repo
 6. On the configuration screen:
    - **Framework Preset:** Next.js (auto-detected — leave it)

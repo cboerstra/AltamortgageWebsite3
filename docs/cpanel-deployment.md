@@ -8,7 +8,7 @@ Step-by-step deploy guide for cPanel shared hosting with **Setup Node.js App** (
 
 - cPanel access for `altamortgagegroup.net`
 - Node.js 22.x available in **Setup Node.js App**
-- GitHub repo: `https://github.com/cboerstra/AltaMortgageWebsite2`
+- GitHub repo: `https://github.com/cboerstra/AltamortgageWebsite3`
 - Working SMTP credentials (for `/api/leads` and `/api/applications` email notifications)
 - Optional: CRM webhook URL for `altamortgagecrm.net`
 
@@ -56,7 +56,7 @@ cPanel auto-generates a `.htaccess` in your `public_html` (or whatever the URL m
    ```bash
    cd ~/altamortgage
    git init
-   git remote add origin https://github.com/cboerstra/AltaMortgageWebsite2.git
+   git remote add origin https://github.com/cboerstra/AltamortgageWebsite3.git
    git fetch origin
    git reset --hard origin/main
    ```
@@ -64,7 +64,7 @@ cPanel auto-generates a `.htaccess` in your `public_html` (or whatever the URL m
 
 ### Option B — Git Version Control in cPanel
 1. cPanel → **Git Version Control** → **Create**
-2. Clone URL: `https://github.com/cboerstra/AltaMortgageWebsite2.git`
+2. Clone URL: `https://github.com/cboerstra/AltamortgageWebsite3.git`
 3. Repository path: `/home/USER/altamortgage`
 4. Branch: `main`
 
