@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Phone } from "lucide-react";
 import { COMPANY } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 export function MobileCTABar() {
   return (
@@ -17,7 +17,7 @@ export function MobileCTABar() {
         href={`tel:${COMPANY.phone.replace(/\D/g, "")}`}
         className="flex items-center justify-center gap-2 bg-navy hover:bg-navy-light text-white px-4 py-3 rounded-lg font-medium text-sm transition-colors"
       >
-        <Phone className="w-4 h-4" />
+        <Icons.phone className="w-4 h-4" />
         Call
       </a>
     </div>

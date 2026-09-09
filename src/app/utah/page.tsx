@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MapPin, Users, Clock, Award } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SERVICE_AREAS, COMPANY } from "@/lib/constants";
 import { generateLocalBusinessSchema } from "@/lib/seo";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Utah Mortgage Lender",
@@ -22,25 +22,25 @@ export const metadata: Metadata = {
 
 const benefits = [
   {
-    icon: MapPin,
+    icon: Icons.localKnowledge,
     title: "Local Market Knowledge",
     description:
       "We know Utah neighborhoods, school districts, and property values. Our deep familiarity with Weber and Davis counties means better guidance on what you can afford and where.",
   },
   {
-    icon: Users,
+    icon: Icons.faceToFace,
     title: "Face-to-Face Service",
     description:
       "Meet with a real person at our Ogden office. We believe in building relationships, not just processing paperwork. Your questions deserve real answers from someone who cares.",
   },
   {
-    icon: Clock,
+    icon: Icons.fasterClosings,
     title: "Faster Closings",
     description:
       "Local lenders close faster. Our relationships with Utah title companies, appraisers, and real estate agents help streamline the process so you can move in sooner.",
   },
   {
-    icon: Award,
+    icon: Icons.utahPrograms,
     title: "Utah-Specific Programs",
     description:
       "We specialize in programs designed for Utah buyers, including Utah Housing Corporation down payment assistance, USDA loans for rural areas, and first-time buyer grants.",

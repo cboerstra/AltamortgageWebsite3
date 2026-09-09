@@ -1,6 +1,6 @@
-import { MapPin } from "lucide-react";
 import { SERVICE_AREAS } from "@/lib/constants";
 import { ServiceAreaMap } from "@/components/graphics/service-area-map";
+import { Icons } from "@/lib/icons";
 
 export function LocalExpertise() {
   return (
@@ -21,7 +21,7 @@ export function LocalExpertise() {
               {SERVICE_AREAS.counties.map((county) => (
                 <div key={county.slug}>
                   <h3 className="font-semibold text-text flex items-center gap-2 mb-3">
-                    <MapPin className="w-4 h-4 text-emerald" />
+                    <Icons.location className="w-4 h-4 text-emerald" />
                     {county.name}
                   </h3>
                   <ul className="space-y-1">

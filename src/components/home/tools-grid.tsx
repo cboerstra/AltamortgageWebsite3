@@ -1,28 +1,28 @@
 import Link from "next/link";
-import { Calculator, BookOpen, GraduationCap, BarChart3 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Icons } from "@/lib/icons";
 
 const tools = [
   {
-    icon: Calculator,
+    icon: Icons.calculator,
     title: "Mortgage Calculator",
     description: "Estimate your monthly payment, see how much home you can afford, or compare refinance savings.",
     href: "/mortgage-calculator",
   },
   {
-    icon: BookOpen,
+    icon: Icons.loanGuide,
     title: "Loan Options Guide",
     description: "Compare FHA, VA, Conventional, USDA, and Jumbo loans to find the right fit for you.",
     href: "/loan-options",
   },
   {
-    icon: GraduationCap,
+    icon: Icons.firstTimeBuyer,
     title: "First-Time Buyer Resources",
     description: "Step-by-step guides, Utah-specific programs, and expert tips for first-time homebuyers.",
     href: "/first-time-homebuyer",
   },
   {
-    icon: BarChart3,
+    icon: Icons.rateComparison,
     title: "Rate Comparison",
     description: "See today's mortgage rates for all loan types and find the best deal for your situation.",
     href: "/rates",

@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { Icons } from "@/lib/icons";
 
 const miniLeadSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -49,7 +49,7 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
   if (submitted) {
     return (
       <div className="flex items-center gap-3 py-4">
-        <CheckCircle className={`w-6 h-6 ${variant === "dark" ? "text-emerald-light" : "text-emerald"}`} />
+        <Icons.success className={`w-6 h-6 ${variant === "dark" ? "text-emerald-light" : "text-emerald"}`} />
         <p className={variant === "dark" ? "text-white" : "text-text"}>
           Thank you! A loan specialist will contact you within 24 hours.
         </p>
@@ -90,7 +90,7 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
         </select>
       </div>
       <Button type="submit" disabled={submitting} className="bg-emerald hover:bg-emerald-light text-white px-8 whitespace-nowrap">
-        {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Get Started"}
+        {submitting ? <Icons.loading className="w-4 h-4 animate-spin" /> : "Get Started"}
       </Button>
     </form>
   );

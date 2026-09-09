@@ -6,8 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
 import type { ApplicationFormData } from "@/lib/schemas";
+import { Icons } from "@/lib/icons";
 
 function fmt(n: number | undefined): string {
   if (n == null || isNaN(n)) return "$0";
@@ -32,7 +32,7 @@ function SectionHeader({
         size="sm"
         onClick={() => onEdit(stepIndex)}
       >
-        <Pencil className="w-3.5 h-3.5 mr-1" /> Edit
+        <Icons.edit className="w-3.5 h-3.5 mr-1" /> Edit
       </Button>
     </div>
   );

@@ -1,21 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Home,
-  Wallet,
-  ClipboardCheck,
-  Search,
-  KeyRound,
-  Shield,
-  Award,
-  MapPin,
-} from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { COMPANY } from "@/lib/constants";
 import { generateFAQSchema } from "@/lib/seo";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "First-Time Homebuyer Guide",
@@ -32,31 +23,31 @@ export const metadata: Metadata = {
 
 const steps = [
   {
-    icon: Wallet,
+    icon: Icons.budget,
     title: "1. Know Your Budget",
     body:
       "Start with the basics: monthly income, existing debts, and how much you have saved. A healthy rule of thumb is keeping your total housing payment under 28% of your gross monthly income. Use our mortgage calculator to estimate what you can afford.",
   },
   {
-    icon: ClipboardCheck,
+    icon: Icons.preApproval,
     title: "2. Get Pre-Approved",
     body:
       "Pre-approval is a written commitment from a lender stating how much you can borrow. It signals to sellers that you're a serious buyer and gives you a clear price range to shop in. With Alta Mortgage Group, this is a free, low-pressure conversation — usually 15 minutes on the phone.",
   },
   {
-    icon: Search,
+    icon: Icons.shopping,
     title: "3. Shop For Your Home",
     body:
       "Work with a local Realtor who knows Weber and Davis counties. They'll help you find homes in your price range, schedule showings, and negotiate offers. Most first-time buyers look at 8–12 homes before finding the right one.",
   },
   {
-    icon: Home,
+    icon: Icons.offer,
     title: "4. Make an Offer & Underwrite",
     body:
       "Once your offer is accepted, we lock your rate and begin underwriting — the formal review of your finances. We'll order an appraisal and title work. This phase typically takes 25–35 days.",
   },
   {
-    icon: KeyRound,
+    icon: Icons.closing,
     title: "5. Close & Move In",
     body:
       "At closing you'll sign the paperwork, pay your down payment and closing costs, and receive the keys. Most closings happen at a title company office and take about an hour.",
@@ -65,7 +56,7 @@ const steps = [
 
 const programs = [
   {
-    icon: Shield,
+    icon: Icons.fha,
     name: "FHA Loan",
     summary: "Backed by the Federal Housing Administration.",
     perks: [
@@ -75,7 +66,7 @@ const programs = [
     ],
   },
   {
-    icon: Award,
+    icon: Icons.va,
     name: "VA Loan",
     summary: "Exclusive to veterans, active military, and eligible spouses.",
     perks: [
@@ -85,7 +76,7 @@ const programs = [
     ],
   },
   {
-    icon: MapPin,
+    icon: Icons.usda,
     name: "USDA Loan",
     summary: "For homes in eligible rural and suburban Utah areas.",
     perks: [
@@ -95,7 +86,7 @@ const programs = [
     ],
   },
   {
-    icon: Home,
+    icon: Icons.utahHousing,
     name: "Utah Housing Corporation",
     summary: "State-run down payment assistance for qualifying buyers.",
     perks: [

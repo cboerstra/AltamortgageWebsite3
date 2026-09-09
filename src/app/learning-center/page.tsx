@@ -1,20 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  BookOpen,
-  Calculator,
-  TrendingUp,
-  FileText,
-  Lightbulb,
-  HelpCircle,
-  DollarSign,
-  Home,
-} from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { COMPANY } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Mortgage Learning Center",
@@ -31,7 +22,7 @@ export const metadata: Metadata = {
 
 const topics = [
   {
-    icon: Home,
+    icon: Icons.firstHomeGuide,
     title: "Buying Your First Home",
     summary:
       "Step-by-step guide for first-time homebuyers in Utah — programs, credit requirements, and what to expect.",
@@ -39,7 +30,7 @@ const topics = [
     cta: "Read the first-time buyer guide",
   },
   {
-    icon: BookOpen,
+    icon: Icons.loanGuide,
     title: "Compare Loan Types",
     summary:
       "Conventional, FHA, VA, USDA, Jumbo, Fixed, ARM — see which mortgage type fits your situation.",
@@ -47,7 +38,7 @@ const topics = [
     cta: "Compare loan options",
   },
   {
-    icon: Calculator,
+    icon: Icons.calculator,
     title: "Mortgage Calculators",
     summary:
       "Estimate your monthly payment, see what you can afford, or check how much you'd save by refinancing.",
@@ -55,7 +46,7 @@ const topics = [
     cta: "Open the calculator",
   },
   {
-    icon: TrendingUp,
+    icon: Icons.rates,
     title: "Today's Rates",
     summary:
       "Current interest rates for 30-year fixed, 15-year fixed, FHA, VA, and more. Updated regularly.",
@@ -63,7 +54,7 @@ const topics = [
     cta: "See current rates",
   },
   {
-    icon: DollarSign,
+    icon: Icons.refinanceGuide,
     title: "Refinancing 101",
     summary:
       "When refinancing makes sense, what it costs, and how much you could save on your monthly payment.",
@@ -71,7 +62,7 @@ const topics = [
     cta: "Learn about refinancing",
   },
   {
-    icon: FileText,
+    icon: Icons.equityGuide,
     title: "Home Equity Loans",
     summary:
       "Tap into your home's equity for renovations, debt consolidation, or other big expenses.",
@@ -117,25 +108,25 @@ const glossary = [
 
 const tips = [
   {
-    icon: Lightbulb,
+    icon: Icons.tip,
     title: "Lock your rate when you're ready",
     body:
       "Interest rates change daily. Once you have an accepted offer, locking your rate protects you from rate increases while your loan is being processed.",
   },
   {
-    icon: Lightbulb,
+    icon: Icons.tip,
     title: "Don't open new credit before closing",
     body:
       "New credit cards, car loans, or even big credit inquiries during underwriting can derail your loan. Wait until after closing for any new credit.",
   },
   {
-    icon: Lightbulb,
+    icon: Icons.tip,
     title: "Keep employment steady",
     body:
       "Lenders verify employment right before closing. Switching jobs (especially to self-employment) during the loan process can complicate things.",
   },
   {
-    icon: Lightbulb,
+    icon: Icons.tip,
     title: "Document any large deposits",
     body:
       "Underwriters scrutinize bank statements for unexplained deposits. Keep records of gift funds, bonuses, or asset sales so you can explain them quickly.",
@@ -226,7 +217,7 @@ export default function LearningCenterPage() {
       {/* Glossary */}
       <section className="mt-16">
         <div className="flex items-center gap-3">
-          <HelpCircle className="w-6 h-6 text-navy" />
+          <Icons.faq className="w-6 h-6 text-navy" />
           <h2 className="text-3xl font-bold text-text">Mortgage Glossary</h2>
         </div>
         <p className="mt-2 text-text-muted">

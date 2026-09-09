@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import type { AmortizationRow } from "@/lib/calculator-utils";
+import { Icons } from "@/lib/icons";
 
 export function AmortizationTable({ schedule }: { schedule: AmortizationRow[] }) {
   const [expanded, setExpanded] = useState(false);
@@ -70,9 +70,9 @@ export function AmortizationTable({ schedule }: { schedule: AmortizationRow[] })
           className="mt-2 w-full text-text-muted"
         >
           {expanded ? (
-            <>Show Less <ChevronUp className="w-4 h-4 ml-1" /></>
+            <>Show Less <Icons.collapse className="w-4 h-4 ml-1" /></>
           ) : (
-            <>Show Full Schedule <ChevronDown className="w-4 h-4 ml-1" /></>
+            <>Show Full Schedule <Icons.expand className="w-4 h-4 ml-1" /></>
           )}
         </Button>
       )}

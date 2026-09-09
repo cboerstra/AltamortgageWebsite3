@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Heart, Target, Users, Shield } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { COMPANY } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 };
 
 const values = [
-  { icon: Heart, title: "Community First", description: "We live and work in Weber and Davis counties. Your community is our community, and we're invested in helping our neighbors achieve homeownership." },
-  { icon: Target, title: "Expert Guidance", description: "Navigating mortgage options can be complex. We simplify the process with clear, honest advice tailored to your unique financial situation." },
-  { icon: Users, title: "Personal Service", description: "You're not a number to us. Every client gets a dedicated loan specialist who's available when you need them — by phone, email, or in person." },
-  { icon: Shield, title: "Trust & Transparency", description: "No hidden fees, no surprises. We believe in full transparency throughout the lending process so you can make confident decisions." },
+  { icon: Icons.community, title: "Community First", description: "We live and work in Weber and Davis counties. Your community is our community, and we're invested in helping our neighbors achieve homeownership." },
+  { icon: Icons.expertise, title: "Expert Guidance", description: "Navigating mortgage options can be complex. We simplify the process with clear, honest advice tailored to your unique financial situation." },
+  { icon: Icons.personalService, title: "Personal Service", description: "You're not a number to us. Every client gets a dedicated loan specialist who's available when you need them — by phone, email, or in person." },
+  { icon: Icons.transparency, title: "Trust & Transparency", description: "No hidden fees, no surprises. We believe in full transparency throughout the lending process so you can make confident decisions." },
 ];
 
 const team = [

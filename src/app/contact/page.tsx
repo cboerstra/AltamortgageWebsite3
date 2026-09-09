@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Phone, Mail, MapPin, Clock } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { PreApprovalForm } from "@/components/forms/pre-approval-form";
 import { COMPANY } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Get Pre-Approved",
@@ -30,19 +30,19 @@ export default function ContactPage() {
             <h2 className="font-semibold text-text mb-4">Contact Information</h2>
             <div className="space-y-4">
               <a href={`tel:${COMPANY.phone.replace(/\D/g, "")}`} className="flex items-center gap-3 text-sm text-text-muted hover:text-navy transition-colors">
-                <Phone className="w-4 h-4 text-emerald" />
+                <Icons.phone className="w-4 h-4 text-emerald" />
                 {COMPANY.phone}
               </a>
               <a href={`mailto:${COMPANY.email}`} className="flex items-center gap-3 text-sm text-text-muted hover:text-navy transition-colors">
-                <Mail className="w-4 h-4 text-emerald" />
+                <Icons.email className="w-4 h-4 text-emerald" />
                 {COMPANY.email}
               </a>
               <div className="flex items-start gap-3 text-sm text-text-muted">
-                <MapPin className="w-4 h-4 text-emerald mt-0.5" />
+                <Icons.location className="w-4 h-4 text-emerald mt-0.5" />
                 <span>{COMPANY.address.street}<br />{COMPANY.address.city}, {COMPANY.address.state} {COMPANY.address.zip}</span>
               </div>
               <div className="flex items-start gap-3 text-sm text-text-muted">
-                <Clock className="w-4 h-4 text-emerald mt-0.5" />
+                <Icons.hours className="w-4 h-4 text-emerald mt-0.5" />
                 <div>
                   <p>Mon-Fri: {COMPANY.hours.weekdays}</p>
                   <p>Saturday: {COMPANY.hours.saturday}</p>

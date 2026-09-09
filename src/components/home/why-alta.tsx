@@ -1,11 +1,11 @@
-import { Shield, Award, MapPin, Star } from "lucide-react";
 import { COMPANY } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 const stats = [
-  { icon: Shield, value: "15+", label: "Years Experience" },
-  { icon: Award, value: "2,500+", label: "Loans Closed" },
-  { icon: MapPin, value: "25+", label: "Utah Cities Served" },
-  { icon: Star, value: "4.9", label: "Star Reviews" },
+  { icon: Icons.experience, value: "15+", label: "Years Experience" },
+  { icon: Icons.loansClosed, value: "2,500+", label: "Loans Closed" },
+  { icon: Icons.citiesServed, value: "25+", label: "Utah Cities Served" },
+  { icon: Icons.rating, value: "4.9", label: "Star Reviews" },
 ];
 
 export function WhyAlta() {
