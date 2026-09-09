@@ -23,7 +23,12 @@ import {
   updateDeliveryStatus,
   type MismoStatus,
 } from "@/lib/db";
-import { sendApplicationNotification, type EmailAttachment } from "@/lib/email";
+import {
+  sendApplicantDocumentRequest,
+  sendApplicationNotification,
+  type EmailAttachment,
+} from "@/lib/email";
+import { buildDocumentChecklist } from "@/lib/document-checklist";
 import { generateMismoDocument, ssnLast4, writeMismoFile, type StoredMismoFile } from "@/lib/mismo";
 import { generateRefNumber } from "@/lib/utils";
 
@@ -147,13 +152,13 @@ export async function POST(request: NextRequest) {
 
     const persisted = stored !== null || applicationId !== null;
 
-    // ---- Best-effort phase: CRM + loan officer email -----------------------
+    // ---- Best-effort phase: CRM + loan officer email + applicant email -----
     const attachments: EmailAttachment[] | undefined =
       xml && mismoFilename
         ? [{ filename: mismoFilename, content: xml, contentType: "application/xml" }]
         : undefined;
 
-    const [crmResult, emailResult] = await Promise.all([
+    const [crmResult, emailResult, applicantEmailResult] = await Promise.all([
       forwardToCRM({
         firstName: app.firstName,
         lastName: app.lastName,
@@ -170,6 +175,15 @@ export async function POST(request: NextRequest) {
         referenceNumber,
         applicantName: `${app.firstName} ${app.lastName}`,
         attachments,
+      }),
+      // The site has no document upload, so this is how the applicant learns
+      // what to send us and where. Best effort: a bounced confirmation must
+      // never fail a submission that is already stored.
+      sendApplicantDocumentRequest({
+        to: app.email,
+        firstName: app.firstName,
+        referenceNumber,
+        checklist: buildDocumentChecklist(app),
       }),
     ]);
 
@@ -207,7 +221,8 @@ export async function POST(request: NextRequest) {
 
     console.log(
       `[${referenceNumber}] Application received ` +
-        `(mismo=${mismoStatus}, db=${dbState}, crm=${crmResult.status}, email=${emailResult.status})`
+        `(mismo=${mismoStatus}, db=${dbState}, crm=${crmResult.status}, ` +
+        `email=${emailResult.status}, applicantEmail=${applicantEmailResult.status})`
     );
 
     return NextResponse.json({
