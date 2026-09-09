@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { generateReviewSchema } from "@/lib/seo";
+import { Icons } from "@/lib/icons";
 
 const testimonials = [
   {
@@ -72,7 +72,7 @@ export function Testimonials() {
                 <CardContent className="p-6">
                   <div className="flex gap-0.5 mb-4">
                     {Array.from({ length: t.rating }).map((_, j) => (
-                      <Star key={j} className="w-4 h-4 fill-warning text-warning" />
+                      <Icons.rating key={j} className="w-4 h-4 fill-warning text-warning" />
                     ))}
                   </div>
                   <p className="text-text text-sm leading-relaxed italic">&ldquo;{t.body}&rdquo;</p>
@@ -91,7 +91,7 @@ export function Testimonials() {
               className="p-2 rounded-full border border-border hover:bg-surface transition-colors"
               aria-label="Previous testimonial"
             >
-              <ChevronLeft className="w-4 h-4 text-text-muted" />
+              <Icons.carouselPrev className="w-4 h-4 text-text-muted" />
             </button>
             {testimonials.map((_, i) => (
               <button
@@ -106,7 +106,7 @@ export function Testimonials() {
               className="p-2 rounded-full border border-border hover:bg-surface transition-colors"
               aria-label="Next testimonial"
             >
-              <ChevronRight className="w-4 h-4 text-text-muted" />
+              <Icons.carouselNext className="w-4 h-4 text-text-muted" />
             </button>
           </div>
         </div>

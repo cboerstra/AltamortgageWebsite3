@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
 import { preApprovalSchema, type PreApprovalFormData } from "@/lib/schemas";
+import { Icons } from "@/lib/icons";
 
 export function PreApprovalForm() {
   const [step, setStep] = useState(1);
@@ -58,7 +58,7 @@ export function PreApprovalForm() {
   if (submitted) {
     return (
       <div className="text-center py-12">
-        <CheckCircle className="w-16 h-16 text-emerald mx-auto" />
+        <Icons.success className="w-16 h-16 text-emerald mx-auto" />
         <h2 className="text-2xl font-bold text-navy mt-4">You&apos;re Pre-Approved!</h2>
         <p className="text-text-muted mt-2 max-w-md mx-auto">
           Thank you for your submission. A loan specialist will contact you within 24 hours to discuss your options and next steps.
@@ -178,16 +178,16 @@ export function PreApprovalForm() {
         <div className="flex justify-between mt-8">
           {step > 1 && (
             <Button type="button" variant="outline" onClick={() => setStep(step - 1)}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <Icons.prev className="w-4 h-4 mr-2" /> Back
             </Button>
           )}
           {step < 3 ? (
             <Button type="button" onClick={() => setStep(step + 1)} className="ml-auto bg-navy hover:bg-navy-light text-white">
-              Next <ArrowRight className="w-4 h-4 ml-2" />
+              Next <Icons.next className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button type="submit" disabled={submitting} className="ml-auto bg-emerald hover:bg-emerald-light text-white px-8">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit Pre-Approval Request"}
+              {submitting ? <Icons.loading className="w-4 h-4 animate-spin" /> : "Submit Pre-Approval Request"}
             </Button>
           )}
         </div>

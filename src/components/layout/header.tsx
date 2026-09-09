@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Phone, Clock, Menu } from "lucide-react";
 import { Logo } from "./logo";
 import { MobileNav } from "./mobile-nav";
 import { COMPANY, NAV_LINKS } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -20,11 +20,11 @@ export function Header() {
               href={`tel:${COMPANY.phone.replace(/\D/g, "")}`}
               className="flex items-center gap-1.5 hover:text-emerald-light transition-colors"
             >
-              <Phone className="w-3.5 h-3.5" />
+              <Icons.phone className="w-3.5 h-3.5" />
               <span>{COMPANY.phone}</span>
             </a>
             <span className="hidden sm:flex items-center gap-1.5 text-white/70">
-              <Clock className="w-3.5 h-3.5" />
+              <Icons.hours className="w-3.5 h-3.5" />
               <span>Mon-Fri {COMPANY.hours.weekdays}</span>
             </span>
           </div>
@@ -61,7 +61,7 @@ export function Header() {
               onClick={() => setMobileOpen(true)}
               aria-label="Open navigation menu"
             >
-              <Menu className="w-6 h-6" />
+              <Icons.menu className="w-6 h-6" />
             </button>
           </div>
         </div>

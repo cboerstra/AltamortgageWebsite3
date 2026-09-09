@@ -5,13 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import {
-  CheckCircle,
-  Loader2,
-  ArrowLeft,
-  ArrowRight,
-  ShieldCheck,
-} from "lucide-react";
 import { applicationSchema, type ApplicationFormData } from "@/lib/schemas";
 import { StepLoanInfo } from "./step-loan-info";
 import { StepPersonalInfo } from "./step-personal-info";
@@ -19,6 +12,7 @@ import { StepEmployment } from "./step-employment";
 import { StepAssets } from "./step-assets";
 import { StepDeclarations } from "./step-declarations";
 import { StepReview } from "./step-review";
+import { Icons } from "@/lib/icons";
 
 const STEP_LABELS = [
   "Loan Information",
@@ -192,7 +186,7 @@ export function ApplicationWizard() {
   if (submitted) {
     return (
       <div className="text-center py-12">
-        <CheckCircle className="w-16 h-16 text-emerald mx-auto" />
+        <Icons.success className="w-16 h-16 text-emerald mx-auto" />
         <h2 className="text-2xl font-bold text-navy mt-4">
           Application Submitted!
         </h2>
@@ -221,7 +215,7 @@ export function ApplicationWizard() {
           <span className="font-medium text-text">{STEP_LABELS[step]}</span>
         </p>
         <div className="flex items-center gap-1 text-xs text-text-muted">
-          <ShieldCheck className="w-3.5 h-3.5" /> Secure &amp; Encrypted
+          <Icons.secure className="w-3.5 h-3.5" /> Secure &amp; Encrypted
         </div>
       </div>
 
@@ -245,7 +239,7 @@ export function ApplicationWizard() {
         <div className="flex justify-between mt-8 pt-6 border-t border-border-brand">
           {step > 0 ? (
             <Button type="button" variant="outline" onClick={goBack}>
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+              <Icons.prev className="w-4 h-4 mr-2" /> Back
             </Button>
           ) : (
             <div />
@@ -257,7 +251,7 @@ export function ApplicationWizard() {
               onClick={goNext}
               className="bg-navy hover:bg-navy-light text-white"
             >
-              Next <ArrowRight className="w-4 h-4 ml-2" />
+              Next <Icons.next className="w-4 h-4 ml-2" />
             </Button>
           ) : (
             <Button
@@ -266,7 +260,7 @@ export function ApplicationWizard() {
               className="bg-emerald hover:bg-emerald-light text-white px-8"
             >
               {submitting ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Icons.loading className="w-4 h-4 animate-spin mr-2" />
               ) : null}
               {submitting ? "Submitting..." : "Submit Application"}
             </Button>

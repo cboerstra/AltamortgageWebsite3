@@ -1,35 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import {
-  Home,
-  Shield,
-  Award,
-  MapPin,
-  TrendingUp,
-  BarChart3,
-  Lock,
-} from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { LOAN_TYPES } from "@/lib/constants";
 import { generateFAQSchema } from "@/lib/seo";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Mortgage Loan Options",
   description:
     "Compare mortgage loan programs: Conventional, FHA, VA, USDA, Jumbo, ARM, and Fixed Rate. Find the right Utah home loan for your situation with Alta Mortgage Group.",
-};
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Home,
-  Shield,
-  Award,
-  MapPin,
-  TrendingUp,
-  BarChart3,
-  Lock,
 };
 
 const faqs = [
@@ -75,7 +57,7 @@ export default function LoanOptionsPage() {
 
       <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {LOAN_TYPES.map((loan) => {
-          const IconComponent = iconMap[loan.icon];
+          const IconComponent = Icons[loan.icon];
           return (
             <Card
               key={loan.id}

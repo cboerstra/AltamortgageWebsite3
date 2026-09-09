@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { X, Phone } from "lucide-react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { Logo } from "./logo";
 import { COMPANY, NAV_LINKS } from "@/lib/constants";
+import { Icons } from "@/lib/icons";
 
 interface MobileNavProps {
   open: boolean;
@@ -22,7 +22,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             aria-label="Close navigation menu"
             className="p-2 text-text-muted hover:text-navy"
           >
-            <X className="w-5 h-5" />
+            <Icons.close className="w-5 h-5" />
           </button>
         </div>
         <nav className="flex flex-col p-4 gap-1" aria-label="Mobile navigation">
@@ -56,7 +56,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
             href={`tel:${COMPANY.phone.replace(/\D/g, "")}`}
             className="flex items-center justify-center gap-2 text-sm text-text-muted"
           >
-            <Phone className="w-4 h-4" />
+            <Icons.phone className="w-4 h-4" />
             {COMPANY.phone}
           </a>
         </div>

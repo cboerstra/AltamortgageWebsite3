@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Wallet, CheckCircle } from "lucide-react";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Home Equity Loans & HELOC",
@@ -27,7 +27,7 @@ export default function HomeEquityPage() {
       <div className="mt-6 grid lg:grid-cols-2 gap-12 items-start">
         <div>
           <div className="w-14 h-14 rounded-xl bg-navy/10 flex items-center justify-center mb-6">
-            <Wallet className="w-7 h-7 text-navy" />
+            <Icons.homeEquity className="w-7 h-7 text-navy" />
           </div>
           <h1 className="text-4xl font-bold text-navy">
             Home Equity Loans &amp; HELOC
@@ -40,7 +40,7 @@ export default function HomeEquityPage() {
           <ul className="mt-8 space-y-3">
             {benefits.map((b, i) => (
               <li key={i} className="flex items-start gap-3 text-text">
-                <CheckCircle className="w-5 h-5 text-emerald mt-0.5 shrink-0" />
+                <Icons.check className="w-5 h-5 text-emerald mt-0.5 shrink-0" />
                 <span>{b}</span>
               </li>
             ))}

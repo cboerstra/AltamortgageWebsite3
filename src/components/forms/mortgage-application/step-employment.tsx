@@ -4,8 +4,8 @@ import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
 import type { ApplicationFormData } from "@/lib/schemas";
+import { Icons } from "@/lib/icons";
 
 const selectClass =
   "mt-1 h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
@@ -120,7 +120,7 @@ export function StepEmployment({
             size="sm"
             onClick={() => append({ type: "", amount: 0 })}
           >
-            <Plus className="w-3.5 h-3.5 mr-1" /> Add
+            <Icons.add className="w-3.5 h-3.5 mr-1" /> Add
           </Button>
         </div>
         {fields.map((field, index) => (
@@ -149,7 +149,7 @@ export function StepEmployment({
               size="icon"
               onClick={() => remove(index)}
             >
-              <Trash2 className="w-4 h-4 text-error" />
+              <Icons.remove className="w-4 h-4 text-error" />
             </Button>
           </div>
         ))}

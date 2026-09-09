@@ -1,26 +1,26 @@
 import Link from "next/link";
-import { Home, RefreshCw, Wallet } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Icons } from "@/lib/icons";
 
 const products = [
   {
-    icon: Home,
+    icon: Icons.purchase,
     title: "Buy a Home",
     description: "Whether you're a first-time buyer or looking to upgrade, we'll find the right mortgage for your dream home in Utah.",
     cta: "Get Started",
     href: "/purchase",
   },
   {
-    icon: RefreshCw,
+    icon: Icons.refinance,
     title: "Refinance",
     description: "Lower your monthly payments, shorten your term, or tap into your equity with a refinance tailored to your goals.",
     cta: "Start Saving",
     href: "/refinance",
   },
   {
-    icon: Wallet,
+    icon: Icons.homeEquity,
     title: "Access Your Equity",
     description: "Turn your home's equity into cash for renovations, debt consolidation, or whatever life throws your way.",
     cta: "Learn More",
