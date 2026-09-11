@@ -1,6 +1,6 @@
-// Contract tests for the draft endpoints, hermetic: DB_* unset means every
-// store call short-circuits, which is the "not configured" production shape
-// the wizard must survive silently.
+// Contract tests for the draft endpoints, hermetic: DATABASE_URL unset means
+// every store call short-circuits, which is the "not configured" production
+// shape the wizard must survive silently.
 
 import { randomBytes } from "node:crypto";
 import type { NextRequest } from "next/server";
@@ -11,7 +11,14 @@ import { GET, POST } from "./route";
 import { POST as runReminders } from "./reminders/route";
 import { GET as optOutPage, POST as optOutSubmit } from "./opt-out/route";
 
-const CLEARED = ["DB_HOST", "DB_USER", "DB_NAME", "CRON_SECRET", "DRAFT_LINK_KEY", "SMTP_HOST"];
+const CLEARED = [
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "CRON_SECRET",
+  "DRAFT_LINK_KEY",
+  "SMTP_HOST",
+];
 const saved: Record<string, string | undefined> = {};
 
 beforeEach(() => {
@@ -58,13 +65,11 @@ describe("POST /api/drafts", () => {
 });
 
 describe("POST /api/drafts with a database configured (validation only)", () => {
-  // Setting DB_* makes isDbConfigured() true. The pool is created lazily and
-  // never used before validation rejects the request, so no connection is
-  // attempted for these cases.
+  // Setting DATABASE_URL makes isDbConfigured() true. The pool is created
+  // lazily and never used before validation rejects the request, so no
+  // connection is attempted for these cases.
   beforeEach(() => {
-    process.env.DB_HOST = "db.invalid";
-    process.env.DB_USER = "u";
-    process.env.DB_NAME = "n";
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
   });
 
   it("rejects an oversized body before parsing it", async () => {
@@ -113,9 +118,7 @@ describe("GET /api/drafts", () => {
   });
 
   it("answers 404 to a malformed token without touching the database", async () => {
-    process.env.DB_HOST = "db.invalid";
-    process.env.DB_USER = "u";
-    process.env.DB_NAME = "n";
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
     const res = await GET(req("http://localhost/api/drafts?token=nope"));
     expect(res.status).toBe(404);
   });

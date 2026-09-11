@@ -1,0 +1,47 @@
+# Fires the abandonment-reminder job every 15 minutes.
+#
+# Vercel Cron on the Hobby plan runs at most once a day, which is useless for
+# a one-hour reminder. This workflow is the scheduler instead: it makes one
+# authenticated POST and the site does the rest. Nothing here touches the
+# database or sends mail.
+#
+# Setup (once): GitHub → repo → Settings → Secrets and variables → Actions
+#   Secret   CRON_SECRET   same value as the CRON_SECRET env var in Vercel
+#   Variable SITE_URL      e.g. https://altamortgage-website3.vercel.app
+#
+# GitHub schedules are best-effort and can run several minutes late under
+# load. That is fine: the job is idempotent and the schedule is measured from
+# the applicant's last edit, so lateness only delays, never duplicates.
+
+name: Draft reminders
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: draft-reminders
+  cancel-in-progress: false
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger /api/drafts/reminders
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$SITE_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "SITE_URL variable and CRON_SECRET secret must both be set." >&2
+            exit 1
+          fi
+          curl --fail --silent --show-error \
+            --max-time 60 \
+            -X POST \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "${SITE_URL%/}/api/drafts/reminders"

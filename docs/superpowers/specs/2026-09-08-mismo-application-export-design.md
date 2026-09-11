@@ -190,3 +190,18 @@ date, consent timestamp, and the MISMO filename.
 
 Structure and the golden file are asserted. XSD validation is available as a
 follow-on if the licensed schema is supplied locally.
+
+## Amendment (2026-09-11): hosting is Vercel, not cPanel
+
+The "Storage layout" and "Schema migration" sections above assumed cPanel
+with a persistent disk and MySQL. That assumption came from scaffolding in
+the repo's initial upload (`app.js`, "run in phpMyAdmin") that was never the
+real deployment. The site deploys to Vercel (Hobby).
+
+- **MISMO documents** are written to Vercel Blob with `access: "private"`,
+  under the key `mismo/<yyyy>/<mm>/<ref>-<timestamp>.xml`. Vercel's function
+  filesystem is read-only and discarded per request; disk storage remains
+  only as the local-development and test backend.
+- **Database** is Neon Postgres, provisioned from the Vercel Storage tab.
+  `db/schema.sql` is Postgres; the MySQL migrations were deleted unrun.
+- **`mismo_path`** holds the Blob pathname, not a filesystem path.

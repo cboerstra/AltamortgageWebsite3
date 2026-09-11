@@ -1,44 +1,70 @@
-// MySQL connection pool + helpers for persisting leads and applications.
-// Reads connection config from environment variables.
+// Postgres connection pool + helpers for persisting leads and applications.
 //
-// If DB_HOST is missing, the helpers no-op and return null. This lets the
-// site work without a database during early setup — leads still go to CRM
-// and email, but persistence is skipped.
+// The site deploys to Vercel; the database is Neon Postgres provisioned from
+// the Vercel Storage tab, which injects DATABASE_URL into the project. Any
+// Postgres reachable by URL works the same way.
+//
+// If no URL is configured, every helper no-ops and returns null. The site
+// keeps working during setup — applications still go to Blob storage and the
+// CRM — but nothing can be looked up by reference number until this is set.
 
-import mysql, { Pool, ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import { Pool, type QueryResultRow } from "pg";
 
 let pool: Pool | null = null;
 let configWarned = false;
 
+/**
+ * Neon's Vercel integration sets several variants. Prefer the pooled one:
+ * serverless functions open many short-lived connections, and PgBouncer in
+ * front of Neon absorbs that far better than the direct endpoint.
+ */
+function connectionString(): string | undefined {
+  return (
+    process.env.DATABASE_URL ||
+    process.env.POSTGRES_URL ||
+    process.env.POSTGRES_PRISMA_URL ||
+    undefined
+  );
+}
+
 export function isDbConfigured(): boolean {
-  return Boolean(process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME);
+  return Boolean(connectionString());
 }
 
 export function getPool(): Pool | null {
   if (pool) return pool;
 
-  if (!isDbConfigured()) {
+  const url = connectionString();
+  if (!url) {
     if (!configWarned) {
-      console.warn("Database not configured (DB_HOST/DB_USER/DB_NAME missing). Skipping persistence.");
+      console.warn("Database not configured (DATABASE_URL missing). Skipping persistence.");
       configWarned = true;
     }
     return null;
   }
 
-  pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || "3306", 10),
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD || "",
-    database: process.env.DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 5,
-    queueLimit: 0,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 10_000,
+  pool = new Pool({
+    connectionString: url,
+    // Each Vercel function instance gets its own pool; keep it small so a
+    // burst of invocations does not exhaust Neon's connection limit.
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    connectionTimeoutMillis: 5_000,
+    ssl: url.includes("localhost") || url.includes("127.0.0.1") ? undefined : { rejectUnauthorized: true },
   });
 
   return pool;
+}
+
+/** Thin wrapper so callers never touch the pool directly. */
+export async function query<T extends QueryResultRow = QueryResultRow>(
+  text: string,
+  params: unknown[] = []
+): Promise<{ rows: T[]; rowCount: number } | null> {
+  const p = getPool();
+  if (!p) return null;
+  const result = await p.query<T>(text, params);
+  return { rows: result.rows, rowCount: result.rowCount ?? 0 };
 }
 
 export interface LeadRecord {
@@ -93,7 +119,7 @@ export interface ApplicationRecord {
   veteran?: boolean;
   firstTimeBuyer?: boolean;
   rawPayload: Record<string, unknown>;
-  /** Path to the generated MISMO document, relative to MISMO_STORAGE_DIR. */
+  /** Storage key of the generated MISMO document (Blob pathname in production). */
   mismoPath?: string;
   mismoSha256?: string;
   mismoStatus?: MismoStatus;
@@ -110,12 +136,13 @@ export async function insertLead(lead: LeadRecord): Promise<number | null> {
   if (!p) return null;
 
   try {
-    const [result] = await p.execute<ResultSetHeader>(
+    const result = await p.query<{ id: number }>(
       `INSERT INTO leads (
         name, email, phone, loan_purpose, estimated_amount,
         preferred_contact, best_time_to_call, property_type,
         property_zip, first_time_buyer, timeline, source, utm, raw_payload
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+      RETURNING id`,
       [
         lead.name,
         lead.email,
@@ -133,7 +160,7 @@ export async function insertLead(lead: LeadRecord): Promise<number | null> {
         JSON.stringify(lead.rawPayload),
       ]
     );
-    return result.insertId;
+    return result.rows[0]?.id ?? null;
   } catch (err) {
     console.error("insertLead error:", err);
     return null;
@@ -148,7 +175,7 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
   if (!p) return null;
 
   try {
-    const [result] = await p.execute<ResultSetHeader>(
+    const result = await p.query<{ id: number }>(
       `INSERT INTO applications (
         ref_number, loan_purpose, property_type, property_use,
         purchase_price, loan_amount, down_payment, current_balance,
@@ -160,7 +187,13 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
         monthly_income, credit_score_range, us_citizen, veteran,
         first_time_buyer, raw_payload,
         mismo_path, mismo_sha256, mismo_status, mismo_error
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+        $11, $12, $13, $14, $15, $16, $17, $18, $19, $20,
+        $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
+        $31, $32, $33, $34, $35, $36, $37, $38
+      )
+      RETURNING id`,
       [
         app.refNumber,
         app.loanPurpose,
@@ -193,8 +226,8 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
         app.monthlyIncome ?? null,
         app.creditScoreRange || null,
         app.usCitizen || null,
-        app.veteran ? 1 : 0,
-        app.firstTimeBuyer ? 1 : 0,
+        app.veteran ?? false,
+        app.firstTimeBuyer ?? false,
         JSON.stringify(app.rawPayload),
         app.mismoPath || null,
         app.mismoSha256 || null,
@@ -202,7 +235,7 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
         app.mismoError || null,
       ]
     );
-    return result.insertId;
+    return result.rows[0]?.id ?? null;
   } catch (err) {
     console.error("insertApplication error:", err);
     return null;
@@ -221,11 +254,11 @@ export async function refNumberExists(refNumber: string): Promise<boolean> {
   if (!p) return false;
 
   try {
-    const [rows] = await p.execute<RowDataPacket[]>(
-      "SELECT 1 FROM applications WHERE ref_number = ? LIMIT 1",
+    const result = await p.query(
+      "SELECT 1 FROM applications WHERE ref_number = $1 LIMIT 1",
       [refNumber]
     );
-    return rows.length > 0;
+    return (result.rowCount ?? 0) > 0;
   } catch (err) {
     console.error("refNumberExists error:", err);
     return false;
@@ -250,7 +283,7 @@ export async function updateDeliveryStatus(
   const p = getPool();
   if (!p) return;
 
-  const columns = ["crm_status = ?", "crm_response = ?", "email_status = ?", "email_error = ?"];
+  const columns = ["crm_status = $1", "crm_response = $2", "email_status = $3", "email_error = $4"];
   const values: (string | number | null)[] = [
     crm.status,
     crm.response || null,
@@ -259,13 +292,16 @@ export async function updateDeliveryStatus(
   ];
 
   if (mismo && table === "applications") {
-    columns.push("mismo_status = ?", "mismo_path = ?", "mismo_sha256 = ?", "mismo_error = ?");
+    columns.push("mismo_status = $5", "mismo_path = $6", "mismo_sha256 = $7", "mismo_error = $8");
     values.push(mismo.status, mismo.path || null, mismo.sha256 || null, mismo.error || null);
   }
   values.push(id);
 
   try {
-    await p.execute(`UPDATE ${table} SET ${columns.join(", ")} WHERE id = ?`, values);
+    await p.query(
+      `UPDATE ${table} SET ${columns.join(", ")} WHERE id = $${values.length}`,
+      values
+    );
   } catch (err) {
     console.error(`updateDeliveryStatus(${table}, ${id}) error:`, err);
   }

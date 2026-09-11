@@ -6,10 +6,10 @@
 // does. Do not tell an applicant to expect one.
 //
 // This forward is BEST EFFORT and is skipped entirely when unconfigured, so it
-// is not a system of record. /api/applications persists to disk and MySQL
-// before calling here, and decides success on that basis.
+// is not a system of record. /api/applications persists to Blob storage and
+// Postgres before calling here, and decides success on that basis.
 //
-// Required env vars (set in the cPanel Node.js app environment):
+// Required env vars (set in the Vercel project):
 //   CRM_API_URL  = https://altamortgagecrm.net/api/website-lead
 //   CRM_API_KEY  = (must match WEBSITE_API_KEY on the CRM server)
 

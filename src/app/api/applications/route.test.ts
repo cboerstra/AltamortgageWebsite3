@@ -1,7 +1,8 @@
 // Contract tests for the submission handler.
 //
-// Hermetic: with CRM_*, SMTP_* and DB_* unset, forwardToCRM, the mailer and the
-// MySQL pool all short-circuit to "skipped" without touching the network. That
+// Hermetic: with CRM_*, SMTP_*, DATABASE_URL and BLOB_READ_WRITE_TOKEN unset,
+// forwardToCRM, the mailer and the Postgres pool all short-circuit to "skipped"
+// and the MISMO store writes to a tmpdir, without touching the network. That
 // is exactly the misconfigured production shape that used to report success
 // while dropping the application, so it is the case worth pinning down.
 
@@ -22,9 +23,10 @@ const CLEARED_ENV = [
   "SMTP_USER",
   "SMTP_PASS",
   "NOTIFICATION_EMAIL",
-  "DB_HOST",
-  "DB_USER",
-  "DB_NAME",
+  "DATABASE_URL",
+  "POSTGRES_URL",
+  "POSTGRES_PRISMA_URL",
+  "BLOB_READ_WRITE_TOKEN",
 ];
 
 const savedEnv: Record<string, string | undefined> = {};

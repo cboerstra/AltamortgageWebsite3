@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "start": "next start",
-    "passenger": "node app.js",
     "build": "next build",
-    "deploy:build": "npm ci --include=dev && next build && npm prune --omit=dev",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -22,12 +20,13 @@
     "@types/nodemailer": "^8.0.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vercel/blob": "^2.8.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.17.0",
-    "mysql2": "^3.22.4",
     "next": "16.2.6",
     "nodemailer": "^8.0.9",
+    "pg": "^8.23.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.76.1",
@@ -40,6 +39,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@types/pg": "^8.23.1",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "vite-tsconfig-paths": "^5.1.4",

@@ -286,3 +286,12 @@ everything short-circuits to "skipped" without touching the network.
    `ON UPDATE CURRENT_TIMESTAMP` would otherwise treat each reminder as
    applicant activity, pushing the next reminder and the purge date back on
    every write. Claims write `updated_at = updated_at` explicitly.
+
+5. **Hosting is Vercel, not cPanel.** The "Scheduling" section's cPanel cron
+   entry does not apply, and Vercel Cron on the Hobby plan runs at most once a
+   day. The 15-minute trigger is a GitHub Actions scheduled workflow
+   (`.github/workflows/draft-reminders.yml`), which the section already
+   named as the fallback. The database is Neon Postgres; the schema uses
+   `ON CONFLICT` and sets `updated_at = NOW()` explicitly on applicant
+   writes, which makes amendment 4's `updated_at = updated_at` trick
+   unnecessary — the reminder job simply never writes that column.

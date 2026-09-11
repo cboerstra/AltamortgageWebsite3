@@ -35,16 +35,17 @@ describe("resolveStorageRoot", () => {
 });
 
 describe("buildRelativePath", () => {
-  it("files documents by UTC year and month", () => {
+  it("files documents by UTC year and month, as a forward-slash storage key", () => {
+    // A key, not a filesystem path: Blob pathnames use "/" on every platform.
     expect(buildRelativePath("ALT-K7M2Q", "2026-09-08T14:30:12.000Z")).toBe(
-      path.join("2026", "09", "ALT-K7M2Q-20260908T143012Z.xml")
+      "2026/09/ALT-K7M2Q-20260908T143012Z.xml"
     );
   });
 
   it("strips characters that have no business in a filename", () => {
     const relative = buildRelativePath("../../etc/passwd", "2026-09-08T14:30:12.000Z");
-    expect(path.basename(relative)).toBe("....etcpasswd-20260908T143012Z.xml");
-    expect(relative.includes(".." + path.sep)).toBe(false);
+    expect(relative.split("/").pop()).toBe("....etcpasswd-20260908T143012Z.xml");
+    expect(relative.includes("../")).toBe(false);
   });
 });
 
@@ -56,9 +57,8 @@ describe("writeMismoFile", () => {
     expect(await readFile(stored.path, "utf8")).toBe(xml);
     expect(stored.bytes).toBe(Buffer.byteLength(xml, "utf8"));
     expect(stored.sha256).toBe(createHash("sha256").update(xml).digest("hex"));
-    expect(stored.relativePath).toBe(
-      path.join("2026", "09", "ALT-K7M2Q-20260908T143012Z.xml")
-    );
+    // The key is the same string in both backends — never a platform path.
+    expect(stored.relativePath).toBe("2026/09/ALT-K7M2Q-20260908T143012Z.xml");
   });
 
   it("leaves no temp file behind", async () => {
