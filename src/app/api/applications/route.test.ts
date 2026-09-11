@@ -1,6 +1,6 @@
 // Contract tests for the submission handler.
 //
-// Hermetic: with CRM_*, SMTP_*, DATABASE_URL and BLOB_READ_WRITE_TOKEN unset,
+// Hermetic: with CRM_*, SMTP_*, DATABASE_URL and the BLOB_* credentials unset,
 // forwardToCRM, the mailer and the Postgres pool all short-circuit to "skipped"
 // and the MISMO store writes to a tmpdir, without touching the network. That
 // is exactly the misconfigured production shape that used to report success
@@ -27,6 +27,7 @@ const CLEARED_ENV = [
   "POSTGRES_URL",
   "POSTGRES_PRISMA_URL",
   "BLOB_READ_WRITE_TOKEN",
+  "BLOB_STORE_ID",
 ];
 
 const savedEnv: Record<string, string | undefined> = {};

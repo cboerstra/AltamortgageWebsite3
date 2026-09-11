@@ -5,12 +5,17 @@
 //
 // Two backends, chosen by environment:
 //
-//   Vercel Blob  when BLOB_READ_WRITE_TOKEN is set. This is production. The
-//                site deploys to Vercel, whose function filesystem is
-//                read-only and discarded after each request, so a file on
-//                disk there would be lost before the response was sent.
-//                Blobs are written with access: "private" — there is no
-//                public URL for a mortgage application.
+//   Vercel Blob  when the store is connected to the project. This is
+//                production. The site deploys to Vercel, whose function
+//                filesystem is read-only and discarded after each request,
+//                so a file on disk there would be lost before the response
+//                was sent. Blobs are written with access: "private" — there
+//                is no public URL for a mortgage application.
+//
+//                Two credential styles exist. Newer stores inject
+//                BLOB_STORE_ID and the SDK authenticates with the OIDC token
+//                Vercel supplies to every function invocation; older stores
+//                inject BLOB_READ_WRITE_TOKEN. Either one means "use Blob".
 //
 //   Local disk   otherwise. Local development and tests. The root is a
 //                sibling of the app directory, never under public/.
@@ -37,7 +42,7 @@ export interface StoredMismoFile {
 export type MismoBackend = "blob" | "disk";
 
 export function mismoBackend(): MismoBackend {
-  return process.env.BLOB_READ_WRITE_TOKEN ? "blob" : "disk";
+  return process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID ? "blob" : "disk";
 }
 
 /** Strip anything that has no business in a filename. */
