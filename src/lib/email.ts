@@ -2,6 +2,9 @@ import nodemailer from "nodemailer";
 import type { SummarySection } from "@/lib/application-summary";
 import { checklistToText, type ChecklistGroup } from "@/lib/document-checklist";
 import { COMPANY } from "@/lib/constants";
+import type { ReminderMessage } from "@/lib/drafts/reminders";
+// Applicant-supplied values end up inside HTML, so nothing goes in unescaped.
+import { escapeHtml } from "@/lib/html";
 
 let transporter: nodemailer.Transporter | null = null;
 
@@ -35,19 +38,6 @@ function getTransporter(): nodemailer.Transporter | null {
     auth: { user, pass },
   });
   return transporter;
-}
-
-/**
- * Applicant-supplied values end up inside an HTML table, so they must be
- * escaped. Without this, a name containing markup breaks the layout of the
- * notification — or worse in a mail client that renders it.
- */
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 const CELL = "padding:8px;border:1px solid #ddd";
@@ -250,6 +240,37 @@ export async function sendApplicantDocumentRequest(input: {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Applicant document request send error:", err);
+    return { status: "failed", error: msg };
+  }
+}
+
+/**
+ * Send one abandonment reminder. The copy is decided by drafts/reminders.ts;
+ * this only puts it on the wire. Never called unless the draft has been
+ * claimed for this stage first, so a send failure cannot cause a duplicate.
+ */
+export async function sendDraftReminder(input: {
+  to: string;
+  message: ReminderMessage;
+}): Promise<EmailResult> {
+  const t = getTransporter();
+  if (!t) {
+    return { status: "skipped", error: "SMTP_HOST/USER/PASS not set" };
+  }
+
+  try {
+    await t.sendMail({
+      from: process.env.SMTP_USER,
+      to: input.to,
+      replyTo: COMPANY.email,
+      subject: input.message.subject,
+      text: input.message.text,
+      html: input.message.html,
+    });
+    return { status: "sent" };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Draft reminder send error:", err);
     return { status: "failed", error: msg };
   }
 }

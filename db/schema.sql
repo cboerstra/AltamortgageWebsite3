@@ -118,3 +118,36 @@ CREATE TABLE IF NOT EXISTS applications (
   INDEX idx_email_status (email_status),
   INDEX idx_mismo_status (mismo_status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================================
+-- APPLICATION DRAFTS — server-side saves from the wizard, so an applicant can
+-- resume on another device and be reminded if they stop.
+-- ============================================================================
+-- token_hash is the SHA-256 of the resume token and is the only lookup key.
+-- token_enc is the same token encrypted under DRAFT_LINK_KEY so the reminder
+-- job can rebuild the link; it is NULL if the key was unset at creation.
+-- data never contains the SSN.
+CREATE TABLE IF NOT EXISTS application_drafts (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  token_enc VARCHAR(255) NULL,
+
+  email VARCHAR(255) NOT NULL,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+
+  data JSON NOT NULL,
+  schema_version SMALLINT NOT NULL,
+  furthest_step TINYINT NOT NULL DEFAULT 0,
+
+  reminders_sent TINYINT NOT NULL DEFAULT 0,
+  last_reminder_at TIMESTAMP NULL,
+  opted_out TINYINT(1) NOT NULL DEFAULT 0,
+  submitted_ref VARCHAR(20) NULL,
+
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+  INDEX idx_email (email),
+  INDEX idx_due (opted_out, submitted_ref, reminders_sent, updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

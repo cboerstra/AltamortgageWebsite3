@@ -18,9 +18,18 @@ import {
   hasDraft,
   hasDraftOnServer,
   readDraft,
+  readDraftToken,
   subscribeDraft,
   writeDraft,
+  writeDraftToken,
 } from "./draft-storage";
+import { loadServerDraft, syncServerDraft } from "./server-draft";
+
+/**
+ * Reaching this step means step 1 (personal info, with the email) has been
+ * validated, so there is an address to file a server-side draft under.
+ */
+const FIRST_SERVER_SYNC_STEP = 2;
 
 const STEP_LABELS = [
   "Loan Information",
@@ -89,6 +98,8 @@ export function ApplicationWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [refNumber, setRefNumber] = useState("");
+  const [furthestStep, setFurthestStep] = useState(0);
+  const [resumeNotice, setResumeNotice] = useState<"expired" | "unavailable" | null>(null);
 
   const hasSavedProgress = useSyncExternalStore(
     subscribeDraft,
@@ -111,35 +122,79 @@ export function ApplicationWizard() {
 
   const { handleSubmit, trigger, getValues, reset } = form;
 
-  // Restore a still-current draft on mount. readDraft() handles the version
-  // and age checks and deletes anything it rejects.
+  // Restore on mount. A resume link wins over the local draft — it is the
+  // more deliberate signal — and its token is moved out of the address bar
+  // immediately so a bearer credential does not sit in browser history.
+  // Otherwise readDraft() handles the version and age checks and deletes
+  // anything it rejects.
   useEffect(() => {
-    const draft = readDraft();
-    if (draft) reset(draft);
-  }, [reset]);
+    const params = new URLSearchParams(window.location.search);
+    const resumeToken = params.get("resume");
 
-  const saveProgress = useCallback(() => {
-    writeDraft(getValues());
-  }, [getValues]);
+    if (!resumeToken) {
+      const draft = readDraft();
+      if (draft) reset(draft);
+      return;
+    }
+
+    params.delete("resume");
+    const rest = params.toString();
+    const cleanUrl = window.location.pathname + (rest ? `?${rest}` : "") + window.location.hash;
+    window.history.replaceState(null, "", cleanUrl);
+
+    let cancelled = false;
+    loadServerDraft(resumeToken).then((result) => {
+      if (cancelled) return;
+      if (result.status !== "ok") {
+        setResumeNotice(result.status);
+        const local = readDraft();
+        if (local) reset(local);
+        return;
+      }
+      reset(result.draft.data);
+      writeDraft(getValues());
+      writeDraftToken(resumeToken);
+      setFurthestStep(result.draft.furthestStep);
+      setStep(result.draft.furthestStep);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [reset, getValues]);
+
+  // Local save on every navigation; server save once there is an email to
+  // file it under. The server call is fire-and-forget — navigation must not
+  // wait on the network.
+  const saveProgress = useCallback(
+    (reached: number) => {
+      const values = getValues();
+      writeDraft(values);
+      const furthest = Math.max(furthestStep, reached);
+      setFurthestStep(furthest);
+      if (furthest >= FIRST_SERVER_SYNC_STEP) void syncServerDraft(values, furthest);
+    },
+    [getValues, furthestStep]
+  );
 
   const goNext = async () => {
     const fields = STEP_FIELDS[step];
     const valid = await trigger(fields);
     if (!valid) return;
 
-    saveProgress();
-    setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1));
+    const next = Math.min(step + 1, TOTAL_STEPS - 1);
+    saveProgress(next);
+    setStep(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goBack = () => {
-    saveProgress();
+    saveProgress(step);
     setStep((s) => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const goToStep = (target: number) => {
-    saveProgress();
+    saveProgress(step);
     setStep(target);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -155,6 +210,8 @@ export function ApplicationWizard() {
           ...data,
           source: window.location.pathname,
           timestamp: new Date().toISOString(),
+          // Lets the server close the draft so reminders stop.
+          draftToken: readDraftToken() ?? undefined,
         }),
       });
 
@@ -230,10 +287,25 @@ export function ApplicationWizard() {
         shared or public computer they need a way to remove it without
         submitting, so say it is there and offer to erase it.
       */}
+      {resumeNotice && (
+        <div
+          role="status"
+          className="mb-6 rounded-lg border border-gold/40 bg-gold/5 px-4 py-3 text-sm text-text"
+        >
+          {resumeNotice === "expired"
+            ? "That resume link has expired or was already used. You can start a fresh application below — it only takes a few minutes."
+            : "We couldn't load your saved application right now. You can start below, and your answers will be saved as you go."}
+        </div>
+      )}
+
       {hasSavedProgress && (
         <div className="mb-6 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface px-4 py-2.5 text-xs text-text-muted">
           <span>
-            Your progress is saved on this device for 24 hours. Your SSN is never saved.
+            Your progress is saved on this device for 24 hours
+            {furthestStep >= FIRST_SERVER_SYNC_STEP
+              ? ". If you leave, we'll email you a link to finish on any device."
+              : "."}{" "}
+            Your SSN is never saved.
           </span>
           <button
             type="button"

@@ -1,6 +1,6 @@
 # Resumable Applications + Abandonment Reminders
 
-Status: proposed
+Status: approved, implemented 2026-09-11 (see Amendments)
 Date: 2026-09-09
 
 ## Problem
@@ -257,3 +257,32 @@ everything short-circuits to "skipped" without touching the network.
 - Does the 7-day reminder need different copy for someone who reached step 5
   versus someone who stopped at step 2? Probably, but that is a copy decision,
   not an architectural one.
+
+## Amendments (2026-09-11, during implementation)
+
+1. **Decision 2 was unbuildable as written.** If only the hash is stored, the
+   reminder job has no raw token and cannot put a resume link in the email —
+   yet the reminder table depends on exactly that. Rotating to a fresh token
+   per reminder would invalidate the token in the applicant's own browser and
+   spawn duplicate drafts. Resolution: the hash stays the sole lookup key, and
+   the token is *additionally* stored encrypted (AES-256-GCM) under
+   `DRAFT_LINK_KEY`, an environment variable. A database dump alone still
+   yields no working links; recovering them requires the table *and* the app
+   environment — the same two things needed to read the drafts themselves.
+   Drafts created while the key is unset get no reminders, and the job says
+   so in its output (`unlinkable`).
+
+2. **Opt-out is a confirmation page, not a bare GET.** Mail security scanners
+   (Outlook Safe Links, corporate gateways) fetch every URL in a message
+   before the recipient sees it. A GET that opted out on arrival would
+   silently unsubscribe those applicants. The link renders a page with one
+   button; the button POSTs. Still one click.
+
+3. **Purge includes submitted drafts.** The application lives in
+   `applications` once submitted; the draft row has nothing left to do and
+   is deleted on the same 30-day clock.
+
+4. **The reminder job preserves `updated_at`.** MySQL's
+   `ON UPDATE CURRENT_TIMESTAMP` would otherwise treat each reminder as
+   applicant activity, pushing the next reminder and the purge date back on
+   every write. Claims write `updated_at = updated_at` explicitly.

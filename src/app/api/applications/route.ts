@@ -29,6 +29,8 @@ import {
   type EmailAttachment,
 } from "@/lib/email";
 import { buildDocumentChecklist } from "@/lib/document-checklist";
+import { markDraftSubmitted } from "@/lib/drafts/store";
+import { isTokenShaped } from "@/lib/drafts/token";
 import { generateMismoDocument, ssnLast4, writeMismoFile, type StoredMismoFile } from "@/lib/mismo";
 import { generateRefNumber } from "@/lib/utils";
 
@@ -82,6 +84,9 @@ export async function POST(request: NextRequest) {
     const app = result.data;
     const submittedAt = new Date().toISOString();
     const sourcePage = typeof body?.source === "string" ? body.source : undefined;
+    // Present when the wizard had a server-side draft. Closing it stops the
+    // abandonment reminders; it is not otherwise trusted for anything.
+    const draftToken = isTokenShaped(body?.draftToken) ? body.draftToken : null;
     referenceNumber = await allocateRefNumber();
 
     // ---- Durable phase 1: the MISMO document -------------------------------
@@ -218,6 +223,8 @@ export async function POST(request: NextRequest) {
         { status: 502 }
       );
     }
+
+    if (draftToken) await markDraftSubmitted(draftToken, referenceNumber);
 
     console.log(
       `[${referenceNumber}] Application received ` +

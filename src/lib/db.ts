@@ -14,7 +14,7 @@ export function isDbConfigured(): boolean {
   return Boolean(process.env.DB_HOST && process.env.DB_USER && process.env.DB_NAME);
 }
 
-function getPool(): Pool | null {
+export function getPool(): Pool | null {
   if (pool) return pool;
 
   if (!isDbConfigured()) {

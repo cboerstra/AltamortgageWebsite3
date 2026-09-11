@@ -104,5 +104,38 @@ export function clearDraft(): void {
   } catch {
     // Nothing to clear if storage is unavailable.
   }
+  clearDraftToken();
   emit();
+}
+
+// ---- Server draft token -----------------------------------------------------
+//
+// The resume token for this browser's server-side draft. Kept separately from
+// the draft body so clearing one without the other is impossible to get wrong:
+// clearDraft() removes both.
+
+export const TOKEN_KEY = "alta-mortgage-app-token";
+
+export function readDraftToken(): string | null {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function writeDraftToken(token: string): void {
+  try {
+    localStorage.setItem(TOKEN_KEY, token);
+  } catch {
+    // Storage unavailable — the server draft simply cannot be updated later.
+  }
+}
+
+export function clearDraftToken(): void {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // Nothing to clear.
+  }
 }

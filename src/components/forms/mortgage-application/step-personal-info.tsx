@@ -105,6 +105,18 @@ export function StepPersonalInfo({
         </div>
       </div>
 
+      {/*
+        The email address is what turns a local draft into a resumable one.
+        Say what we will do with it here, where it is typed, not in a policy
+        page nobody opens: a link to finish on any device, up to three
+        reminders, and a stop link in every one.
+      */}
+      <p className="text-xs text-text-muted -mt-2">
+        We&apos;ll use your email to send a link so you can finish this application on any
+        device, plus up to three reminders if you don&apos;t. Every reminder has a
+        one-click stop link.
+      </p>
+
       <fieldset className="space-y-3">
         <legend className="text-sm font-semibold text-text">Current Address</legend>
         <div>
