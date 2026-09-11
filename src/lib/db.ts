@@ -49,7 +49,10 @@ export function getPool(): Pool | null {
     // burst of invocations does not exhaust Neon's connection limit.
     max: 3,
     idleTimeoutMillis: 10_000,
-    connectionTimeoutMillis: 5_000,
+    // Neon suspends an idle database and resumes it on the next connection.
+    // Resume usually takes under a second, but not always — a timeout that
+    // trips during a cold start turns a slow first request into a lost row.
+    connectionTimeoutMillis: 15_000,
     ssl: url.includes("localhost") || url.includes("127.0.0.1") ? undefined : { rejectUnauthorized: true },
   });
 
