@@ -165,3 +165,70 @@ CREATE INDEX IF NOT EXISTS idx_drafts_email ON application_drafts (email);
 -- Shaped for the one query the reminder job runs.
 CREATE INDEX IF NOT EXISTS idx_drafts_due
   ON application_drafts (opted_out, submitted_ref, reminders_sent, updated_at);
+
+-- ============================================================================
+-- BORROWER PORTAL — sign-in by emailed one-time code, and the document vault.
+-- ============================================================================
+-- A borrower is anyone who has submitted an application or started a draft.
+-- Rows are created on first successful sign-in; applications and drafts are
+-- matched by lowercased email.
+CREATE TABLE IF NOT EXISTS borrowers (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  first_name VARCHAR(100),
+  last_name VARCHAR(100),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_login_at TIMESTAMPTZ
+);
+
+-- One-time sign-in codes. Only the SHA-256 of the code is stored.
+CREATE TABLE IF NOT EXISTS borrower_login_codes (
+  id SERIAL PRIMARY KEY,
+  borrower_id INT NOT NULL REFERENCES borrowers(id) ON DELETE CASCADE,
+  code_hash CHAR(64) NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  consumed_at TIMESTAMPTZ,
+  attempts SMALLINT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_login_codes_borrower ON borrower_login_codes (borrower_id, created_at);
+
+-- Sessions. The cookie carries a random token; only its SHA-256 is stored.
+CREATE TABLE IF NOT EXISTS borrower_sessions (
+  id SERIAL PRIMARY KEY,
+  borrower_id INT NOT NULL REFERENCES borrowers(id) ON DELETE CASCADE,
+  token_hash CHAR(64) NOT NULL UNIQUE,
+  expires_at TIMESTAMPTZ NOT NULL,
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  revoked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Uploaded documents. Bytes live in private Vercel Blob, encrypted under
+-- DOCUMENT_ENCRYPTION_KEY, in chunks (see borrower_document_parts). sha256 is
+-- of the plaintext, computed server-side as the parts arrive.
+CREATE TABLE IF NOT EXISTS borrower_documents (
+  id SERIAL PRIMARY KEY,
+  borrower_id INT NOT NULL REFERENCES borrowers(id) ON DELETE CASCADE,
+  slot VARCHAR(20) NOT NULL
+    CHECK (slot IN ('bank_statement','w2','paystub','tax_return','other')),
+  original_filename VARCHAR(255) NOT NULL,
+  mime_type VARCHAR(50) NOT NULL,
+  byte_size INT NOT NULL,
+  sha256 CHAR(64),
+  part_count SMALLINT NOT NULL DEFAULT 0,
+  status VARCHAR(10) NOT NULL DEFAULT 'uploading'
+    CHECK (status IN ('uploading','available','deleted')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  completed_at TIMESTAMPTZ,
+  deleted_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_documents_borrower ON borrower_documents (borrower_id, status);
+
+CREATE TABLE IF NOT EXISTS borrower_document_parts (
+  document_id INT NOT NULL REFERENCES borrower_documents(id) ON DELETE CASCADE,
+  part_index SMALLINT NOT NULL,
+  blob_pathname VARCHAR(500) NOT NULL,
+  cipher_bytes INT NOT NULL,
+  PRIMARY KEY (document_id, part_index)
+);

@@ -5,6 +5,7 @@ import {
   Lightbulb, Loader2, Lock, Mail, MapPin, Menu, Pencil, Phone, Plus, RefreshCw,
   Search, Shield, ShieldCheck, Star, Target, Trash2, TrendingDown, TrendingUp,
   Users, Wallet, X,
+  AlertTriangle, Download, LogOut, UploadCloud,
 } from "lucide-react";
 
 /**
@@ -120,6 +121,13 @@ export const Icons = {
   carouselPrev: ChevronLeft,
   breadcrumbSeparator: ChevronRight,
   rateDrop: TrendingDown,
+
+  // --- Borrower portal ---
+  upload: UploadCloud,
+  download: Download,
+  document: FileText,
+  logout: LogOut,
+  warning: AlertTriangle,
 
   // --- Social ---
   facebook: FacebookIcon,

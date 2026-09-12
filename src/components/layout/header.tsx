@@ -28,9 +28,14 @@ export function Header() {
               <span>Mon-Fri {COMPANY.hours.weekdays}</span>
             </span>
           </div>
-          <Link href="/apply" className="font-medium hover:text-emerald-light transition-colors">
-            Apply Now
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/portal/login" className="hidden sm:inline text-white/80 hover:text-white transition-colors">
+              Your application
+            </Link>
+            <Link href="/apply" className="font-medium hover:text-emerald-light transition-colors">
+              Apply Now
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -159,7 +159,7 @@ describe("POST /api/drafts/reminders", () => {
     process.env.DRAFT_LINK_KEY = randomBytes(32).toString("base64");
     const res = await run("Bearer correct-horse");
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ sent: 0, failed: 0, skipped: 0, unlinkable: 0, purged: 0 });
+    expect(await res.json()).toEqual({ sent: 0, failed: 0, skipped: 0, unlinkable: 0, purged: 0, purgedUploads: 0 });
   });
 });
 

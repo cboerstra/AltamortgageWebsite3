@@ -32,6 +32,7 @@ import { buildDocumentChecklist } from "@/lib/document-checklist";
 import { markDraftSubmitted } from "@/lib/drafts/store";
 import { isTokenShaped } from "@/lib/drafts/token";
 import { generateMismoDocument, ssnLast4, writeMismoFile, type StoredMismoFile } from "@/lib/mismo";
+import { siteOrigin } from "@/lib/portal/site-url";
 import { generateRefNumber } from "@/lib/utils";
 
 // Writes files and opens MySQL connections, so it cannot run on the edge.
@@ -189,6 +190,7 @@ export async function POST(request: NextRequest) {
         firstName: app.firstName,
         referenceNumber,
         checklist: buildDocumentChecklist(app),
+        portalUrl: `${siteOrigin(request)}/portal/login`,
       }),
     ]);
 

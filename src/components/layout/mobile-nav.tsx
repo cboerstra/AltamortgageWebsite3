@@ -52,6 +52,13 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
           >
             Apply Now
           </Link>
+          <Link
+            href="/portal/login"
+            onClick={onClose}
+            className="flex w-full items-center justify-center text-sm text-navy underline underline-offset-2"
+          >
+            Your application
+          </Link>
           <a
             href={`tel:${COMPANY.phone.replace(/\D/g, "")}`}
             className="flex items-center justify-center gap-2 text-sm text-text-muted"

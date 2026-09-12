@@ -328,3 +328,26 @@ export async function listDraftsForStaff(input: {
     return null;
   }
 }
+
+/**
+ * The latest unsubmitted, non-opted-out draft for an email. For the portal,
+ * where the caller has already proven they own the address — the reason the
+ * rest of this module refuses to look up by email does not apply.
+ */
+export async function findOpenDraftByEmail(email: string): Promise<DraftRecord | null> {
+  const p = getPool();
+  if (!p) return null;
+  try {
+    const { rows } = await p.query<DraftRow>(
+      `SELECT * FROM application_drafts
+        WHERE LOWER(email) = $1 AND submitted_ref IS NULL
+        ORDER BY updated_at DESC
+        LIMIT 1`,
+      [email.trim().toLowerCase()]
+    );
+    return rows[0] ? toRecord(rows[0]) : null;
+  } catch (err) {
+    console.error("findOpenDraftByEmail error:", err);
+    return null;
+  }
+}

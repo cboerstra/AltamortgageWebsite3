@@ -20,6 +20,7 @@ import {
   selectReminderCandidates,
 } from "@/lib/drafts/store";
 import { linkKey } from "@/lib/drafts/token";
+import { purgeAbandonedUploads } from "@/lib/portal/documents";
 
 export const runtime = "nodejs";
 
@@ -106,6 +107,8 @@ export async function POST(request: NextRequest) {
   }
 
   const purged = await purgeStaleDrafts();
+  // Same job, same cadence: uploads that were started but never completed.
+  const purgedUploads = await purgeAbandonedUploads();
 
   if (unlinkable > 0) {
     console.warn(
@@ -113,7 +116,7 @@ export async function POST(request: NextRequest) {
     );
   }
   console.log(
-    `Draft reminders: sent=${sent} failed=${failed} skipped=${skipped} unlinkable=${unlinkable} purged=${purged}`
+    `Draft reminders: sent=${sent} failed=${failed} skipped=${skipped} unlinkable=${unlinkable} purged=${purged} purgedUploads=${purgedUploads}`
   );
-  return NextResponse.json({ sent, failed, skipped, unlinkable, purged });
+  return NextResponse.json({ sent, failed, skipped, unlinkable, purged, purgedUploads });
 }

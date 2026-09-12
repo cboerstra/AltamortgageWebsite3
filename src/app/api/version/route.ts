@@ -10,6 +10,7 @@
 import { NextResponse } from "next/server";
 import { getPool, isDbConfigured } from "@/lib/db";
 import { mismoBackend } from "@/lib/mismo/store";
+import { isDocumentEncryptionConfigured } from "@/lib/portal/crypto";
 
 export const runtime = "nodejs";
 
@@ -92,6 +93,8 @@ export async function GET() {
     crm: Boolean(process.env.CRM_API_URL && process.env.CRM_API_KEY),
     cronSecret: Boolean(process.env.CRON_SECRET),
     draftLinkKey: Boolean(process.env.DRAFT_LINK_KEY),
+    documentEncryptionKey: isDocumentEncryptionConfigured(),
+    staffApiKey: Boolean(process.env.STAFF_API_KEY),
     siteUrl: process.env.NEXT_PUBLIC_SITE_URL || null,
   };
 

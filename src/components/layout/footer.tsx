@@ -31,6 +31,7 @@ const footerLinks = {
       { label: "About Us", href: "/about" },
       { label: "Contact", href: "/contact" },
       { label: "Apply Now", href: "/apply" },
+      { label: "Your Application", href: "/portal/login" },
     ],
   },
   legal: {

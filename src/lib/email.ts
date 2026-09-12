@@ -140,12 +140,10 @@ export async function sendApplicationNotification(input: {
 /**
  * Confirm receipt to the applicant and tell them which documents to send.
  *
- * This is the only email that goes to a customer rather than to the loan
- * officer, and it exists because the site has no document upload: the
- * checklist and the address to send it to are the whole point of the message.
- *
- * `replyTo` is the company inbox rather than the SMTP user, so "just reply to
- * this email" is genuinely the shortest path for the applicant.
+ * Goes to the applicant, not the loan officer. Tells them what documents we
+ * need and sends them to the portal to upload them: encrypted at rest, never
+ * sitting in an inbox. Replying with attachments still works as a fallback
+ * (`replyTo` is the company inbox), but the email no longer suggests it.
  *
  * Failure is never fatal to a submission. The application is already stored by
  * the time this runs, and the caller records the result rather than acting on
@@ -156,6 +154,8 @@ export async function sendApplicantDocumentRequest(input: {
   firstName: string;
   referenceNumber: string;
   checklist: ChecklistGroup[];
+  /** Absolute URL of the borrower portal sign-in page. */
+  portalUrl: string;
 }): Promise<EmailResult> {
   const t = getTransporter();
   if (!t) {
@@ -189,10 +189,10 @@ export async function sendApplicantDocumentRequest(input: {
         `A loan specialist will call you within one business day. To keep things moving, ` +
         `send us the documents below.\n\n` +
         `HOW TO SEND THEM\n` +
-        `  Reply to this email with the files attached, or email them to ${sendTo}.\n` +
-        `  Put your reference number ${input.referenceNumber} in the subject line.\n` +
-        `  Clear phone photos are fine as long as all four corners and the whole page are visible.\n` +
-        `  Send what you have now; you do not have to send everything at once.\n\n` +
+        `  Upload them securely at ${input.portalUrl}\n` +
+        `  Sign in with this email address; we will send you a one-time code. No password needed.\n` +
+        `  PDF, JPG or PNG. Clear phone photos are fine as long as the whole page is visible.\n` +
+        `  Upload what you have now; you can come back for the rest.\n\n` +
         `${checklistToText(input.checklist)}\n\n` +
         `A NOTE ON SECURITY\n` +
         `  Please do not put your full Social Security number in an email — we already have ` +
@@ -212,13 +212,14 @@ export async function sendApplicantDocumentRequest(input: {
           <p>A loan specialist will call you within one business day. To keep things moving,
           send us the documents below.</p>
 
-          <h3 style="margin:24px 0 6px;font-size:16px">How to send them</h3>
-          <ul style="margin:0;padding-left:20px">
-            <li style="margin:4px 0">Reply to this email with the files attached, or email them to
-              <a href="mailto:${escapeHtml(sendTo)}">${escapeHtml(sendTo)}</a>.</li>
-            <li style="margin:4px 0">Put your reference number <strong>${ref}</strong> in the subject line.</li>
-            <li style="margin:4px 0">Clear phone photos are fine, as long as all four corners and the whole page are visible.</li>
-            <li style="margin:4px 0">Send what you have now — you do not have to send everything at once.</li>
+          <p style="margin:24px 0 8px">
+            <a href="${escapeHtml(input.portalUrl)}" style="display:inline-block;background:#003087;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:6px">Upload your documents securely</a>
+          </p>
+          <ul style="margin:0;padding-left:20px;font-size:14px;color:#4b5563">
+            <li style="margin:4px 0">Sign in with this email address — we send you a one-time code. No password needed.</li>
+            <li style="margin:4px 0">PDF, JPG or PNG. Clear phone photos are fine, as long as the whole page is visible.</li>
+            <li style="margin:4px 0">Upload what you have now; you can come back for the rest.</li>
+            <li style="margin:4px 0">Your files are encrypted when stored and visible only to you and your loan specialist.</li>
           </ul>
 
           <h2 style="color:#003087;margin:28px 0 0;font-size:18px">What we need</h2>
@@ -271,6 +272,58 @@ export async function sendDraftReminder(input: {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("Draft reminder send error:", err);
+    return { status: "failed", error: msg };
+  }
+}
+
+/**
+ * The portal sign-in code. Short-lived, single use, six digits. The email
+ * says so, and says what to do if they did not ask for it.
+ */
+export async function sendPortalLoginCode(input: {
+  to: string;
+  firstName: string | null;
+  code: string;
+  portalUrl: string;
+}): Promise<EmailResult> {
+  const t = getTransporter();
+  if (!t) {
+    return { status: "skipped", error: "SMTP_HOST/USER/PASS not set" };
+  }
+
+  const greeting = input.firstName ? `Hi ${input.firstName},` : "Hello,";
+  const code = escapeHtml(input.code);
+
+  try {
+    await t.sendMail({
+      from: process.env.SMTP_USER,
+      to: input.to,
+      replyTo: COMPANY.email,
+      subject: `${input.code} is your ${COMPANY.name} sign-in code`,
+      text:
+        `${greeting}\n\n` +
+        `Your sign-in code is: ${input.code}\n\n` +
+        `Enter it at ${input.portalUrl} to open your application. ` +
+        `It expires in 10 minutes and works once.\n\n` +
+        `If you did not request this, you can ignore this email. Nobody can ` +
+        `sign in without the code.\n\n` +
+        `${COMPANY.name} — NMLS #${COMPANY.nmlsId}\n`,
+      html: `
+        <div style="font-family:system-ui,-apple-system,Segoe UI,sans-serif;max-width:520px;color:#1f2937;line-height:1.5">
+          <h2 style="color:#003087;margin-bottom:4px">Your sign-in code</h2>
+          <p style="margin-top:0">${escapeHtml(greeting)}</p>
+          <p style="font-family:monospace;font-size:32px;letter-spacing:8px;background:#f0f4f8;border-left:4px solid #003087;padding:16px 20px;margin:20px 0">${code}</p>
+          <p>Enter it at <a href="${escapeHtml(input.portalUrl)}">${escapeHtml(input.portalUrl)}</a> to open your application.
+          It expires in 10 minutes and works once.</p>
+          <p style="font-size:14px;color:#4b5563">If you did not request this, you can ignore this email. Nobody can sign in without the code.</p>
+          <p style="font-size:14px;color:#4b5563;margin-top:28px">${escapeHtml(COMPANY.name)} — NMLS #${escapeHtml(COMPANY.nmlsId)}</p>
+        </div>
+      `,
+    });
+    return { status: "sent" };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("Portal login code send error:", err);
     return { status: "failed", error: msg };
   }
 }

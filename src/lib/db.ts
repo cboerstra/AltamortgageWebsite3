@@ -450,3 +450,19 @@ export async function getApplicationByRef(refNumber: string): Promise<Applicatio
     return null;
   }
 }
+
+/** Applications submitted under an email, newest first. For the borrower portal. */
+export async function listApplicationsByEmail(email: string): Promise<ApplicationListItem[]> {
+  const p = getPool();
+  if (!p) return [];
+  try {
+    const { rows } = await p.query<ApplicationRow>(
+      `SELECT ${LIST_COLUMNS} FROM applications WHERE LOWER(email) = $1 ORDER BY id DESC LIMIT 20`,
+      [email.trim().toLowerCase()]
+    );
+    return rows.map(toListItem);
+  } catch (err) {
+    console.error("listApplicationsByEmail error:", err);
+    return [];
+  }
+}
