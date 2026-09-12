@@ -309,3 +309,144 @@ export async function updateDeliveryStatus(
     console.error(`updateDeliveryStatus(${table}, ${id}) error:`, err);
   }
 }
+
+// ---- Staff reads ------------------------------------------------------------
+//
+// Consumed by /api/staff/* and, through it, the CRM. These return only what a
+// loan officer needs to see; the full SSN is never in the database to begin
+// with, and resume tokens are never selected.
+
+export interface ApplicationListItem {
+  refNumber: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  loanPurpose: string;
+  loanAmount: number | null;
+  createdAt: string;
+  mismoStatus: MismoStatus;
+  crmStatus: DeliveryStatus;
+  emailStatus: DeliveryStatus;
+}
+
+export interface ApplicationDetail extends ApplicationListItem {
+  ssnLast4: string | null;
+  rawPayload: Record<string, unknown>;
+  mismoPath: string | null;
+  mismoSha256: string | null;
+  mismoError: string | null;
+  crmResponse: string | null;
+  emailError: string | null;
+}
+
+interface ApplicationRow {
+  ref_number: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string | null;
+  loan_purpose: string;
+  loan_amount: string | null;
+  created_at: Date;
+  mismo_status: MismoStatus;
+  crm_status: DeliveryStatus;
+  email_status: DeliveryStatus;
+  ssn_last4?: string | null;
+  raw_payload?: Record<string, unknown>;
+  mismo_path?: string | null;
+  mismo_sha256?: string | null;
+  mismo_error?: string | null;
+  crm_response?: string | null;
+  email_error?: string | null;
+}
+
+const LIST_COLUMNS = `ref_number, first_name, last_name, email, phone, loan_purpose,
+  loan_amount, created_at, mismo_status, crm_status, email_status`;
+
+function toListItem(row: ApplicationRow): ApplicationListItem {
+  return {
+    refNumber: row.ref_number,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    email: row.email,
+    phone: row.phone,
+    loanPurpose: row.loan_purpose,
+    // NUMERIC comes back as a string from pg.
+    loanAmount: row.loan_amount === null ? null : Number(row.loan_amount),
+    createdAt: row.created_at.toISOString(),
+    mismoStatus: row.mismo_status,
+    crmStatus: row.crm_status,
+    emailStatus: row.email_status,
+  };
+}
+
+export const STAFF_PAGE_SIZE = 50;
+
+/**
+ * Newest first. `q` matches the reference number exactly (case-insensitive)
+ * or the email as a prefix — the two things a loan officer actually has in
+ * hand when they come looking.
+ */
+export async function listApplications(input: {
+  q?: string;
+  page?: number;
+}): Promise<{ items: ApplicationListItem[]; total: number; page: number } | null> {
+  const p = getPool();
+  if (!p) return null;
+
+  const page = Math.max(1, Math.floor(input.page ?? 1));
+  const offset = (page - 1) * STAFF_PAGE_SIZE;
+  const q = input.q?.trim() ?? "";
+
+  const where = q ? `WHERE ref_number ILIKE $1 OR email ILIKE $2` : "";
+  const filter = q ? [q, `${q.replace(/[%_]/g, "\$&")}%`] : [];
+
+  try {
+    const [rows, count] = await Promise.all([
+      p.query<ApplicationRow>(
+        `SELECT ${LIST_COLUMNS} FROM applications ${where}
+         ORDER BY id DESC LIMIT $${filter.length + 1} OFFSET $${filter.length + 2}`,
+        [...filter, STAFF_PAGE_SIZE, offset]
+      ),
+      p.query<{ n: string }>(`SELECT COUNT(*) AS n FROM applications ${where}`, filter),
+    ]);
+    return {
+      items: rows.rows.map(toListItem),
+      total: Number(count.rows[0]?.n ?? 0),
+      page,
+    };
+  } catch (err) {
+    console.error("listApplications error:", err);
+    return null;
+  }
+}
+
+export async function getApplicationByRef(refNumber: string): Promise<ApplicationDetail | null> {
+  const p = getPool();
+  if (!p) return null;
+
+  try {
+    const { rows } = await p.query<ApplicationRow>(
+      `SELECT ${LIST_COLUMNS}, ssn_last4, raw_payload, mismo_path, mismo_sha256,
+              mismo_error, crm_response, email_error
+         FROM applications WHERE ref_number = $1 LIMIT 1`,
+      [refNumber]
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      ...toListItem(row),
+      ssnLast4: row.ssn_last4 ?? null,
+      rawPayload: row.raw_payload ?? {},
+      mismoPath: row.mismo_path ?? null,
+      mismoSha256: row.mismo_sha256 ?? null,
+      mismoError: row.mismo_error ?? null,
+      crmResponse: row.crm_response ?? null,
+      emailError: row.email_error ?? null,
+    };
+  } catch (err) {
+    console.error("getApplicationByRef error:", err);
+    return null;
+  }
+}

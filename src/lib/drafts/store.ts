@@ -262,3 +262,69 @@ export async function purgeStaleDrafts(): Promise<number> {
     return 0;
   }
 }
+
+// ---- Staff view -------------------------------------------------------------
+
+/**
+ * What a loan officer may see about an in-progress application. Deliberately
+ * excludes the form data and both token columns: the data is the applicant's
+ * unfinished draft, and a token is a login.
+ */
+export interface DraftStaffItem {
+  id: number;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  furthestStep: number;
+  remindersSent: number;
+  lastReminderAt: string | null;
+  optedOut: boolean;
+  submittedRef: string | null;
+  startedAt: string;
+  lastActivityAt: string;
+}
+
+export async function listDraftsForStaff(input: {
+  page?: number;
+  pageSize?: number;
+}): Promise<{ items: DraftStaffItem[]; total: number; page: number } | null> {
+  const p = getPool();
+  if (!p) return null;
+
+  const pageSize = Math.min(200, Math.max(1, Math.floor(input.pageSize ?? 50)));
+  const page = Math.max(1, Math.floor(input.page ?? 1));
+
+  try {
+    const [rows, count] = await Promise.all([
+      p.query<Omit<DraftRow, "token_enc" | "data" | "schema_version">>(
+        `SELECT id, email, first_name, last_name, furthest_step, reminders_sent,
+                last_reminder_at, opted_out, submitted_ref, created_at, updated_at
+           FROM application_drafts
+          ORDER BY updated_at DESC
+          LIMIT $1 OFFSET $2`,
+        [pageSize, (page - 1) * pageSize]
+      ),
+      p.query<{ n: string }>(`SELECT COUNT(*) AS n FROM application_drafts`),
+    ]);
+    return {
+      items: rows.rows.map((row) => ({
+        id: row.id,
+        email: row.email,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        furthestStep: row.furthest_step,
+        remindersSent: row.reminders_sent,
+        lastReminderAt: row.last_reminder_at ? row.last_reminder_at.toISOString() : null,
+        optedOut: row.opted_out,
+        submittedRef: row.submitted_ref,
+        startedAt: row.created_at.toISOString(),
+        lastActivityAt: row.updated_at.toISOString(),
+      })),
+      total: Number(count.rows[0]?.n ?? 0),
+      page,
+    };
+  } catch (err) {
+    console.error("listDraftsForStaff error:", err);
+    return null;
+  }
+}

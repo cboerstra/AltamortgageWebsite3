@@ -21,9 +21,9 @@
 //                sibling of the app directory, never under public/.
 
 import { createHash } from "node:crypto";
-import { mkdir, open, rename, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { put } from "@vercel/blob";
+import { get, put } from "@vercel/blob";
 
 export interface StoredMismoFile {
   /**
@@ -158,6 +158,54 @@ async function writeToDisk(payload: Buffer, relativePath: string): Promise<Store
     bytes: payload.byteLength,
     sha256: digest(payload),
   };
+}
+
+// ---- Read back --------------------------------------------------------------
+
+/**
+ * A stored document's storage key must look like one we produced. Anything
+ * else — a traversal attempt, an absolute path, a key for a different prefix
+ * — is refused before either backend is consulted.
+ */
+const RELATIVE_PATH_PATTERN = new RegExp("^[0-9]{4}/[0-9]{2}/[A-Za-z0-9._-]+[.]xml$");
+
+export function isMismoRelativePath(value: string): boolean {
+  return RELATIVE_PATH_PATTERN.test(value);
+}
+
+async function readFromBlob(relativePath: string): Promise<Buffer | null> {
+  const result = await get(`${BLOB_PREFIX}/${relativePath}`, { access: "private", useCache: false });
+  if (!result || result.statusCode !== 200 || !result.stream) return null;
+  const chunks: Uint8Array[] = [];
+  const reader = result.stream.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (value) chunks.push(value);
+  }
+  return Buffer.concat(chunks);
+}
+
+async function readFromDisk(relativePath: string): Promise<Buffer | null> {
+  const absolutePath = path.join(resolveStorageRoot(), ...relativePath.split("/"));
+  try {
+    return await readFile(absolutePath);
+  } catch (err) {
+    if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return null;
+    throw err;
+  }
+}
+
+/**
+ * Fetch a stored document by the key recorded in `applications.mismo_path`.
+ * Null when it does not exist. Throws on a malformed key rather than
+ * touching storage with it.
+ */
+export async function readMismoFile(relativePath: string): Promise<Buffer | null> {
+  if (!isMismoRelativePath(relativePath)) {
+    throw new Error("Refusing to read a MISMO document with a malformed storage key");
+  }
+  return mismoBackend() === "blob" ? readFromBlob(relativePath) : readFromDisk(relativePath);
 }
 
 // ---- Public -----------------------------------------------------------------

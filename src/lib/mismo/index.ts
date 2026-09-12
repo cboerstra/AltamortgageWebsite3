@@ -14,6 +14,8 @@ export { buildMismoXml } from "./build";
 export { mapToDeal, ssnLast4, type MismoDeal } from "./map";
 export {
   buildRelativePath,
+  isMismoRelativePath,
+  readMismoFile,
   resolveStorageRoot,
   writeMismoFile,
   type StoredMismoFile,
