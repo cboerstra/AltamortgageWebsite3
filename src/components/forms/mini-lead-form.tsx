@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/lib/icons";
+import { COMPANY } from "@/lib/constants";
 
 const miniLeadSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -20,6 +21,7 @@ type MiniLeadData = z.infer<typeof miniLeadSchema>;
 export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" }) {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<MiniLeadData>({
     resolver: zodResolver(miniLeadSchema),
@@ -27,6 +29,7 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
 
   const onSubmit = async (data: MiniLeadData) => {
     setSubmitting(true);
+    setSubmitError(false);
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
@@ -39,8 +42,9 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
         }),
       });
       if (res.ok) setSubmitted(true);
+      else setSubmitError(true);
     } catch {
-      // Silently fail — form stays visible for retry
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
@@ -62,7 +66,12 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
     : "bg-white border-border text-text";
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col sm:flex-row gap-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col sm:flex-row sm:flex-wrap gap-3">
+      {submitError && (
+        <p className={`basis-full text-sm ${variant === "dark" ? "text-red-200" : "text-error"}`} role="alert">
+          We couldn&apos;t send your request. Please try again or call {COMPANY.phone}.
+        </p>
+      )}
       <div className="flex-1">
         <Input {...register("name")} placeholder="Full Name" className={inputClass} aria-label="Full Name" />
         {errors.name && <p className="text-xs text-error mt-1">{errors.name.message}</p>}

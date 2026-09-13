@@ -60,34 +60,34 @@ function renderSections(sections: SummarySection[]): string {
     .join("");
 }
 
-export async function sendLeadNotification(
-  lead: Record<string, unknown>
-): Promise<EmailResult> {
+export async function sendLeadNotification(input: {
+  name: string;
+  loanType: string;
+  rows: Array<[label: string, value: string]>;
+}): Promise<EmailResult> {
   const t = getTransporter();
   const to = process.env.NOTIFICATION_EMAIL;
   if (!t || !to) {
     return { status: "skipped", error: "SMTP_HOST/USER/PASS or NOTIFICATION_EMAIL not set" };
   }
 
+  const rows = input.rows
+    .filter(([, value]) => value.trim() !== "")
+    .map(
+      ([label, value]) =>
+        `<tr><td style="${CELL};font-weight:bold;width:40%">${escapeHtml(label)}</td>` +
+        `<td style="${CELL}">${escapeHtml(value)}</td></tr>`
+    )
+    .join("");
+
   try {
     await t.sendMail({
       from: process.env.SMTP_USER,
       to,
-      subject: `New Lead — ${lead.name} — ${lead.loanPurpose}`,
-      html: `
-        <h2>New Lead Received</h2>
-        <table style="border-collapse:collapse;width:100%">
-          ${Object.entries(lead)
-            .filter(([, v]) => v !== undefined && v !== null && v !== "")
-            .map(
-              ([k, v]) =>
-                `<tr><td style="${CELL};font-weight:bold">${escapeHtml(k)}</td><td style="${CELL}">${escapeHtml(
-                  typeof v === "object" ? JSON.stringify(v) : String(v)
-                )}</td></tr>`
-            )
-            .join("")}
-        </table>
-      `,
+      subject: `New website lead — ${input.name} — ${input.loanType}`,
+      html:
+        `<h2 style="margin:0 0 16px">New lead from ${escapeHtml(COMPANY.domain)}</h2>` +
+        `<table style="border-collapse:collapse;width:100%">${rows}</table>`,
     });
     return { status: "sent" };
   } catch (err) {

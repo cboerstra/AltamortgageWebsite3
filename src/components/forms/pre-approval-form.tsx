@@ -10,11 +10,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { preApprovalSchema, type PreApprovalFormData } from "@/lib/schemas";
 import { Icons } from "@/lib/icons";
+import { COMPANY } from "@/lib/constants";
 
 export function PreApprovalForm() {
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
   const totalSteps = 4;
 
   const form = useForm<PreApprovalFormData>({
@@ -26,6 +28,7 @@ export function PreApprovalForm() {
 
   const onSubmit = async (data: PreApprovalFormData) => {
     setSubmitting(true);
+    setSubmitError(false);
     try {
       const res = await fetch("/api/leads", {
         method: "POST",
@@ -47,9 +50,11 @@ export function PreApprovalForm() {
       if (res.ok) {
         setSubmitted(true);
         setStep(totalSteps);
+      } else {
+        setSubmitError(true);
       }
     } catch {
-      // Stay on current step for retry
+      setSubmitError(true);
     } finally {
       setSubmitting(false);
     }
@@ -59,9 +64,10 @@ export function PreApprovalForm() {
     return (
       <div className="text-center py-12">
         <Icons.success className="w-16 h-16 text-emerald mx-auto" />
-        <h2 className="text-2xl font-bold text-navy mt-4">You&apos;re Pre-Approved!</h2>
+        <h2 className="text-2xl font-bold text-navy mt-4">Request Received</h2>
         <p className="text-text-muted mt-2 max-w-md mx-auto">
-          Thank you for your submission. A loan specialist will contact you within 24 hours to discuss your options and next steps.
+          Thank you. A loan specialist will contact you within one business day to review your
+          information and go over your pre-approval options.
         </p>
       </div>
     );
@@ -173,6 +179,12 @@ export function PreApprovalForm() {
               </RadioGroup>
             </div>
           </div>
+        )}
+
+        {submitError && (
+          <p className="text-sm text-error mt-6" role="alert">
+            We couldn&apos;t send your request. Please try again or call us at {COMPANY.phone}.
+          </p>
         )}
 
         <div className="flex justify-between mt-8">
