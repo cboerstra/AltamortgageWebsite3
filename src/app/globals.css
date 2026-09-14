@@ -47,19 +47,22 @@
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
 
-  /* Alta Mortgage Group brand colors */
-  --color-navy: #003087;
-  --color-navy-light: #1a4a9e;
-  --color-navy-dark: #001f5c;
-  --color-emerald: #00A86B;
-  --color-emerald-light: #00c77b;
-  --color-gold: #C89B3C;
-  --color-gold-light: #E4C87E;
-  --color-surface: #F8F7F4;
-  --color-surface-warm: #FBF6EC;
-  --color-text: #1A1A2E;
-  --color-text-muted: #6B7280;
-  --color-border-brand: #E9E5DD;
+  /* Alta Mortgage Group brand colors — shared with the CRM (Alta-crm3
+     client/src/index.css), so the two products read as one company.
+     Token names predate the palette: "navy" is now the deep green and
+     "emerald" the action green. */
+  --color-navy: #004B1B;
+  --color-navy-light: #006A2F;
+  --color-navy-dark: #00220D;
+  --color-emerald: #006A2F;
+  --color-emerald-light: #00884B;
+  --color-gold: #C79E41;
+  --color-gold-light: #E2BF76;
+  --color-surface: #FAFAF9;
+  --color-surface-warm: #F1F4F2;
+  --color-text: #11161F;
+  --color-text-muted: #5D646F;
+  --color-border-brand: #DEE5E0;
   --color-warning: #F59E0B;
   --color-error: #EF4444;
 
@@ -93,7 +96,7 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -148,6 +151,14 @@
   html {
     @apply font-sans scroll-smooth;
   }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  }
+  h1 {
+    font-weight: 800;
+  }
 
   /* Entrance + ambient animations for a livelier feel */
   @keyframes fade-up {
@@ -184,6 +195,15 @@
     .animate-float {
       animation: none;
     }
+  }
+
+  /* Soft mesh: three radial gradients over off-white. Hero and CTA sections only. */
+  .bg-mesh {
+    background:
+      radial-gradient(60% 80% at 15% 20%, #DDF0E3 0%, rgba(221, 240, 227, 0) 60%),
+      radial-gradient(50% 70% at 85% 15%, #F6E7C4 0%, rgba(246, 231, 196, 0) 60%),
+      radial-gradient(60% 60% at 70% 90%, #CFE8D8 0%, rgba(207, 232, 216, 0) 60%),
+      #FBFBF9;
   }
 
   /* Alta heading scale */

@@ -49,6 +49,12 @@ export function Footer() {
   return (
     <footer className="bg-navy-dark text-white" role="contentinfo">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <div className="mb-10 flex flex-col sm:flex-row sm:items-center gap-4">
+          <Logo height={64} />
+          <p className="text-sm text-white/70 max-w-md">
+            Helping Weber &amp; Davis County families into the right home loan since 1997.
+          </p>
+        </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">
           {Object.values(footerLinks).map((section) => (
             <div key={section.title}>
@@ -60,7 +66,7 @@ export function Footer() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-white/80 hover:text-emerald-light transition-colors"
+                      className="text-sm text-white/80 hover:text-gold-light transition-colors"
                     >
                       {link.label}
                     </Link>

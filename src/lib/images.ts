@@ -9,10 +9,16 @@ import { COMPANY } from "./constants";
  * renaming or re-organizing a file is a one-line change here.
  */
 export const IMAGES = {
-  /** Full horizontal wordmark. Used in the header, footer, and mobile nav. */
-  logoFull: "/images/logo.jpg",
-  /** Vector version of the wordmark. */
+  /** The emblem with the NMLS plate, transparent background. Header, footer, mobile nav. */
+  logoFull: "/images/logo-800.png",
+  /** Smaller copy of the same emblem for tight spots (mobile nav, structured data). */
+  logoSmall: "/images/logo-400.png",
+  /** Original vector of the previous wordmark; kept for print use. */
   logoMark: "/images/logo.svg",
+  /** Family on their new doorstep with the Wasatch behind. Home page hero. */
+  heroFamily: "/images/hero-family.jpg",
+  /** Scott Boerstra, Broker/Manager. About page. */
+  brokerPortrait: "/images/scott-boerstra.jpg",
 } as const;
 
 export type ImageKey = keyof typeof IMAGES;

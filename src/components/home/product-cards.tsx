@@ -34,14 +34,14 @@ export function ProductCards() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid md:grid-cols-3 gap-6 lg:gap-8">
           {products.map((product) => (
-            <Card key={product.title} className="group bg-white border-border hover:shadow-xl hover:-translate-y-1 hover:border-gold/40 transition-all duration-300">
+            <Card key={product.title} className="group rounded-[20px] bg-white/80 backdrop-blur border-navy/10 shadow-[0_12px_32px_rgba(0,75,27,0.06)] hover:shadow-[0_16px_40px_rgba(0,75,27,0.12)] hover:border-gold/50 transition-all duration-300">
               <CardContent className="p-6 lg:p-8 flex flex-col items-start gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-navy to-navy-light flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                  <product.icon className="w-6 h-6 text-white" />
+                <div className="w-13 h-13 rounded-[14px] bg-navy/[0.08] flex items-center justify-center group-hover:bg-navy/[0.12] transition-colors duration-300">
+                  <product.icon className="w-6 h-6 text-emerald" />
                 </div>
-                <h3 className="text-xl font-bold text-text">{product.title}</h3>
+                <h3 className="text-2xl text-navy">{product.title}</h3>
                 <p className="text-text-muted text-sm leading-relaxed">{product.description}</p>
-                <Link href={product.href} className={cn(buttonVariants({ variant: "outline" }), "mt-auto border-navy text-navy hover:bg-navy hover:text-white")}>
+                <Link href={product.href} className={cn(buttonVariants({ variant: "outline" }), "mt-auto rounded-full border-emerald text-emerald hover:bg-emerald hover:text-white font-semibold")}>
                   {product.cta}
                 </Link>
               </CardContent>

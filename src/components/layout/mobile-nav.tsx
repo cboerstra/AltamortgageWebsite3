@@ -16,7 +16,7 @@ export function MobileNav({ open, onClose }: MobileNavProps) {
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent side="left" className="w-80 p-0" showCloseButton={false}>
         <div className="flex items-center justify-between p-4 border-b border-border">
-          <Logo />
+          <Logo height={56} />
           <button
             onClick={onClose}
             aria-label="Close navigation menu"

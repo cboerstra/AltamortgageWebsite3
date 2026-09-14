@@ -43,12 +43,12 @@ export function ToolsGrid() {
         <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {tools.map((tool) => (
             <Link key={tool.title} href={tool.href}>
-              <Card className="group h-full bg-white border-border hover:shadow-xl hover:-translate-y-1 hover:border-emerald/30 transition-all duration-300 cursor-pointer">
+              <Card className="group h-full rounded-[20px] bg-white border-navy/10 hover:shadow-[0_16px_40px_rgba(0,75,27,0.12)] hover:border-gold/50 transition-all duration-300 cursor-pointer">
                 <CardContent className="p-6 flex flex-col items-start gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-light to-emerald flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
-                    <tool.icon className="w-5 h-5 text-white" />
+                  <div className="w-11 h-11 rounded-xl bg-navy/[0.08] flex items-center justify-center group-hover:bg-navy/[0.12] transition-colors duration-300">
+                    <tool.icon className="w-5 h-5 text-emerald" />
                   </div>
-                  <h3 className="font-semibold text-text">{tool.title}</h3>
+                  <h3 className="text-lg text-navy">{tool.title}</h3>
                   <p className="text-sm text-text-muted leading-relaxed">{tool.description}</p>
                 </CardContent>
               </Card>

@@ -7,7 +7,7 @@ export function RateTeaser() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Icons.rateDrop className="w-6 h-6 text-emerald-light" />
+            <Icons.rateDrop className="w-6 h-6 text-gold-light" />
             <span className="font-semibold text-lg">Today&apos;s Rates</span>
           </div>
           <div className="flex items-center gap-6 sm:gap-10">
@@ -24,7 +24,7 @@ export function RateTeaser() {
               <div className="text-xs text-white/60">FHA 30-Year</div>
             </div>
           </div>
-          <Link href="/rates" className="text-sm font-medium text-emerald-light hover:text-white transition-colors underline underline-offset-4">
+          <Link href="/rates" className="text-sm font-semibold text-gold-light hover:text-white transition-colors underline underline-offset-4">
             See All Rates &rarr;
           </Link>
         </div>

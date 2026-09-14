@@ -1,11 +1,12 @@
 import {
-  ArrowLeft, ArrowRight, Award, BarChart3, BookOpen, Calculator, CheckCircle,
+  ArrowLeft, ArrowRight, Award, BarChart3, BookOpen, Building2, Calculator, CheckCircle,
   ChevronDown, ChevronLeft, ChevronRight, ChevronUp, ClipboardCheck, Clock,
-  DollarSign, FileText, GraduationCap, Heart, HelpCircle, Home, KeyRound,
-  Lightbulb, Loader2, Lock, Mail, MapPin, Menu, Pencil, Phone, Plus, RefreshCw,
-  Search, Shield, ShieldCheck, Star, Target, Trash2, TrendingDown, TrendingUp,
-  Users, Wallet, X,
+  DollarSign, Eye, FileCheck, FileSignature, FileText, GraduationCap, HandCoins, Handshake,
+  Heart, HelpCircle, Home, KeyRound, Landmark, Lightbulb, Loader2, Lock, Mail, MapPin,
+  Medal, Menu, MountainSnow, Pencil, Percent, Phone, Plus, RefreshCw, Search, Shield,
+  ShieldCheck, Star, Target, Trash2, TrendingDown, TrendingUp, Users, Wallet, Wheat, X,
   AlertTriangle, Download, LogOut, UploadCloud,
+  type LucideIcon,
 } from "lucide-react";
 
 /**
@@ -48,86 +49,97 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Lucide draws at a 2px stroke by default; the site uses 1.75px so glyphs sit
+ * lighter against Lora headings and inside the mint tiles. Set here once
+ * rather than at sixty call sites.
+ */
+function thin(Icon: LucideIcon): IconComponent {
+  const Thin = ({ className }: { className?: string }) => <Icon className={className} strokeWidth={1.75} />;
+  Thin.displayName = Icon.displayName ?? "Icon";
+  return Thin;
+}
+
 export const Icons = {
   // --- Loan programs (keys match LOAN_TYPES ids in constants.ts) ---
-  conventional: Home,
-  fha: Shield,
-  va: Award,
-  usda: MapPin,
-  jumbo: TrendingUp,
-  arm: BarChart3,
-  fixed: Lock,
-  utahHousing: Home,
+  conventional: thin(Building2),
+  fha: thin(Shield),
+  va: thin(Medal),
+  usda: thin(Wheat),
+  jumbo: thin(TrendingUp),
+  arm: thin(BarChart3),
+  fixed: thin(Lock),
+  utahHousing: thin(MountainSnow),
 
   // --- Core services ---
-  purchase: Home,
-  refinance: RefreshCw,
-  homeEquity: Wallet,
+  purchase: thin(Home),
+  refinance: thin(RefreshCw),
+  homeEquity: thin(HandCoins),
 
   // --- Tools and learning ---
-  calculator: Calculator,
-  loanGuide: BookOpen,
-  firstTimeBuyer: GraduationCap,
-  rateComparison: BarChart3,
-  rates: TrendingUp,
-  refinanceGuide: DollarSign,
-  equityGuide: FileText,
-  firstHomeGuide: Home,
-  tip: Lightbulb,
-  faq: HelpCircle,
+  calculator: thin(Calculator),
+  loanGuide: thin(BookOpen),
+  firstTimeBuyer: thin(GraduationCap),
+  rateComparison: thin(Percent),
+  rates: thin(TrendingUp),
+  refinanceGuide: thin(DollarSign),
+  equityGuide: thin(FileText),
+  firstHomeGuide: thin(KeyRound),
+  tip: thin(Lightbulb),
+  faq: thin(HelpCircle),
 
   // --- Value propositions ---
-  experience: Shield,
-  loansClosed: Award,
-  citiesServed: MapPin,
-  rating: Star,
-  community: Heart,
-  expertise: Target,
-  personalService: Users,
-  transparency: Shield,
-  localKnowledge: MapPin,
-  faceToFace: Users,
-  fasterClosings: Clock,
-  utahPrograms: Award,
+  experience: thin(Award),
+  loansClosed: thin(FileCheck),
+  citiesServed: thin(MapPin),
+  rating: thin(Star),
+  community: thin(Heart),
+  expertise: thin(Target),
+  personalService: thin(Users),
+  transparency: thin(Eye),
+  localKnowledge: thin(MountainSnow),
+  faceToFace: thin(Handshake),
+  fasterClosings: thin(Clock),
+  utahPrograms: thin(Landmark),
 
   // --- First-time buyer journey ---
-  budget: Wallet,
-  preApproval: ClipboardCheck,
-  shopping: Search,
-  offer: Home,
-  closing: KeyRound,
+  budget: thin(Wallet),
+  preApproval: thin(ClipboardCheck),
+  shopping: thin(Search),
+  offer: thin(FileSignature),
+  closing: thin(KeyRound),
 
   // --- Contact details ---
-  phone: Phone,
-  email: Mail,
-  location: MapPin,
-  hours: Clock,
+  phone: thin(Phone),
+  email: thin(Mail),
+  location: thin(MapPin),
+  hours: thin(Clock),
 
   // --- Interface actions and state ---
-  next: ArrowRight,
-  prev: ArrowLeft,
-  check: CheckCircle,
-  success: CheckCircle,
-  loading: Loader2,
-  secure: ShieldCheck,
-  add: Plus,
-  remove: Trash2,
-  edit: Pencil,
-  menu: Menu,
-  close: X,
-  expand: ChevronDown,
-  collapse: ChevronUp,
-  carouselNext: ChevronRight,
-  carouselPrev: ChevronLeft,
-  breadcrumbSeparator: ChevronRight,
-  rateDrop: TrendingDown,
+  next: thin(ArrowRight),
+  prev: thin(ArrowLeft),
+  check: thin(CheckCircle),
+  success: thin(CheckCircle),
+  loading: thin(Loader2),
+  secure: thin(ShieldCheck),
+  add: thin(Plus),
+  remove: thin(Trash2),
+  edit: thin(Pencil),
+  menu: thin(Menu),
+  close: thin(X),
+  expand: thin(ChevronDown),
+  collapse: thin(ChevronUp),
+  carouselNext: thin(ChevronRight),
+  carouselPrev: thin(ChevronLeft),
+  breadcrumbSeparator: thin(ChevronRight),
+  rateDrop: thin(TrendingDown),
 
   // --- Borrower portal ---
-  upload: UploadCloud,
-  download: Download,
-  document: FileText,
-  logout: LogOut,
-  warning: AlertTriangle,
+  upload: thin(UploadCloud),
+  download: thin(Download),
+  document: thin(FileText),
+  logout: thin(LogOut),
+  warning: thin(AlertTriangle),
 
   // --- Social ---
   facebook: FacebookIcon,
