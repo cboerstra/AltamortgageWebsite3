@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { leadSchema } from "@/lib/schemas";
 import { forwardToCRM, splitName, LOAN_TYPE_LABELS } from "@/lib/crm";
 import { sendLeadNotification } from "@/lib/email";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
+
+// A person fills this in once or twice; a script fills it in hundreds of
+// times and each one lands in the CRM and the inbox.
+const LEAD_LIMIT = 5;
+const LEAD_WINDOW_MS = 10 * 60 * 1000;
 
 const LABELS: Record<string, string> = {
   "under-200k": "Under $200,000",
@@ -26,6 +32,14 @@ const LABELS: Record<string, string> = {
 const label = (v: unknown) => (typeof v === "string" ? LABELS[v] ?? v : "");
 
 export async function POST(request: NextRequest) {
+  const limit = rateLimit(`leads:${clientKey(request.headers)}`, LEAD_LIMIT, LEAD_WINDOW_MS);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again in a few minutes or call us." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+    );
+  }
+
   try {
     const body = await request.json();
     const result = leadSchema.safeParse(body);

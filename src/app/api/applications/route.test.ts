@@ -12,6 +12,7 @@ import path from "node:path";
 import type { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { completeApplication } from "@/lib/mismo/__fixtures__/application";
+import { resetRateLimits } from "@/lib/rate-limit";
 import { POST } from "./route";
 
 let storageRoot = "";
@@ -33,6 +34,7 @@ const CLEARED_ENV = [
 const savedEnv: Record<string, string | undefined> = {};
 
 beforeEach(async () => {
+  resetRateLimits();
   for (const key of [...CLEARED_ENV, "MISMO_STORAGE_DIR"]) {
     savedEnv[key] = process.env[key];
     delete process.env[key];
@@ -142,5 +144,23 @@ describe("POST /api/applications", () => {
     const body = await res.json();
     expect(body.success).toBeUndefined();
     expect(body.error).toContain("could not save");
+  });
+});
+
+describe("rate limit", () => {
+  it("answers 429 with Retry-After after three submissions from one address", async () => {
+    process.env.MISMO_STORAGE_DIR = storageRoot;
+    const post = () =>
+      POST(
+        new Request("http://x/api/applications", {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-forwarded-for": "203.0.113.9" },
+          body: JSON.stringify(completeApplication),
+        }) as unknown as NextRequest
+      );
+    for (let i = 0; i < 3; i++) expect((await post()).status).not.toBe(429);
+    const blocked = await post();
+    expect(blocked.status).toBe(429);
+    expect(Number(blocked.headers.get("retry-after"))).toBeGreaterThan(0);
   });
 });

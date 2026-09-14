@@ -32,6 +32,11 @@ import { buildDocumentChecklist } from "@/lib/document-checklist";
 import { markDraftSubmitted } from "@/lib/drafts/store";
 import { isTokenShaped } from "@/lib/drafts/token";
 import { generateMismoDocument, ssnLast4, writeMismoFile, type StoredMismoFile } from "@/lib/mismo";
+import { clientKey, rateLimit } from "@/lib/rate-limit";
+
+// Three full applications from one address in an hour is already unusual.
+const APPLICATION_LIMIT = 3;
+const APPLICATION_WINDOW_MS = 60 * 60 * 1000;
 import { siteOrigin } from "@/lib/portal/site-url";
 import { generateRefNumber } from "@/lib/utils";
 
@@ -69,6 +74,14 @@ function payloadWithoutSsn(app: ApplicationFormData): Record<string, unknown> {
 }
 
 export async function POST(request: NextRequest) {
+  const limit = rateLimit(`applications:${clientKey(request.headers)}`, APPLICATION_LIMIT, APPLICATION_WINDOW_MS);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Too many submissions. Please try again later or call us." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSeconds) } }
+    );
+  }
+
   let referenceNumber = "";
 
   try {
