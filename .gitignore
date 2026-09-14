@@ -15,6 +15,12 @@ out/
 # local scratch
 email-preview.html
 
+# full-size source images; the site ships the web-sized copies beside them
+public/images/AltaMortgageLogoNew.png
+public/images/NorthernUtah.png
+public/images/ScottPic.png
+public/images/altaheroImage.png
+
 # os
 .DS_Store
 Thumbs.db
