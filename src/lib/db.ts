@@ -316,6 +316,9 @@ export async function updateDeliveryStatus(
 // loan officer needs to see; the full SSN is never in the database to begin
 // with, and resume tokens are never selected.
 
+export const REVIEW_STATUSES = ["new", "in_review", "approved", "declined", "closed"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+
 export interface ApplicationListItem {
   refNumber: string;
   firstName: string;
@@ -328,6 +331,9 @@ export interface ApplicationListItem {
   mismoStatus: MismoStatus;
   crmStatus: DeliveryStatus;
   emailStatus: DeliveryStatus;
+  reviewStatus: ReviewStatus;
+  staffNotes: string | null;
+  reviewedAt: string | null;
 }
 
 export interface ApplicationDetail extends ApplicationListItem {
@@ -352,6 +358,9 @@ interface ApplicationRow {
   mismo_status: MismoStatus;
   crm_status: DeliveryStatus;
   email_status: DeliveryStatus;
+  review_status: ReviewStatus;
+  staff_notes: string | null;
+  reviewed_at: Date | null;
   ssn_last4?: string | null;
   raw_payload?: Record<string, unknown>;
   mismo_path?: string | null;
@@ -362,7 +371,8 @@ interface ApplicationRow {
 }
 
 const LIST_COLUMNS = `ref_number, first_name, last_name, email, phone, loan_purpose,
-  loan_amount, created_at, mismo_status, crm_status, email_status`;
+  loan_amount, created_at, mismo_status, crm_status, email_status,
+  review_status, staff_notes, reviewed_at`;
 
 function toListItem(row: ApplicationRow): ApplicationListItem {
   return {
@@ -378,6 +388,9 @@ function toListItem(row: ApplicationRow): ApplicationListItem {
     mismoStatus: row.mismo_status,
     crmStatus: row.crm_status,
     emailStatus: row.email_status,
+    reviewStatus: row.review_status,
+    staffNotes: row.staff_notes,
+    reviewedAt: row.reviewed_at ? row.reviewed_at.toISOString() : null,
   };
 }
 
@@ -465,4 +478,64 @@ export async function listApplicationsByEmail(email: string): Promise<Applicatio
     console.error("listApplicationsByEmail error:", err);
     return [];
   }
+}
+
+/**
+ * Loan officer's review. Only the two staff-owned columns can change;
+ * borrower-entered data stays as submitted. Returns the updated row, or
+ * null when the reference does not exist.
+ */
+export async function updateApplicationReview(
+  refNumber: string,
+  input: { reviewStatus?: ReviewStatus; staffNotes?: string | null }
+): Promise<ApplicationDetail | null> {
+  const p = getPool();
+  if (!p) return null;
+  try {
+    await p.query(
+      `UPDATE applications
+          SET review_status = COALESCE($2, review_status),
+              staff_notes = CASE WHEN $3::boolean THEN $4 ELSE staff_notes END,
+              reviewed_at = NOW()
+        WHERE ref_number = $1`,
+      [refNumber, input.reviewStatus ?? null, input.staffNotes !== undefined, input.staffNotes ?? null]
+    );
+    return getApplicationByRef(refNumber);
+  } catch (err) {
+    console.error("updateApplicationReview error:", err);
+    throw err;
+  }
+}
+
+export interface DeletedApplication {
+  email: string;
+  mismoPath: string | null;
+  /** True when no other application remains under the same email. */
+  lastForEmail: boolean;
+}
+
+/**
+ * Remove the application row. Returns what the caller needs to clean up
+ * storage, or null when the reference does not exist. Storage is the
+ * caller's job: a blob that outlives its row is recoverable, a row that
+ * outlives its blob is not.
+ */
+export async function deleteApplication(refNumber: string): Promise<DeletedApplication | null> {
+  const p = getPool();
+  if (!p) return null;
+  const { rows } = await p.query<{ email: string; mismo_path: string | null }>(
+    `DELETE FROM applications WHERE ref_number = $1 RETURNING email, mismo_path`,
+    [refNumber]
+  );
+  const row = rows[0];
+  if (!row) return null;
+  const { rows: rest } = await p.query<{ n: string }>(
+    `SELECT COUNT(*) AS n FROM applications WHERE LOWER(email) = $1`,
+    [row.email.trim().toLowerCase()]
+  );
+  return {
+    email: row.email,
+    mismoPath: row.mismo_path,
+    lastForEmail: Number(rest[0]?.n ?? 0) === 0,
+  };
 }

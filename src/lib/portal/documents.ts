@@ -412,6 +412,34 @@ export async function deleteDocument(borrowerId: number, id: number): Promise<bo
   }
 }
 
+/**
+ * Erase a borrower entirely: every uploaded document's encrypted chunks, then
+ * the borrower row, which cascades to documents, parts, login codes and
+ * sessions. For when their last application is deleted. Returns how many
+ * documents were removed.
+ */
+export async function purgeBorrowerByEmail(email: string): Promise<number> {
+  const p = getPool();
+  if (!p) return 0;
+  const normalized = email.trim().toLowerCase();
+  const { rows: parts } = await p.query<{ blob_pathname: string }>(
+    `SELECT pt.blob_pathname
+       FROM borrower_document_parts pt
+       JOIN borrower_documents d ON d.id = pt.document_id
+       JOIN borrowers b ON b.id = d.borrower_id
+      WHERE LOWER(b.email) = $1`,
+    [normalized]
+  );
+  await deleteParts(parts.map((r) => r.blob_pathname));
+  const { rows: docs } = await p.query<{ n: string }>(
+    `SELECT COUNT(*) AS n FROM borrower_documents d
+       JOIN borrowers b ON b.id = d.borrower_id WHERE LOWER(b.email) = $1`,
+    [normalized]
+  );
+  await p.query(`DELETE FROM borrowers WHERE LOWER(email) = $1`, [normalized]);
+  return Number(docs[0]?.n ?? 0);
+}
+
 /** Uploads that never completed. Run from the cron job. Returns how many were removed. */
 export async function purgeAbandonedUploads(olderThanHours = 24): Promise<number> {
   const p = getPool();

@@ -120,8 +120,23 @@ CREATE TABLE IF NOT EXISTS applications (
     CHECK (email_status IN ('pending','sent','failed','skipped')),
   email_error TEXT,
 
+  -- Loan officer's review, set from the CRM. Borrower-entered columns above
+  -- are never edited: the MISMO document must keep matching what was signed.
+  review_status VARCHAR(20) NOT NULL DEFAULT 'new'
+    CHECK (review_status IN ('new','in_review','approved','declined','closed')),
+  staff_notes TEXT,
+  reviewed_at TIMESTAMPTZ,
+
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+-- Databases created before the review columns existed.
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS review_status VARCHAR(20) NOT NULL DEFAULT 'new';
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS staff_notes TEXT;
+ALTER TABLE applications ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ;
+DO $$ BEGIN
+  ALTER TABLE applications ADD CONSTRAINT applications_review_status_check
+    CHECK (review_status IN ('new','in_review','approved','declined','closed'));
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 CREATE INDEX IF NOT EXISTS idx_applications_email ON applications (email);
 CREATE INDEX IF NOT EXISTS idx_applications_created_at ON applications (created_at);

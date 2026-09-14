@@ -21,9 +21,9 @@
 //                sibling of the app directory, never under public/.
 
 import { createHash } from "node:crypto";
-import { mkdir, open, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, open, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { get, put } from "@vercel/blob";
+import { del, get, put } from "@vercel/blob";
 
 export interface StoredMismoFile {
   /**
@@ -206,6 +206,18 @@ export async function readMismoFile(relativePath: string): Promise<Buffer | null
     throw new Error("Refusing to read a MISMO document with a malformed storage key");
   }
   return mismoBackend() === "blob" ? readFromBlob(relativePath) : readFromDisk(relativePath);
+}
+
+/** Remove a stored document. Missing files are not an error. */
+export async function deleteMismoFile(relativePath: string): Promise<void> {
+  if (!isMismoRelativePath(relativePath)) {
+    throw new Error("Refusing to delete a MISMO document with a malformed storage key");
+  }
+  if (mismoBackend() === "blob") {
+    await del(`${BLOB_PREFIX}/${relativePath}`);
+    return;
+  }
+  await rm(path.join(resolveStorageRoot(), ...relativePath.split("/")), { force: true });
 }
 
 // ---- Public -----------------------------------------------------------------

@@ -263,6 +263,16 @@ export async function purgeStaleDrafts(): Promise<number> {
   }
 }
 
+/** Every draft under an email, finished or not. Used when an application is deleted. */
+export async function deleteDraftsByEmail(email: string): Promise<number> {
+  const p = getPool();
+  if (!p) return 0;
+  const result = await p.query(`DELETE FROM application_drafts WHERE LOWER(email) = $1`, [
+    email.trim().toLowerCase(),
+  ]);
+  return result.rowCount ?? 0;
+}
+
 // ---- Staff view -------------------------------------------------------------
 
 /**

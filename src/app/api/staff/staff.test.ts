@@ -13,7 +13,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ApplicationDetail } from "@/lib/db";
 import { isMismoRelativePath, readMismoFile } from "@/lib/mismo/store";
 import { GET as listApplications } from "./applications/route";
-import { GET as getApplication } from "./applications/[ref]/route";
+import {
+  DELETE as deleteApplicationRoute,
+  GET as getApplication,
+  PATCH as patchApplication,
+} from "./applications/[ref]/route";
 import { GET as downloadMismo } from "./applications/[ref]/mismo/route";
 import { GET as listDrafts } from "./drafts/route";
 
@@ -48,8 +52,15 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-function req(url: string, auth?: string): NextRequest {
-  const request = new Request(url, { headers: auth ? { authorization: auth } : {} });
+function req(url: string, auth?: string, init?: { method?: string; body?: unknown }): NextRequest {
+  const request = new Request(url, {
+    method: init?.method ?? "GET",
+    headers: {
+      ...(auth ? { authorization: auth } : {}),
+      ...(init?.body !== undefined ? { "content-type": "application/json" } : {}),
+    },
+    body: init?.body !== undefined ? JSON.stringify(init.body) : undefined,
+  });
   Object.defineProperty(request, "nextUrl", { value: new URL(url) });
   return request as unknown as NextRequest;
 }
@@ -75,6 +86,9 @@ const baseDetail: ApplicationDetail = {
   mismoError: null,
   crmResponse: null,
   emailError: null,
+  reviewStatus: "new",
+  staffNotes: null,
+  reviewedAt: null,
 };
 
 describe("staff key", () => {
@@ -95,11 +109,15 @@ describe("staff key", () => {
     expect((await listApplications(req(url, `Bearer ${sameLength}`))).status).toBe(401);
   });
 
-  it("guards every route, including the download", async () => {
+  it("guards every route, including the download and the writes", async () => {
     process.env.STAFF_API_KEY = KEY;
     expect((await getApplication(req("http://x/a"), params("ALT-AAAAA"))).status).toBe(401);
     expect((await downloadMismo(req("http://x/a"), params("ALT-AAAAA"))).status).toBe(401);
     expect((await listDrafts(req("http://x/api/staff/drafts"))).status).toBe(401);
+    const patch = req("http://x/a", undefined, { method: "PATCH", body: { reviewStatus: "closed" } });
+    expect((await patchApplication(patch, params("ALT-AAAAA"))).status).toBe(401);
+    const del = req("http://x/a", undefined, { method: "DELETE" });
+    expect((await deleteApplicationRoute(del, params("ALT-AAAAA"))).status).toBe(401);
   });
 
   it("never lets a staff response be cached or indexed", async () => {
@@ -200,6 +218,160 @@ describe("detail response", () => {
     expect(body.summary).toBeNull();
     expect(body.mismoAvailable).toBe(true);
     expect(body.mismoFilename).toBe("ALT-K7M2Q-20260908T143012Z.xml");
+  });
+});
+
+describe("review (PATCH)", () => {
+  beforeEach(() => {
+    process.env.STAFF_API_KEY = KEY;
+  });
+
+  const patch = (ref: string, body: unknown) =>
+    patchApplication(req("http://x/a", `Bearer ${KEY}`, { method: "PATCH", body }), params(ref));
+
+  it("answers 503 without a database, before validating the body", async () => {
+    const res = await patch("ALT-K7M2Q", { reviewStatus: "approved" });
+    expect(res.status).toBe(503);
+  });
+
+  it("rejects an unknown status, an empty update, and a malformed reference", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    expect((await patch("ALT-K7M2Q", { reviewStatus: "funded" })).status).toBe(400);
+    expect((await patch("ALT-K7M2Q", {})).status).toBe(400);
+    expect((await patch("ALT-K7M2Q", "not json object")).status).toBe(400);
+    expect((await patch("../x", { reviewStatus: "approved" })).status).toBe(404);
+  });
+
+  it("passes only the two staff-owned fields through and returns the presented row", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    const spy = vi.spyOn(db, "updateApplicationReview").mockResolvedValue({
+      ...baseDetail,
+      reviewStatus: "in_review",
+      staffNotes: "Called, left voicemail",
+      reviewedAt: "2026-09-13T20:00:00.000Z",
+    });
+    const res = await patch("alt-k7m2q", {
+      reviewStatus: "in_review",
+      staffNotes: "Called, left voicemail",
+      firstName: "Mallory",
+      loanAmount: 1,
+    });
+    expect(res.status).toBe(200);
+    expect(spy).toHaveBeenCalledWith("ALT-K7M2Q", {
+      reviewStatus: "in_review",
+      staffNotes: "Called, left voicemail",
+    });
+    const body = await res.json();
+    expect(body.reviewStatus).toBe("in_review");
+    expect(body.staffNotes).toBe("Called, left voicemail");
+    expect(body.rawPayload).toBeUndefined();
+  });
+
+  it("answers 404 when the reference does not exist", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "updateApplicationReview").mockResolvedValue(null);
+    expect((await patch("ALT-K7M2Q", { staffNotes: null })).status).toBe(404);
+  });
+});
+
+describe("delete", () => {
+  beforeEach(() => {
+    process.env.STAFF_API_KEY = KEY;
+  });
+
+  const del = (ref: string) =>
+    deleteApplicationRoute(req("http://x/a", `Bearer ${KEY}`, { method: "DELETE" }), params(ref));
+
+  it("answers 503 without a database and 404 for a malformed reference", async () => {
+    expect((await del("ALT-K7M2Q")).status).toBe(503);
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    expect((await del("nope")).status).toBe(404);
+  });
+
+  it("answers 404 when the row does not exist and touches nothing else", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "deleteApplication").mockResolvedValue(null);
+    const docs = await import("@/lib/portal/documents");
+    const purge = vi.spyOn(docs, "purgeBorrowerByEmail");
+    expect((await del("ALT-K7M2Q")).status).toBe(404);
+    expect(purge).not.toHaveBeenCalled();
+  });
+
+  it("removes the MISMO file, and the borrower's documents and drafts when it was their last application", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const abs = path.join(storageRoot, ...baseDetail.mismoPath!.split("/"));
+    await mkdir(path.dirname(abs), { recursive: true });
+    await writeFile(abs, "<x/>", "utf8");
+
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "deleteApplication").mockResolvedValue({
+      email: baseDetail.email,
+      mismoPath: baseDetail.mismoPath,
+      lastForEmail: true,
+    });
+    const docs = await import("@/lib/portal/documents");
+    const purge = vi.spyOn(docs, "purgeBorrowerByEmail").mockResolvedValue(2);
+    const drafts = await import("@/lib/drafts/store");
+    const dropDrafts = vi.spyOn(drafts, "deleteDraftsByEmail").mockResolvedValue(1);
+
+    const res = await del("ALT-K7M2Q");
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body).toMatchObject({
+      deleted: true,
+      refNumber: "ALT-K7M2Q",
+      documentsRemoved: 2,
+      draftsRemoved: 1,
+      borrowerPurged: true,
+      warnings: [],
+    });
+    expect(purge).toHaveBeenCalledWith(baseDetail.email);
+    expect(dropDrafts).toHaveBeenCalledWith(baseDetail.email);
+    expect(await readMismoFile(baseDetail.mismoPath!)).toBeNull();
+  });
+
+  it("leaves the borrower's documents alone when another application remains", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "deleteApplication").mockResolvedValue({
+      email: baseDetail.email,
+      mismoPath: null,
+      lastForEmail: false,
+    });
+    const docs = await import("@/lib/portal/documents");
+    const purge = vi.spyOn(docs, "purgeBorrowerByEmail");
+    const drafts = await import("@/lib/drafts/store");
+    const dropDrafts = vi.spyOn(drafts, "deleteDraftsByEmail");
+
+    const res = await del("ALT-K7M2Q");
+    expect(res.status).toBe(200);
+    expect((await res.json()).borrowerPurged).toBe(false);
+    expect(purge).not.toHaveBeenCalled();
+    expect(dropDrafts).not.toHaveBeenCalled();
+  });
+
+  it("still reports the row as deleted when storage cleanup fails", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "deleteApplication").mockResolvedValue({
+      email: baseDetail.email,
+      mismoPath: baseDetail.mismoPath,
+      lastForEmail: true,
+    });
+    const docs = await import("@/lib/portal/documents");
+    vi.spyOn(docs, "purgeBorrowerByEmail").mockRejectedValue(new Error("blob down"));
+    const drafts = await import("@/lib/drafts/store");
+    vi.spyOn(drafts, "deleteDraftsByEmail").mockResolvedValue(0);
+    vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const res = await del("ALT-K7M2Q");
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.deleted).toBe(true);
+    expect(body.warnings).toEqual(["Uploaded documents could not be removed"]);
   });
 });
 
