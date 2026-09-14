@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { buttonVariants } from "@/components/ui/button";
@@ -18,9 +19,17 @@ const values = [
   { icon: Icons.transparency, title: "Trust & Transparency", description: "No hidden fees, no surprises. We believe in full transparency throughout the lending process so you can make confident decisions." },
 ];
 
-const team: { name: string; title: string; nmls: string; bio?: string }[] = [
-  { name: COMPANY.broker.name, title: COMPANY.broker.title, nmls: COMPANY.broker.nmlsId },
-];
+const broker = {
+  name: COMPANY.broker.name,
+  title: COMPANY.broker.title,
+  nmls: COMPANY.broker.nmlsId,
+  photo: "/images/scott-boerstra.jpg",
+  bio: [
+    "Scott Boerstra is the Broker/Manager of Alta Mortgage Group, which opened its doors in Sandy, Utah in 1997 — 29 years ago and counting. The company moved to Hooper in Weber County in 2002 and today serves families up and down the Wasatch Front.",
+    "Scott graduated from the University of Utah in 1993 with a degree in Marketing. Along the way he has bought, renovated and sold homes himself, which gives him a working sense of what a property is really worth and what it takes to get to closing. He is a licensed mortgage broker and also a licensed real estate agent with Equity Real Estate, so clients get one person who understands both sides of the transaction.",
+    "His focus is helping new families get into affordable homes: finding the right program, the right lender and the right payment, and staying with each file personally from application through closing.",
+  ],
+};
 
 export default function AboutPage() {
   return (
@@ -55,20 +64,27 @@ export default function AboutPage() {
       </div>
 
       <div className="mt-16">
-        <h2 className="text-3xl font-bold text-navy">Our Team</h2>
-        <p className="mt-2 text-text-muted">Meet the people who make it happen.</p>
-        <div className="mt-8 grid md:grid-cols-3 gap-6">
-          {team.map((member) => (
-            <div key={member.name} className="bg-white border border-border rounded-xl p-6 text-center">
-              <div className="w-20 h-20 rounded-full bg-surface mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-navy">
-                {member.name.split(" ").map((n) => n[0]).join("")}
-              </div>
-              <h3 className="font-semibold text-text">{member.name}</h3>
-              <p className="text-sm text-emerald font-medium">{member.title}</p>
-              <p className="text-xs text-text-muted mt-1">NMLS# {member.nmls}</p>
-              {member.bio && <p className="text-sm text-text-muted mt-3 leading-relaxed">{member.bio}</p>}
+        <h2 className="text-3xl font-bold text-navy">Meet Your Broker</h2>
+        <div className="mt-8 bg-white border border-border rounded-xl p-6 lg:p-8 grid md:grid-cols-[260px_1fr] gap-8 items-start">
+          <Image
+            src={broker.photo}
+            alt={`${broker.name}, ${broker.title} at ${COMPANY.name}`}
+            width={800}
+            height={1000}
+            sizes="(min-width: 768px) 260px, 100vw"
+            className="w-full max-w-[260px] mx-auto md:mx-0 rounded-xl object-cover"
+            priority={false}
+          />
+          <div>
+            <h3 className="text-2xl font-bold text-text">{broker.name}</h3>
+            <p className="text-emerald font-medium">{broker.title}</p>
+            <p className="text-sm text-text-muted mt-1">NMLS# {broker.nmls}</p>
+            <div className="mt-5 space-y-4">
+              {broker.bio.map((paragraph) => (
+                <p key={paragraph.slice(0, 32)} className="text-text-muted leading-relaxed">{paragraph}</p>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </div>
 
