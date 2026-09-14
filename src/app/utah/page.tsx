@@ -11,7 +11,7 @@ import { Icons } from "@/lib/icons";
 export const metadata: Metadata = {
   title: "Utah Mortgage Lender",
   description:
-    "Alta Mortgage Group is a trusted Utah mortgage lender serving Weber and Davis counties. Purchase, refinance, and home equity loans with competitive rates.",
+    "Alta Mortgage Group is a trusted Utah mortgage lender serving Weber, Davis, Box Elder and Morgan counties. Purchase, refinance, and home equity loans with competitive rates.",
   keywords: [
     "Utah mortgage lender",
     "home loans Utah",
@@ -25,7 +25,7 @@ const benefits = [
     icon: Icons.localKnowledge,
     title: "Local Market Knowledge",
     description:
-      "We know Utah neighborhoods, school districts, and property values. Our deep familiarity with Weber and Davis counties means better guidance on what you can afford and where.",
+      "We know Utah neighborhoods, school districts, and property values. Our deep familiarity with Weber, Davis, Box Elder and Morgan counties means better guidance on what you can afford and where.",
   },
   {
     icon: Icons.faceToFace,
@@ -63,7 +63,7 @@ export default function UtahPage() {
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           {COMPANY.name} is a trusted mortgage lender based in{" "}
           {COMPANY.address.city}, Utah, serving homebuyers and homeowners across
-          Weber and Davis counties. Whether you&apos;re purchasing your first
+          Weber, Davis, Box Elder and Morgan counties. Whether you&apos;re purchasing your first
           home, refinancing for a better rate, or tapping into your home equity,
           our local expertise and personalized service make the process
           straightforward and stress-free.
@@ -145,7 +145,7 @@ export default function UtahPage() {
           <div className="bg-surface rounded-xl p-6">
             <h3 className="font-semibold text-text">USDA Rural Loans</h3>
             <p className="text-sm text-text-muted mt-2 leading-relaxed">
-              Many areas in Weber and Davis counties qualify for USDA financing,
+              Many areas in Box Elder, Morgan, Weber, Davis, Box Elder and Morgan counties qualify for USDA financing,
               offering zero-down-payment mortgages for eligible buyers in
               designated rural communities.
             </p>

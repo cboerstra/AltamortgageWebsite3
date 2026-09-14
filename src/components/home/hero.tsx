@@ -12,14 +12,14 @@ export function Hero() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-up">
             <span className="text-xs font-bold uppercase tracking-[0.14em] text-gold">
-              Serving Weber &amp; Davis Counties
+              Serving Weber, Davis, Box Elder &amp; Morgan Counties
             </span>
             <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl text-navy leading-[1.08]">
               Your Trusted Utah Mortgage Partner
             </h1>
             <div className="mt-6 h-1 w-16 rounded-full bg-gold" />
             <p className="mt-6 text-lg text-text-muted max-w-xl">
-              Helping families in Weber &amp; Davis counties find the right home loan.
+              Helping families across northern Utah find the right home loan.
               Expert guidance, competitive rates, and a commitment to your homeownership goals.
             </p>
             <div className="mt-8 flex flex-col items-stretch sm:items-start gap-3">

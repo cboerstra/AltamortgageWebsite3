@@ -20,6 +20,10 @@ export const COMPANY = {
 
 export const SERVICE_AREAS = {
   state: "Utah",
+  /** For running copy: "…families in Weber, Davis, Box Elder and Morgan counties". */
+  countiesText: "Weber, Davis, Box Elder and Morgan counties",
+  /** Short form for headings and badges. */
+  region: "Northern Utah",
   counties: [
     {
       name: "Weber County", slug: "weber-county",
@@ -28,6 +32,14 @@ export const SERVICE_AREAS = {
     {
       name: "Davis County", slug: "davis-county",
       cities: ["Layton", "Bountiful", "Kaysville", "Clearfield", "Syracuse", "Farmington", "Centerville", "Woods Cross", "West Point", "Clinton", "North Salt Lake", "South Weber", "Fruit Heights", "Sunset", "West Bountiful"],
+    },
+    {
+      name: "Box Elder County", slug: "box-elder-county",
+      cities: ["Brigham City", "Tremonton", "Perry", "Willard", "Garland", "Corinne", "Honeyville", "Mantua", "Bear River City", "Elwood", "Deweyville", "Fielding", "Plymouth"],
+    },
+    {
+      name: "Morgan County", slug: "morgan-county",
+      cities: ["Morgan", "Mountain Green", "Peterson", "Croydon", "Milton", "Porterville", "Richville"],
     },
   ],
 } as const;

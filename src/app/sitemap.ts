@@ -20,6 +20,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${baseUrl}/utah`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/utah/weber-county`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/utah/davis-county`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+
+    { url: `${baseUrl}/utah/box-elder-county`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+
+    { url: `${baseUrl}/utah/morgan-county`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/first-time-homebuyer`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
     { url: `${baseUrl}/learning-center`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },

@@ -11,7 +11,7 @@ import { Icons } from "@/lib/icons";
 export const metadata: Metadata = {
   title: "First-Time Homebuyer Guide",
   description:
-    "Buying your first home in Utah? Alta Mortgage Group walks you through every step — programs with low or no down payment, what to expect at closing, and how to qualify in Weber and Davis counties.",
+    "Buying your first home in Utah? Alta Mortgage Group walks you through every step — programs with low or no down payment, what to expect at closing, and how to qualify in Weber, Davis, Box Elder and Morgan counties.",
   keywords: [
     "first time home buyer Utah",
     "first time homebuyer programs Utah",
@@ -38,7 +38,7 @@ const steps = [
     icon: Icons.shopping,
     title: "3. Shop For Your Home",
     body:
-      "Work with a local Realtor who knows Weber and Davis counties. They'll help you find homes in your price range, schedule showings, and negotiate offers. Most first-time buyers look at 8–12 homes before finding the right one.",
+      "Work with a local Realtor who knows Weber, Davis, Box Elder and Morgan counties. They'll help you find homes in your price range, schedule showings, and negotiate offers. Most first-time buyers look at 8–12 homes before finding the right one.",
   },
   {
     icon: Icons.offer,
@@ -146,7 +146,7 @@ export default function FirstTimeHomebuyerPage() {
           Buying your first home in Utah can feel overwhelming — but it
           shouldn&apos;t. {COMPANY.name} walks you through every step, from
           understanding programs designed for first-time buyers to getting your
-          keys. We work with buyers in Weber and Davis counties every week.
+          keys. We work with buyers across Weber, Davis, Box Elder and Morgan counties every week.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           <Link

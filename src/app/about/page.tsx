@@ -9,11 +9,11 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "About Us",
-  description: `Learn about ${COMPANY.name}, a trusted Utah mortgage lender serving Weber and Davis counties. Our mission, values, and team.`,
+  description: `Learn about ${COMPANY.name}, a trusted Utah mortgage lender serving Weber, Davis, Box Elder and Morgan counties. Our mission, values, and team.`,
 };
 
 const values = [
-  { icon: Icons.community, title: "Community First", description: "We live and work in Weber and Davis counties. Your community is our community, and we're invested in helping our neighbors achieve homeownership." },
+  { icon: Icons.community, title: "Community First", description: "We live and work in northern Utah — Weber, Davis, Box Elder and Morgan counties. Your community is our community, and we're invested in helping our neighbors achieve homeownership." },
   { icon: Icons.expertise, title: "Expert Guidance", description: "Navigating mortgage options can be complex. We simplify the process with clear, honest advice tailored to your unique financial situation." },
   { icon: Icons.personalService, title: "Personal Service", description: "You're not a number to us. Every client gets a dedicated loan specialist who's available when you need them — by phone, email, or in person." },
   { icon: Icons.transparency, title: "Trust & Transparency", description: "No hidden fees, no surprises. We believe in full transparency throughout the lending process so you can make confident decisions." },
@@ -39,7 +39,7 @@ export default function AboutPage() {
       <div className="mt-6 max-w-3xl">
         <h1 className="text-4xl font-bold text-navy">About Alta Mortgage Group</h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
-          Alta Mortgage Group is a Utah-based mortgage lender dedicated to helping families in Weber and Davis counties achieve their homeownership dreams. Founded on the principles of trust, transparency, and personalized service, we provide expert mortgage guidance for home purchases, refinancing, and home equity loans.
+          Alta Mortgage Group is a Utah-based mortgage lender dedicated to helping families across Weber, Davis, Box Elder and Morgan counties achieve their homeownership dreams. Founded on the principles of trust, transparency, and personalized service, we provide expert mortgage guidance for home purchases, refinancing, and home equity loans.
         </p>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           Our name, &quot;Alta,&quot; means &quot;high&quot; or &quot;elevated&quot; — and that&apos;s exactly the standard of service we hold ourselves to. We believe every family deserves a lender who listens, educates, and advocates on their behalf.

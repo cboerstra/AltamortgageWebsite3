@@ -30,7 +30,7 @@ export function Testimonials() {
           What Our Clients Say
         </h2>
         <p className="mt-4 text-text-muted text-center">
-          In their own words, from families across Weber and Davis counties.
+          In their own words, from families across northern Utah.
         </p>
 
         <div className="mt-12 relative">

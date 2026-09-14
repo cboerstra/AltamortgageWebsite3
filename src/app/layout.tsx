@@ -12,7 +12,7 @@ const lora = Lora({ subsets: ["latin"], variable: "--font-display-var", weight: 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://altamortgagegroup.net"),
   title: { default: "Alta Mortgage Group | Utah Mortgage Lender", template: "%s | Alta Mortgage Group | Utah Mortgage Lender" },
-  description: "Alta Mortgage Group is a trusted Utah mortgage lender serving Weber and Davis counties. Purchase, refinance, and home equity loans in Ogden, Layton, Bountiful, and surrounding areas.",
+  description: "Alta Mortgage Group is a trusted Utah mortgage lender serving Weber, Davis, Box Elder and Morgan counties. Purchase, refinance, and home equity loans in Ogden, Layton, Brigham City, Morgan, and surrounding areas.",
   keywords: ["Utah mortgage lender", "home loans Utah", "mortgage rates Ogden", "refinance Weber County", "FHA loans Utah", "VA loans Utah", "first time home buyer Utah", "Davis County mortgage"],
   openGraph: { type: "website", locale: "en_US", siteName: COMPANY.name },
   twitter: { card: "summary_large_image" },

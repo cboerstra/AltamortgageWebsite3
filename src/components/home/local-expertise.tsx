@@ -10,7 +10,7 @@ export function LocalExpertise() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl sm:text-4xl font-bold text-navy">
-              Proudly Serving Weber &amp; Davis Counties
+              Proudly Serving Northern Utah
             </h2>
             <p className="mt-4 text-text-muted text-lg leading-relaxed">
               We&apos;re not just another national lender — we live and work in northern Utah.
@@ -18,7 +18,7 @@ export function LocalExpertise() {
               and a team that understands your community.
             </p>
 
-            <div className="mt-8 grid grid-cols-2 gap-6">
+            <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8">
               {SERVICE_AREAS.counties.map((county) => (
                 <div key={county.slug}>
                   <h3 className="font-semibold text-text flex items-center gap-2 mb-3">

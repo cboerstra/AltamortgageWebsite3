@@ -15,7 +15,7 @@ const benefits = [
   "Competitive rates on all loan types",
   "Down payments as low as 0% for eligible buyers",
   "First-time homebuyer programs and grants",
-  "Local expertise in Weber and Davis county markets",
+  "Local expertise in Weber, Davis, Box Elder and Morgan county markets",
   "Fast pre-approvals — often same day",
   "Personalized guidance from application to closing",
 ];

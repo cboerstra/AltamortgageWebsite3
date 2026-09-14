@@ -23,6 +23,8 @@ const footerLinks = {
       { label: "Utah Mortgages", href: "/utah" },
       { label: "Weber County", href: "/utah/weber-county" },
       { label: "Davis County", href: "/utah/davis-county" },
+      { label: "Box Elder County", href: "/utah/box-elder-county" },
+      { label: "Morgan County", href: "/utah/morgan-county" },
     ],
   },
   company: {
@@ -53,7 +55,7 @@ export function Footer() {
         <div className="mb-10 flex flex-col sm:flex-row sm:items-center gap-4">
           <Logo height={64} />
           <p className="text-sm text-white/70 max-w-md">
-            Helping Weber &amp; Davis County families into the right home loan since 1997.
+            Helping northern Utah families into the right home loan since 1997 — Weber, Davis, Box Elder and Morgan counties.
           </p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-12">

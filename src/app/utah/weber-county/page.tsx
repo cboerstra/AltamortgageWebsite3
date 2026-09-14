@@ -79,9 +79,9 @@ export default function WeberCountyPage() {
           Weber County Mortgage Lender
         </h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
-          {COMPANY.name} is headquartered in Ogden, the county seat of Weber
-          County, and has been helping local families finance their homes for
-          years. Weber County&apos;s housing market continues to grow, offering
+          {COMPANY.name} is headquartered in Hooper, in the heart of Weber
+          County, and has been helping local families finance their homes
+          since 1997. Weber County&apos;s housing market continues to grow, offering
           everything from historic Ogden bungalows to new construction in
           communities like Farr West and West Haven. Whether you&apos;re a
           first-time buyer or looking to refinance, our team knows this market
