@@ -60,15 +60,6 @@ export function StepPersonalInfo({
             <p className="text-xs text-error mt-1">{errors.dateOfBirth.message}</p>
           )}
         </div>
-        <div>
-          <Label>Social Security Number</Label>
-          <Input
-            {...register("ssn")}
-            type="password"
-            className="mt-1"
-            placeholder="XXX-XX-XXXX"
-          />
-        </div>
       </div>
 
       <div>

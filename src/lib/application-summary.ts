@@ -17,7 +17,6 @@ import {
   PROPERTY_PROFILE,
   PROPERTY_USE_LABEL,
 } from "@/lib/mismo/enums";
-import { ssnLast4 } from "@/lib/mismo/map";
 
 export interface SummaryRow {
   label: string;
@@ -102,7 +101,6 @@ export function buildApplicationSummary(
       rows: [
         { label: "Name", value: fullName(app) },
         { label: "Date of birth", value: text(app.dateOfBirth) },
-        { label: "SSN (last 4)", value: text(ssnLast4(app.ssn)) },
         { label: "Marital status", value: MARITAL_STATUS_LABEL[app.maritalStatus] },
         { label: "Phone", value: text(app.phone) },
         { label: "Email", value: text(app.email) },

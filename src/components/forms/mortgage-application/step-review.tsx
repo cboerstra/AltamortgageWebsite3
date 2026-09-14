@@ -63,10 +63,6 @@ export function StepReview({
 
   const data = watch();
 
-  const maskedSSN = data.ssn
-    ? `***-**-${data.ssn.slice(-4)}`
-    : "Not provided";
-
   const boolLabel = (v: boolean | undefined) =>
     v === true ? "Yes" : v === false ? "No" : "---";
 
@@ -117,7 +113,6 @@ export function StepReview({
             .join(" ")}
         />
         <Row label="Date of Birth" value={data.dateOfBirth} />
-        <Row label="SSN" value={maskedSSN} />
         <Row label="Marital Status" value={data.maritalStatus} />
         <Row label="Phone" value={data.phone} />
         <Row label="Email" value={data.email} />
