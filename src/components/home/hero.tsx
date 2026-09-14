@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { IMAGES } from "@/lib/images";
+import { Icons } from "@/lib/icons";
 
 export function Hero() {
   return (
@@ -21,12 +22,15 @@ export function Hero() {
               Helping families in Weber &amp; Davis counties find the right home loan.
               Expert guidance, competitive rates, and a commitment to your homeownership goals.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4">
-              <Link href="/contact" className={cn(buttonVariants({ size: "lg" }), "rounded-full bg-emerald hover:bg-emerald-light text-white text-base font-semibold px-8 py-6 shadow-md hover:shadow-lg transition-all duration-300")}>
+            <div className="mt-8 flex flex-col items-stretch sm:items-start gap-3">
+              <Link href="/contact" className={cn(buttonVariants({ size: "lg" }), "rounded-full bg-emerald hover:bg-emerald-light text-white text-base font-semibold px-8 py-6 sm:min-w-[260px] shadow-md hover:shadow-lg transition-all duration-300")}>
                 Get Pre-Approved
               </Link>
-              <Link href="/mortgage-calculator" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "rounded-full border-2 border-emerald bg-transparent text-emerald hover:bg-emerald hover:text-white text-base font-semibold px-8 py-6 transition-all duration-300")}>
-                Calculate Your Payment
+              <Link href="/apply" className={cn(buttonVariants({ variant: "outline", size: "lg" }), "rounded-full border-2 border-emerald bg-transparent text-emerald hover:bg-emerald hover:text-white text-base font-semibold px-8 py-6 sm:min-w-[260px] transition-all duration-300")}>
+                Apply Now
+              </Link>
+              <Link href="/mortgage-calculator" className="mt-2 inline-flex items-center gap-1.5 text-emerald font-semibold hover:text-navy transition-colors">
+                Calculate your payment <Icons.next className="w-4 h-4" />
               </Link>
             </div>
           </div>

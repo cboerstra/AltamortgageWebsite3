@@ -38,27 +38,27 @@ export function Header() {
       <header className="sticky top-0 z-50 bg-navy-dark border-b border-white/10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-24">
           <Logo height={80} />
-          <nav className="hidden lg:flex items-center gap-0.5 xl:gap-1" aria-label="Main navigation">
+          <nav className="hidden lg:flex items-center gap-0 xl:gap-1" aria-label="Main navigation">
             {NAV_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="px-3 py-2 text-sm font-semibold whitespace-nowrap text-white/85 hover:text-white transition-colors rounded-full hover:bg-white/10"
+                className="px-2 xl:px-3 py-2 text-[13px] xl:text-sm font-semibold whitespace-nowrap text-white/85 hover:text-white transition-colors rounded-full hover:bg-white/10"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 lg:ml-4">
             <Link
               href="/apply"
-              className="hidden xl:inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/70 px-4 py-2 text-sm font-semibold text-white hover:bg-white/10 transition-colors"
+              className="hidden sm:inline-flex items-center justify-center whitespace-nowrap rounded-full border border-white/70 px-3.5 xl:px-4 py-2 text-[13px] xl:text-sm font-semibold text-white hover:bg-white/10 transition-colors"
             >
               Apply Now
             </Link>
             <Link
               href="/contact"
-              className="hidden sm:inline-flex items-center justify-center whitespace-nowrap rounded-full bg-gold px-4 py-2 text-sm font-semibold text-navy-deeper hover:bg-gold-light transition-colors"
+              className="hidden sm:inline-flex items-center justify-center whitespace-nowrap rounded-full bg-gold px-3.5 xl:px-4 py-2 text-[13px] xl:text-sm font-semibold text-navy-deeper hover:bg-gold-light transition-colors"
             >
               Get Pre-Approved
             </Link>
