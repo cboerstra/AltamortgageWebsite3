@@ -70,25 +70,3 @@ export function generateFAQSchema(faqs: { question: string; answer: string }[]) 
     })),
   };
 }
-
-export function generateReviewSchema(reviews: { author: string; rating: number; body: string }[]) {
-  const avgRating = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
-  return {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: COMPANY.name,
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: avgRating.toFixed(1),
-      reviewCount: reviews.length,
-      bestRating: "5",
-      worstRating: "1",
-    },
-    review: reviews.map((r) => ({
-      "@type": "Review",
-      author: { "@type": "Person", name: r.author },
-      reviewRating: { "@type": "Rating", ratingValue: r.rating },
-      reviewBody: r.body,
-    })),
-  };
-}

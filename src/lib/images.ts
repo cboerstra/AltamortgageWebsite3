@@ -17,6 +17,8 @@ export const IMAGES = {
   logoMark: "/images/logo.svg",
   /** Family on their new doorstep with the Wasatch behind. Home page hero. */
   heroFamily: "/images/hero-family.jpg",
+  /** Utah county map with the northern counties called out. Service-area section. */
+  northernUtahMap: "/images/northern-utah-map.jpg",
   /** Scott Boerstra, Broker/Manager. About page. */
   brokerPortrait: "/images/scott-boerstra.jpg",
 } as const;

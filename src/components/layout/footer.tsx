@@ -29,6 +29,7 @@ const footerLinks = {
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
+      { label: "Client Reviews", href: "/testimonials" },
       { label: "Contact", href: "/contact" },
       { label: "Apply Now", href: "/apply" },
       { label: "Your Application", href: "/portal/login" },
@@ -109,15 +110,6 @@ export function Footer() {
                   className="text-white/60 hover:text-white transition-colors"
                 >
                   <Icons.instagram className="w-5 h-5" />
-                </a>
-                <a
-                  href={COMPANY.social.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="LinkedIn"
-                  className="text-white/60 hover:text-white transition-colors"
-                >
-                  <Icons.linkedin className="w-5 h-5" />
                 </a>
               </div>
               <div className="flex items-center gap-2 text-xs text-white/40">

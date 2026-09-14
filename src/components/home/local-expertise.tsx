@@ -1,5 +1,6 @@
 import { SERVICE_AREAS } from "@/lib/constants";
-import { ServiceAreaMap } from "@/components/graphics/service-area-map";
+import Image from "next/image";
+import { IMAGES } from "@/lib/images";
 import { Icons } from "@/lib/icons";
 
 export function LocalExpertise() {
@@ -34,8 +35,15 @@ export function LocalExpertise() {
             </div>
           </div>
 
-          <div className="hidden lg:flex justify-center" aria-hidden="true">
-            <ServiceAreaMap />
+          <div className="mt-8 lg:mt-0">
+            <Image
+              src={IMAGES.northernUtahMap}
+              alt="Map of Utah highlighting the northern counties Alta Mortgage Group serves: Weber, Davis, Box Elder and Morgan"
+              width={1400}
+              height={1050}
+              sizes="(min-width: 1024px) 560px, 100vw"
+              className="w-full rounded-[20px] shadow-[0_24px_48px_rgba(0,75,27,0.14)]"
+            />
           </div>
         </div>
       </div>
