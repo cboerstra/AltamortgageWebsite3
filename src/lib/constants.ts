@@ -1,12 +1,15 @@
 export const COMPANY = {
   name: "Alta Mortgage Group",
+  legalName: "Clarke and Associates",
   shortName: "Alta",
   domain: "altamortgagegroup.net",
   title: "Broker/Manager",
   phone: "(801) 628-9400",
   email: "info@altamortgagegroup.net",
-  nmlsId: "258624",
+  // Company (entity) NMLS ID. The broker's individual ID is under `broker`.
+  nmlsId: "565137",
   stateLicenseId: "5452345-NMLM",
+  broker: { name: "Scott Boerstra", title: "Broker/Manager", nmlsId: "258624" },
   address: { street: "4824 S 6150 W", city: "Hooper", state: "UT", zip: "84315" },
   hours: { weekdays: "9:00 AM - 6:00 PM", saturday: "10:00 AM - 2:00 PM", sunday: "Closed" },
   social: {

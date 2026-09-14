@@ -75,7 +75,8 @@ export function Footer() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
             <div className="space-y-2">
               <p className="text-xs text-white/50 max-w-md">
-                {COMPANY.name} NMLS# {COMPANY.nmlsId}. Licensed by the Utah Division of Real Estate.
+                {COMPANY.legalName} dba {COMPANY.name} — NMLS #{COMPANY.nmlsId} · Utah DRE #{COMPANY.stateLicenseId}.
+                {" "}{COMPANY.broker.name}, {COMPANY.broker.title}, NMLS #{COMPANY.broker.nmlsId}.
                 Equal Housing Opportunity. All rights reserved.
               </p>
               <p className="text-xs text-white/50">

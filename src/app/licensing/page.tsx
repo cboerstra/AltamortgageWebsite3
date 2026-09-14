@@ -23,15 +23,19 @@ export default function LicensingPage() {
             NMLS Registration
           </h2>
           <p className="text-text-muted leading-relaxed">
-            {COMPANY.name} is registered with the Nationwide Multistate
-            Licensing System &amp; Registry (NMLS).
+            {COMPANY.legalName}, doing business as {COMPANY.name}, is registered
+            with the Nationwide Multistate Licensing System &amp; Registry (NMLS).
           </p>
           <p className="mt-3 text-text-muted leading-relaxed">
-            <strong className="text-text">NMLS ID:</strong> {COMPANY.nmlsId}
+            <strong className="text-text">Company NMLS ID:</strong> {COMPANY.nmlsId}
           </p>
           <p className="mt-1 text-text-muted leading-relaxed">
             <strong className="text-text">Utah State License:</strong>{" "}
             {COMPANY.stateLicenseId}
+          </p>
+          <p className="mt-1 text-text-muted leading-relaxed">
+            <strong className="text-text">{COMPANY.broker.name}, {COMPANY.broker.title} — NMLS ID:</strong>{" "}
+            {COMPANY.broker.nmlsId}
           </p>
           <p className="mt-3 text-text-muted leading-relaxed">
             The NMLS is a system created by the Conference of State Bank

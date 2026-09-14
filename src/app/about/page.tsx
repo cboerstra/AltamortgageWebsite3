@@ -18,10 +18,8 @@ const values = [
   { icon: Icons.transparency, title: "Trust & Transparency", description: "No hidden fees, no surprises. We believe in full transparency throughout the lending process so you can make confident decisions." },
 ];
 
-const team = [
-  { name: "John Smith", title: "Branch Manager / Loan Officer", nmls: "123456", bio: "15+ years of mortgage lending experience in the Utah market. Specializes in first-time homebuyer programs and VA loans." },
-  { name: "Jane Doe", title: "Senior Loan Officer", nmls: "234567", bio: "Expert in conventional and jumbo loans. Passionate about helping families in Davis County find their dream homes." },
-  { name: "Mike Johnson", title: "Loan Officer", nmls: "345678", bio: "Former real estate agent turned loan officer. Deep knowledge of the Weber County housing market and FHA programs." },
+const team: { name: string; title: string; nmls: string; bio?: string }[] = [
+  { name: COMPANY.broker.name, title: COMPANY.broker.title, nmls: COMPANY.broker.nmlsId },
 ];
 
 export default function AboutPage() {
@@ -68,7 +66,7 @@ export default function AboutPage() {
               <h3 className="font-semibold text-text">{member.name}</h3>
               <p className="text-sm text-emerald font-medium">{member.title}</p>
               <p className="text-xs text-text-muted mt-1">NMLS# {member.nmls}</p>
-              <p className="text-sm text-text-muted mt-3 leading-relaxed">{member.bio}</p>
+              {member.bio && <p className="text-sm text-text-muted mt-3 leading-relaxed">{member.bio}</p>}
             </div>
           ))}
         </div>
