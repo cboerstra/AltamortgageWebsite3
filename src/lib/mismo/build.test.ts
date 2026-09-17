@@ -71,15 +71,16 @@ describe("buildMismoXml — document shape", () => {
 });
 
 describe("buildMismoXml — privacy", () => {
-  it("never emits the full SSN", () => {
+  it("never emits the SSN in any form as a taxpayer identifier", () => {
     const xml = build();
     expect(xml).not.toContain("123-45-6789");
     expect(xml).not.toContain("123456789");
-    expect(xml).toContain("<TaxpayerIdentifierValue>XXX-XX-6789</TaxpayerIdentifierValue>");
+    expect(xml).not.toContain("TAXPAYER_IDENTIFIER");
+    expect(build(refinanceApplication)).not.toContain("TAXPAYER_IDENTIFIER");
   });
 
-  it("omits the taxpayer identifier block when no SSN was collected", () => {
-    expect(build(refinanceApplication)).not.toContain("TAXPAYER_IDENTIFIER");
+  it("marks the borrower as the primary borrower so importers can find them", () => {
+    expect(build()).toContain("<BorrowerClassificationType>Primary</BorrowerClassificationType>");
   });
 });
 

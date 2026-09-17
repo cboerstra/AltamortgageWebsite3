@@ -63,6 +63,7 @@
               <INDIVIDUAL>
                 <NAME>
                   <FirstName>Dana</FirstName>
+                  <FullName>Dana Lee O'Brien &amp; Sons Jr.</FullName>
                   <LastName>O'Brien &amp; Sons</LastName>
                   <MiddleName>Lee</MiddleName>
                   <SuffixName>Jr.</SuffixName>
@@ -91,7 +92,7 @@
                   <BORROWER>
                     <BORROWER_DETAIL>
                       <BorrowerBirthDate>1985-04-17</BorrowerBirthDate>
-                      <CitizenshipResidencyType>USCitizen</CitizenshipResidencyType>
+                      <BorrowerClassificationType>Primary</BorrowerClassificationType>
                       <MaritalStatusType>Married</MaritalStatusType>
                       <SelfDeclaredMilitaryServiceIndicator>true</SelfDeclaredMilitaryServiceIndicator>
                     </BORROWER_DETAIL>
@@ -109,8 +110,9 @@
                       <DECLARATION_DETAIL>
                         <BankruptcyIndicator>false</BankruptcyIndicator>
                         <BorrowedDownPaymentIndicator>false</BorrowedDownPaymentIndicator>
+                        <CitizenshipResidencyType>USCitizen</CitizenshipResidencyType>
                         <HomeownerPastThreeYearsType>Yes</HomeownerPastThreeYearsType>
-                        <IntentToOccupySubjectPropertyIndicator>true</IntentToOccupySubjectPropertyIndicator>
+                        <IntentToOccupyType>Yes</IntentToOccupyType>
                         <OutstandingJudgmentsIndicator>false</OutstandingJudgmentsIndicator>
                         <PriorPropertyForeclosureCompletedIndicator>false</PriorPropertyForeclosureCompletedIndicator>
                       </DECLARATION_DETAIL>
@@ -177,12 +179,6 @@
                   </ROLE_DETAIL>
                 </ROLE>
               </ROLES>
-              <TAXPAYER_IDENTIFIERS>
-                <TAXPAYER_IDENTIFIER>
-                  <TaxpayerIdentifierType>SocialSecurityNumber</TaxpayerIdentifierType>
-                  <TaxpayerIdentifierValue>XXX-XX-6789</TaxpayerIdentifierValue>
-                </TAXPAYER_IDENTIFIER>
-              </TAXPAYER_IDENTIFIERS>
             </PARTY>
           </PARTIES>
           <RELATIONSHIPS>

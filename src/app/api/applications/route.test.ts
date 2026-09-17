@@ -117,7 +117,7 @@ describe("POST /api/applications", () => {
 
     expect(xml).not.toContain("123-45-6789");
     expect(xml).not.toContain("123456789");
-    expect(xml).toContain("XXX-XX-6789");
+    expect(xml).not.toContain("TAXPAYER_IDENTIFIER");
   });
 
   it("rejects an invalid application without writing anything", async () => {

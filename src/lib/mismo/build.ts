@@ -134,8 +134,9 @@ function declarations(deal: MismoDeal): XmlElement | null {
     el("DECLARATION_DETAIL", undefined, [
       leaf("BankruptcyIndicator", d.bankruptcy),
       leaf("BorrowedDownPaymentIndicator", d.borrowedDownPayment),
+      leaf("CitizenshipResidencyType", deal.borrower.citizenshipType),
       leaf("HomeownerPastThreeYearsType", d.homeownerPastThreeYears),
-      leaf("IntentToOccupySubjectPropertyIndicator", d.intentToOccupy),
+      leaf("IntentToOccupyType", d.intentToOccupy ? "Yes" : "No"),
       leaf("OutstandingJudgmentsIndicator", d.outstandingJudgments),
       leaf("PriorPropertyForeclosureCompletedIndicator", d.priorForeclosure),
     ]),
@@ -214,6 +215,7 @@ function party(deal: MismoDeal): XmlElement {
     el("INDIVIDUAL", undefined, [
       el("NAME", undefined, [
         leaf("FirstName", b.firstName),
+        leaf("FullName", [b.firstName, b.middleName, b.lastName, b.suffixName].filter(Boolean).join(" ")),
         leaf("LastName", b.lastName),
         leaf("MiddleName", b.middleName),
         leaf("SuffixName", b.suffixName),
@@ -225,7 +227,8 @@ function party(deal: MismoDeal): XmlElement {
         el("BORROWER", undefined, [
           el("BORROWER_DETAIL", undefined, [
             leaf("BorrowerBirthDate", b.birthDate),
-            leaf("CitizenshipResidencyType", b.citizenshipType),
+            // Importers (Arive, Encompass) locate the primary borrower by this.
+            leaf("BorrowerClassificationType", "Primary"),
             leaf("MaritalStatusType", b.maritalStatusType),
             leaf("SelfDeclaredMilitaryServiceIndicator", b.militaryService),
           ]),
@@ -238,14 +241,8 @@ function party(deal: MismoDeal): XmlElement {
         el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "Borrower")]),
       ]),
     ]),
-    b.ssnMasked
-      ? el("TAXPAYER_IDENTIFIERS", undefined, [
-          el("TAXPAYER_IDENTIFIER", undefined, [
-            leaf("TaxpayerIdentifierType", "SocialSecurityNumber"),
-            leaf("TaxpayerIdentifierValue", b.ssnMasked),
-          ]),
-        ])
-      : null,
+    // No TAXPAYER_IDENTIFIERS: the site does not collect the SSN, and a
+    // masked value is not a valid TaxpayerIdentifierValue.
   ]);
 }
 
