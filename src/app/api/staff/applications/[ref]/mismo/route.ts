@@ -1,12 +1,18 @@
-// GET /api/staff/applications/{ref}/mismo
+// /api/staff/applications/{ref}/mismo
 //
-// The MISMO v3.4 document itself, as a download. Fetched from Blob storage
-// (private) in production, from disk locally. The storage key comes from the
-// database row, never from the URL, and is validated before use.
+//   GET   the MISMO v3.4 document itself, as a download. Fetched from Blob
+//         storage (private) in production, from disk locally. The storage key
+//         comes from the database row, never from the URL, and is validated
+//         before use.
+//   POST  regenerate the document from the stored application with the
+//         current generator — for when the generator improves after a
+//         submission. The store is write-once, so the new document gets a
+//         new key and the old one is removed after the row points at the new.
 
 import { NextRequest, NextResponse } from "next/server";
-import { getApplicationByRef } from "@/lib/db";
+import { getApplicationByRef, isDbConfigured } from "@/lib/db";
 import { readMismoFile } from "@/lib/mismo";
+import { regenerateMismoByRef, StalePayloadError } from "@/lib/mismo/regenerate";
 import { requireStaffKey, STAFF_HEADERS } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -57,4 +63,37 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ ref: st
       ...(app.mismoSha256 ? { "X-Content-SHA256": app.mismoSha256 } : {}),
     },
   });
+}
+
+export async function POST(request: NextRequest, ctx: { params: Promise<{ ref: string }> }) {
+  const denied = requireStaffKey(request);
+  if (denied) return denied;
+
+  const { ref } = await ctx.params;
+  const refNumber = ref.toUpperCase();
+  if (!REF_PATTERN.test(refNumber)) {
+    return NextResponse.json({ error: "Not found" }, { status: 404, headers: STAFF_HEADERS });
+  }
+  if (!isDbConfigured()) {
+    return NextResponse.json(
+      { error: "Website database is not configured or unreachable." },
+      { status: 503, headers: STAFF_HEADERS }
+    );
+  }
+
+  try {
+    const result = await regenerateMismoByRef(refNumber);
+    if (!result) return NextResponse.json({ error: "Not found" }, { status: 404, headers: STAFF_HEADERS });
+    return NextResponse.json(
+      { regenerated: true, refNumber, mismoFilename: result.filename, mismoSha256: result.sha256, bytes: result.bytes },
+      { headers: STAFF_HEADERS }
+    );
+  } catch (err) {
+    if (err instanceof StalePayloadError) {
+      return NextResponse.json({ error: err.message }, { status: 422, headers: STAFF_HEADERS });
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[${refNumber}] MISMO regeneration failed:`, message);
+    return NextResponse.json({ error: `Regeneration failed: ${message}` }, { status: 500, headers: STAFF_HEADERS });
+  }
 }

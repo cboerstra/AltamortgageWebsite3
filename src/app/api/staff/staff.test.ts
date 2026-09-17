@@ -18,8 +18,9 @@ import {
   GET as getApplication,
   PATCH as patchApplication,
 } from "./applications/[ref]/route";
-import { GET as downloadMismo } from "./applications/[ref]/mismo/route";
+import { GET as downloadMismo, POST as regenerateMismo } from "./applications/[ref]/mismo/route";
 import { GET as listDrafts } from "./drafts/route";
+import { PUT as editApplication } from "./applications/[ref]/data/route";
 
 const KEY = "test-staff-key-with-enough-length";
 const CLEARED = [
@@ -372,6 +373,113 @@ describe("delete", () => {
     const body = await res.json();
     expect(body.deleted).toBe(true);
     expect(body.warnings).toEqual(["Uploaded documents could not be removed"]);
+  });
+});
+
+describe("regenerate MISMO (POST)", () => {
+  beforeEach(() => {
+    process.env.STAFF_API_KEY = KEY;
+  });
+
+  const regen = (ref: string, auth: string | undefined = `Bearer ${KEY}`) =>
+    regenerateMismo(req("http://x/a", auth, { method: "POST" }), params(ref));
+
+  it("is guarded and answers 503 without a database", async () => {
+    expect((await regen("ALT-K7M2Q", "")).status).toBe(401);
+    expect((await regen("ALT-K7M2Q")).status).toBe(503);
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    expect((await regen("nope")).status).toBe(404);
+  });
+
+  it("writes a new document under a new key, points the row at it, and removes the old one", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const { completeApplication } = await import("@/lib/mismo/__fixtures__/application");
+    const oldPath = baseDetail.mismoPath!;
+    const abs = path.join(storageRoot, ...oldPath.split("/"));
+    await mkdir(path.dirname(abs), { recursive: true });
+    await writeFile(abs, "<old/>", "utf8");
+
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "getApplicationByRef").mockResolvedValue({ ...baseDetail, rawPayload: completeApplication });
+    const update = vi.spyOn(db, "updateMismoRecord").mockResolvedValue();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const res = await regen("ALT-K7M2Q");
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.regenerated).toBe(true);
+    expect(body.mismoFilename).toMatch(/^ALT-K7M2Q-\d{8}T\d{6}Z\.xml$/);
+    expect(update).toHaveBeenCalledWith("ALT-K7M2Q", expect.objectContaining({ status: "written", sha256: body.mismoSha256 }));
+
+    const newPath = update.mock.calls[0][1].path!;
+    expect(newPath).not.toBe(oldPath);
+    const written = await readMismoFile(newPath);
+    expect(written?.toString("utf8")).toContain("<BorrowerClassificationType>Primary</BorrowerClassificationType>");
+    expect(await readMismoFile(oldPath)).toBeNull();
+  });
+
+  it("refuses a stored payload that no longer validates", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "getApplicationByRef").mockResolvedValue({ ...baseDetail, rawPayload: { legacy: true } });
+    expect((await regen("ALT-K7M2Q")).status).toBe(422);
+  });
+});
+
+describe("edit application data (PUT)", () => {
+  beforeEach(() => {
+    process.env.STAFF_API_KEY = KEY;
+  });
+
+  const put = (ref: string, body: unknown, auth = `Bearer ${KEY}`) =>
+    editApplication(req("http://x/a", auth || undefined, { method: "PUT", body }), params(ref));
+
+  it("is guarded and answers 503 without a database", async () => {
+    expect((await put("ALT-K7M2Q", { phone: "8015550000" }, "")).status).toBe(401);
+    expect((await put("ALT-K7M2Q", { phone: "8015550000" })).status).toBe(503);
+  });
+
+  it("refuses the borrower's consent, signature and SSN fields", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const res = await put("ALT-K7M2Q", { eSignatureName: "Someone Else" });
+    expect(res.status).toBe(400);
+    expect((await res.json()).error).toContain("eSignatureName");
+    expect((await put("ALT-K7M2Q", { ssn: "123-45-6789" })).status).toBe(400);
+  });
+
+  it("merges the edit over the stored application, saves the columns, and regenerates the document", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const { completeApplication } = await import("@/lib/mismo/__fixtures__/application");
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "getApplicationByRef").mockResolvedValue({ ...baseDetail, mismoPath: null, rawPayload: completeApplication });
+    const save = vi.spyOn(db, "updateApplicationData").mockResolvedValue(true);
+    vi.spyOn(db, "updateMismoRecord").mockResolvedValue();
+    vi.spyOn(console, "log").mockImplementation(() => {});
+
+    const res = await put("ALT-K7M2Q", { phone: "8015550000", loanAmount: 425000, currentAddress: { zip: "84403" } });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.updated).toBe(true);
+    expect(body.mismo.status).toBe("written");
+
+    const saved = save.mock.calls[0][1];
+    expect(saved.phone).toBe("8015550000");
+    expect(saved.loanAmount).toBe(425000);
+    expect(saved.currentZip).toBe("84403");
+    expect(saved.currentCity).toBe(completeApplication.currentAddress.city);
+    expect(saved.firstName).toBe(completeApplication.firstName);
+    expect((saved.rawPayload as Record<string, unknown>).ssn).toBeUndefined();
+    expect((saved.rawPayload as Record<string, unknown>).eSignatureName).toBe(completeApplication.eSignatureName);
+  });
+
+  it("rejects a bad field value up front, and a stored record that no longer fits the form", async () => {
+    process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
+    const db = await import("@/lib/db");
+    vi.spyOn(db, "getApplicationByRef").mockResolvedValue({ ...baseDetail, rawPayload: { legacy: true } });
+    const save = vi.spyOn(db, "updateApplicationData");
+    expect((await put("ALT-K7M2Q", { email: "not-an-email" })).status).toBe(400);
+    expect((await put("ALT-K7M2Q", { phone: "8015550000" })).status).toBe(422);
+    expect(save).not.toHaveBeenCalled();
   });
 });
 

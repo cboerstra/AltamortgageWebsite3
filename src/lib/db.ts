@@ -246,6 +246,69 @@ export async function insertApplication(app: ApplicationRecord): Promise<number 
 }
 
 /**
+ * Replace the borrower-entered columns and raw_payload after a staff edit.
+ * Delivery, MISMO and review columns are untouched; the caller regenerates
+ * the MISMO document separately.
+ */
+export async function updateApplicationData(
+  refNumber: string,
+  app: Omit<ApplicationRecord, "refNumber" | "mismoPath" | "mismoSha256" | "mismoStatus" | "mismoError">
+): Promise<boolean> {
+  const p = getPool();
+  if (!p) throw new Error("Database not configured");
+  const result = await p.query(
+    `UPDATE applications SET
+        loan_purpose = $2, property_type = $3, property_use = $4,
+        purchase_price = $5, loan_amount = $6, down_payment = $7, current_balance = $8,
+        first_name = $9, middle_name = $10, last_name = $11, suffix = $12, date_of_birth = $13,
+        ssn_last4 = $14, marital_status = $15, phone = $16, email = $17,
+        current_street = $18, current_city = $19, current_state = $20, current_zip = $21,
+        years_at_address = $22, housing_status = $23, monthly_housing_payment = $24,
+        employment_status = $25, employer_name = $26, job_title = $27, years_at_job = $28,
+        monthly_income = $29, credit_score_range = $30, us_citizen = $31, veteran = $32,
+        first_time_buyer = $33, raw_payload = $34
+      WHERE ref_number = $1`,
+    [
+      refNumber,
+      app.loanPurpose,
+      app.propertyType || null,
+      app.propertyUse || null,
+      app.purchasePrice ?? null,
+      app.loanAmount ?? null,
+      app.downPayment ?? null,
+      app.currentBalance ?? null,
+      app.firstName,
+      app.middleName || null,
+      app.lastName,
+      app.suffix || null,
+      app.dateOfBirth || null,
+      app.ssnLast4 || null,
+      app.maritalStatus || null,
+      app.phone || null,
+      app.email,
+      app.currentStreet || null,
+      app.currentCity || null,
+      app.currentState || null,
+      app.currentZip || null,
+      app.yearsAtAddress ?? null,
+      app.housingStatus || null,
+      app.monthlyHousingPayment ?? null,
+      app.employmentStatus || null,
+      app.employerName || null,
+      app.jobTitle || null,
+      app.yearsAtJob ?? null,
+      app.monthlyIncome ?? null,
+      app.creditScoreRange || null,
+      app.usCitizen || null,
+      app.veteran ?? false,
+      app.firstTimeBuyer ?? false,
+      JSON.stringify(app.rawPayload),
+    ]
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+/**
  * Whether a reference number is already taken.
  *
  * Returns false when the database is not configured — there is nothing to
@@ -505,6 +568,21 @@ export async function updateApplicationReview(
     console.error("updateApplicationReview error:", err);
     throw err;
   }
+}
+
+/** Point an application at a freshly generated MISMO document. */
+export async function updateMismoRecord(
+  refNumber: string,
+  mismo: { status: MismoStatus; path?: string; sha256?: string; error?: string }
+): Promise<void> {
+  const p = getPool();
+  if (!p) throw new Error("Database not configured");
+  await p.query(
+    `UPDATE applications
+        SET mismo_status = $2, mismo_path = $3, mismo_sha256 = $4, mismo_error = $5
+      WHERE ref_number = $1`,
+    [refNumber, mismo.status, mismo.path ?? null, mismo.sha256 ?? null, mismo.error ?? null]
+  );
 }
 
 export interface DeletedApplication {

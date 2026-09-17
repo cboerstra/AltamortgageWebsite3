@@ -76,10 +76,20 @@ function present(app: ApplicationDetail) {
   const { rawPayload: _raw, ...rest } = app;
   void _raw;
 
+  // The borrower-entered fields a loan officer may correct through PUT
+  // .../data. Consent, e-signature and SSN never leave the store this way.
+  let editable: Record<string, unknown> | null = null;
+  if (parsed.success) {
+    const { ssn, consentAuthorization, eSignatureName, eSignatureDate, ...fields } = parsed.data;
+    void ssn; void consentAuthorization; void eSignatureName; void eSignatureDate;
+    editable = fields;
+  }
+
   return NextResponse.json(
     {
       ...rest,
       summary,
+      editable,
       mismoFilename: app.mismoPath ? app.mismoPath.split("/").pop() : null,
       mismoAvailable: app.mismoStatus === "written" && Boolean(app.mismoPath),
     },
