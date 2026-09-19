@@ -212,7 +212,10 @@ function residences(deal: MismoDeal): XmlElement | null {
 function party(deal: MismoDeal): XmlElement {
   const b = deal.borrower;
   return required("PARTY", { "xlink:label": PARTY_LABEL, SequenceNumber: 1 }, [
+    // Schema sequence: CONTACT_POINTS precedes NAME. A validating importer
+    // drops the whole INDIVIDUAL — and with it the borrower — if reversed.
     el("INDIVIDUAL", undefined, [
+      contactPoints(deal),
       el("NAME", undefined, [
         leaf("FirstName", b.firstName),
         leaf("FullName", [b.firstName, b.middleName, b.lastName, b.suffixName].filter(Boolean).join(" ")),
@@ -220,10 +223,9 @@ function party(deal: MismoDeal): XmlElement {
         leaf("MiddleName", b.middleName),
         leaf("SuffixName", b.suffixName),
       ]),
-      contactPoints(deal),
     ]),
     el("ROLES", undefined, [
-      el("ROLE", { SequenceNumber: 1 }, [
+      el("ROLE", { SequenceNumber: 1, "xlink:label": "BORROWER_1" }, [
         el("BORROWER", undefined, [
           el("BORROWER_DETAIL", undefined, [
             leaf("BorrowerBirthDate", b.birthDate),
