@@ -84,6 +84,42 @@ describe("buildMismoXml — privacy", () => {
   });
 });
 
+describe("buildMismoXml — ULAD layout", () => {
+  it("puts liabilities at DEAL level, labeled and tied to the borrower role", () => {
+    const xml = build();
+    const dealOpen = xml.indexOf("<DEAL ");
+    const partiesOpen = xml.indexOf("<PARTIES>");
+    const liabOpen = xml.indexOf("<LIABILITIES>");
+    expect(liabOpen).toBeGreaterThan(dealOpen);
+    expect(liabOpen).toBeLessThan(partiesOpen);
+    expect(xml).toContain('xlink:from="LIABILITY_1" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE"');
+  });
+
+  it("emits bank accounts as DEAL-level assets tied to the borrower role", () => {
+    const xml = build({
+      ...completeApplication,
+      bankAccounts: [
+        { institution: "America First CU", type: "checking", balance: 12500 },
+        { institution: "Fidelity", type: "investment", balance: 40000 },
+        { institution: "Empty", type: "savings", balance: 0 },
+      ],
+    });
+    expect(xml.indexOf("<ASSETS>")).toBeLessThan(xml.indexOf("<COLLATERALS>"));
+    expect(xml).toContain("<AssetType>CheckingAccount</AssetType>");
+    expect(xml).toContain("<AssetType>Stock</AssetType>");
+    expect(xml).toContain("<FullName>America First CU</FullName>");
+    expect(xml).not.toContain("Empty");
+    expect(xml).toContain('xlink:from="ASSET_2" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/ASSET_IsAssociatedWith_ROLE"');
+  });
+
+  it("links the base income item to the employer and lists other income as further items", () => {
+    const xml = build({ ...completeApplication, otherIncome: [{ type: "Rental income", amount: 900 }] });
+    expect(xml).toContain('xlink:from="CURRENT_INCOME_ITEM_1" xlink:to="EMPLOYER_1"');
+    expect(xml).toContain("<IncomeTypeOtherDescription>Rental income</IncomeTypeOtherDescription>");
+    expect(xml).toContain("<CurrentIncomeMonthlyTotalAmount>900.00</CurrentIncomeMonthlyTotalAmount>");
+  });
+});
+
 describe("buildMismoXml — escaping", () => {
   it("escapes applicant text that would otherwise break the document", () => {
     const xml = build();

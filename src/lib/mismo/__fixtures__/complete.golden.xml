@@ -35,6 +35,50 @@
               </SUBJECT_PROPERTY>
             </COLLATERAL>
           </COLLATERALS>
+          <LIABILITIES>
+            <LIABILITY SequenceNumber="1" xlink:label="LIABILITY_1">
+              <LIABILITY_DETAIL>
+                <LiabilityDescription>Auto loan</LiabilityDescription>
+                <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
+                <LiabilityMonthlyPaymentAmount>415.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
+                <LiabilityType>Installment</LiabilityType>
+              </LIABILITY_DETAIL>
+              <LIABILITY_HOLDER>
+                <NAME>
+                  <FullName>Auto loan</FullName>
+                </NAME>
+              </LIABILITY_HOLDER>
+            </LIABILITY>
+            <LIABILITY SequenceNumber="2" xlink:label="LIABILITY_2">
+              <LIABILITY_DETAIL>
+                <LiabilityDescription>Student loan</LiabilityDescription>
+                <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
+                <LiabilityMonthlyPaymentAmount>260.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
+                <LiabilityType>Installment</LiabilityType>
+              </LIABILITY_DETAIL>
+              <LIABILITY_HOLDER>
+                <NAME>
+                  <FullName>Student loan</FullName>
+                </NAME>
+              </LIABILITY_HOLDER>
+            </LIABILITY>
+            <LIABILITY SequenceNumber="3" xlink:label="LIABILITY_3">
+              <LIABILITY_DETAIL>
+                <LiabilityDescription>Credit cards</LiabilityDescription>
+                <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
+                <LiabilityMonthlyPaymentAmount>130.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
+                <LiabilityType>Revolving</LiabilityType>
+              </LIABILITY_DETAIL>
+              <LIABILITY_HOLDER>
+                <NAME>
+                  <FullName>Credit cards</FullName>
+                </NAME>
+              </LIABILITY_HOLDER>
+            </LIABILITY>
+          </LIABILITIES>
           <LOANS>
             <LOAN xlink:label="Loan1" LoanRoleType="SubjectLoan">
               <LOAN_DETAIL>
@@ -98,9 +142,10 @@
                     </BORROWER_DETAIL>
                     <CURRENT_INCOME>
                       <CURRENT_INCOME_ITEMS>
-                        <CURRENT_INCOME_ITEM SequenceNumber="1">
+                        <CURRENT_INCOME_ITEM SequenceNumber="1" xlink:label="CURRENT_INCOME_ITEM_1">
                           <CURRENT_INCOME_ITEM_DETAIL>
                             <CurrentIncomeMonthlyTotalAmount>9400.00</CurrentIncomeMonthlyTotalAmount>
+                            <EmploymentIncomeIndicator>true</EmploymentIncomeIndicator>
                             <IncomeType>Base</IncomeType>
                           </CURRENT_INCOME_ITEM_DETAIL>
                         </CURRENT_INCOME_ITEM>
@@ -118,7 +163,7 @@
                       </DECLARATION_DETAIL>
                     </DECLARATION>
                     <EMPLOYERS>
-                      <EMPLOYER SequenceNumber="1">
+                      <EMPLOYER SequenceNumber="1" xlink:label="EMPLOYER_1">
                         <LEGAL_ENTITY>
                           <LEGAL_ENTITY_DETAIL>
                             <FullName>Wasatch Analytics</FullName>
@@ -133,29 +178,6 @@
                         </EMPLOYMENT>
                       </EMPLOYER>
                     </EMPLOYERS>
-                    <LIABILITIES>
-                      <LIABILITY SequenceNumber="1">
-                        <LIABILITY_DETAIL>
-                          <LiabilityDescription>Auto loan</LiabilityDescription>
-                          <LiabilityMonthlyPaymentAmount>415.00</LiabilityMonthlyPaymentAmount>
-                          <LiabilityType>Installment</LiabilityType>
-                        </LIABILITY_DETAIL>
-                      </LIABILITY>
-                      <LIABILITY SequenceNumber="2">
-                        <LIABILITY_DETAIL>
-                          <LiabilityDescription>Student loan</LiabilityDescription>
-                          <LiabilityMonthlyPaymentAmount>260.00</LiabilityMonthlyPaymentAmount>
-                          <LiabilityType>Installment</LiabilityType>
-                        </LIABILITY_DETAIL>
-                      </LIABILITY>
-                      <LIABILITY SequenceNumber="3">
-                        <LIABILITY_DETAIL>
-                          <LiabilityDescription>Credit cards</LiabilityDescription>
-                          <LiabilityMonthlyPaymentAmount>130.00</LiabilityMonthlyPaymentAmount>
-                          <LiabilityType>Revolving</LiabilityType>
-                        </LIABILITY_DETAIL>
-                      </LIABILITY>
-                    </LIABILITIES>
                     <RESIDENCES>
                       <RESIDENCE SequenceNumber="1">
                         <ADDRESS>
@@ -182,7 +204,11 @@
             </PARTY>
           </PARTIES>
           <RELATIONSHIPS>
-            <RELATIONSHIP SequenceNumber="1" xlink:from="Party1" xlink:to="Loan1" xlink:arcrole="urn:fdc:Meta:2009:arcrole:PartyToLoan" />
+            <RELATIONSHIP SequenceNumber="1" xlink:from="LIABILITY_1" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
+            <RELATIONSHIP SequenceNumber="2" xlink:from="LIABILITY_2" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
+            <RELATIONSHIP SequenceNumber="3" xlink:from="LIABILITY_3" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
+            <RELATIONSHIP SequenceNumber="4" xlink:from="CURRENT_INCOME_ITEM_1" xlink:to="EMPLOYER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER" />
+            <RELATIONSHIP SequenceNumber="5" xlink:from="Party1" xlink:to="Loan1" xlink:arcrole="urn:fdc:Meta:2009:arcrole:PartyToLoan" />
           </RELATIONSHIPS>
         </DEAL>
       </DEALS>

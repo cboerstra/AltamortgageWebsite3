@@ -39,6 +39,18 @@ export interface MismoLiability {
   monthlyPayment: number;
 }
 
+export interface MismoAsset {
+  /** MISMO AssetType */
+  type: string;
+  holderName: string;
+  amount: number;
+}
+
+export interface MismoOtherIncome {
+  description: string;
+  monthlyAmount: number;
+}
+
 export interface MismoEmployer {
   name?: string;
   jobTitle?: string;
@@ -95,7 +107,9 @@ export interface MismoDeal {
     employer?: MismoEmployer;
     incomeType: string;
     monthlyIncome: number;
+    otherIncome: MismoOtherIncome[];
     liabilities: MismoLiability[];
+    assets: MismoAsset[];
     declarations: MismoDeclarations;
   };
   extension: {
@@ -145,6 +159,13 @@ function monthsFromYears(years: number | undefined): number {
 function positive(value: number | undefined): number | undefined {
   return typeof value === "number" && value > 0 ? value : undefined;
 }
+
+/** Form account types -> MISMO AssetType. */
+const ASSET_TYPE: Record<string, string> = {
+  checking: "CheckingAccount",
+  savings: "SavingsAccount",
+  investment: "Stock",
+};
 
 function buildLiabilities(app: ApplicationFormData): MismoLiability[] {
   const candidates: MismoLiability[] = [
@@ -224,6 +245,16 @@ export function mapToDeal(app: ApplicationFormData, options: MapOptions): MismoD
         : undefined,
       incomeType: INCOME_TYPE[app.employmentStatus],
       monthlyIncome: app.monthlyIncome,
+      otherIncome: (app.otherIncome ?? [])
+        .filter((o) => o.type.trim() !== "" && o.amount > 0)
+        .map((o) => ({ description: o.type.trim(), monthlyAmount: o.amount })),
+      assets: (app.bankAccounts ?? [])
+        .filter((a) => a.balance > 0)
+        .map((a) => ({
+          type: ASSET_TYPE[a.type] ?? "Other",
+          holderName: a.institution.trim() || "Unknown institution",
+          amount: a.balance,
+        })),
       liabilities: buildLiabilities(app),
 
       declarations: {

@@ -17,8 +17,11 @@ const ALTA_NS = "http://altamortgagegroup.net/schemas/application/1.0";
 const REFERENCE_MODEL = "3.4.0322";
 
 const PARTY_LABEL = "Party1";
+const BORROWER_ROLE_LABEL = "BORROWER_1";
+const EMPLOYER_LABEL = "EMPLOYER_1";
 const SUBJECT_LOAN_LABEL = "Loan1";
 const RELATED_LOAN_LABEL = "Loan2";
+const ULAD_ARC = "urn:fdc:mismo.org:2009:residential";
 
 /** MISMO amounts are unformatted decimals — no separators, no currency sign. */
 function amount(value: number | undefined): string | undefined {
@@ -147,7 +150,7 @@ function employers(deal: MismoDeal): XmlElement | null {
   const e = deal.borrower.employer;
   if (!e) return null;
   return el("EMPLOYERS", undefined, [
-    el("EMPLOYER", { SequenceNumber: 1 }, [
+    el("EMPLOYER", { SequenceNumber: 1, "xlink:label": EMPLOYER_LABEL }, [
       el("LEGAL_ENTITY", undefined, [
         el("LEGAL_ENTITY_DETAIL", undefined, [leaf("FullName", e.name)]),
       ]),
@@ -164,16 +167,49 @@ function employers(deal: MismoDeal): XmlElement | null {
 
 function currentIncome(deal: MismoDeal): XmlElement | null {
   const b = deal.borrower;
-  return el("CURRENT_INCOME", undefined, [
-    el("CURRENT_INCOME_ITEMS", undefined, [
-      el("CURRENT_INCOME_ITEM", { SequenceNumber: 1 }, [
-        el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
-          leaf("CurrentIncomeMonthlyTotalAmount", amount(b.monthlyIncome)),
-          leaf("IncomeType", b.incomeType),
-        ]),
+  const items: XmlElement[] = [
+    el("CURRENT_INCOME_ITEM", { SequenceNumber: 1, "xlink:label": "CURRENT_INCOME_ITEM_1" }, [
+      el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
+        leaf("CurrentIncomeMonthlyTotalAmount", amount(b.monthlyIncome)),
+        leaf("EmploymentIncomeIndicator", Boolean(b.employer)),
+        leaf("IncomeType", b.incomeType),
       ]),
-    ]),
-  ]);
+    ]) as XmlElement,
+  ];
+  b.otherIncome.forEach((o, i) => {
+    items.push(
+      el("CURRENT_INCOME_ITEM", { SequenceNumber: i + 2, "xlink:label": `CURRENT_INCOME_ITEM_${i + 2}` }, [
+        el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
+          leaf("CurrentIncomeMonthlyTotalAmount", amount(o.monthlyAmount)),
+          leaf("EmploymentIncomeIndicator", false),
+          leaf("IncomeType", "Other"),
+          leaf("IncomeTypeOtherDescription", o.description),
+        ]),
+      ]) as XmlElement
+    );
+  });
+  return el("CURRENT_INCOME", undefined, [el("CURRENT_INCOME_ITEMS", undefined, items)]);
+}
+
+// Assets and liabilities are DEAL-level in ULAD, tied to the borrower role by
+// labeled relationships. Importers (DU, Arive) read them there, not inside
+// BORROWER.
+function assets(deal: MismoDeal): XmlElement | null {
+  const items = deal.borrower.assets;
+  if (items.length === 0) return null;
+  return el(
+    "ASSETS",
+    undefined,
+    items.map((a, index) =>
+      el("ASSET", { SequenceNumber: index + 1, "xlink:label": `ASSET_${index + 1}` }, [
+        el("ASSET_DETAIL", undefined, [
+          leaf("AssetCashOrMarketValueAmount", amount(a.amount)),
+          leaf("AssetType", a.type),
+        ]),
+        el("ASSET_HOLDER", undefined, [el("NAME", undefined, [leaf("FullName", a.holderName)])]),
+      ])
+    )
+  );
 }
 
 function liabilities(deal: MismoDeal): XmlElement | null {
@@ -183,12 +219,15 @@ function liabilities(deal: MismoDeal): XmlElement | null {
     "LIABILITIES",
     undefined,
     items.map((l, index) =>
-      el("LIABILITY", { SequenceNumber: index + 1 }, [
+      el("LIABILITY", { SequenceNumber: index + 1, "xlink:label": `LIABILITY_${index + 1}` }, [
         el("LIABILITY_DETAIL", undefined, [
           leaf("LiabilityDescription", l.description),
+          leaf("LiabilityExclusionIndicator", false),
           leaf("LiabilityMonthlyPaymentAmount", amount(l.monthlyPayment)),
+          leaf("LiabilityPayoffStatusIndicator", false),
           leaf("LiabilityType", l.type),
         ]),
+        el("LIABILITY_HOLDER", undefined, [el("NAME", undefined, [leaf("FullName", l.description)])]),
       ])
     )
   );
@@ -225,7 +264,7 @@ function party(deal: MismoDeal): XmlElement {
       ]),
     ]),
     el("ROLES", undefined, [
-      el("ROLE", { SequenceNumber: 1, "xlink:label": "BORROWER_1" }, [
+      el("ROLE", { SequenceNumber: 1, "xlink:label": BORROWER_ROLE_LABEL }, [
         el("BORROWER", undefined, [
           el("BORROWER_DETAIL", undefined, [
             leaf("BorrowerBirthDate", b.birthDate),
@@ -237,7 +276,6 @@ function party(deal: MismoDeal): XmlElement {
           currentIncome(deal),
           declarations(deal),
           employers(deal),
-          liabilities(deal),
           residences(deal),
         ]),
         el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "Borrower")]),
@@ -249,25 +287,28 @@ function party(deal: MismoDeal): XmlElement {
 }
 
 function relationships(deal: MismoDeal): XmlElement | null {
-  const arcs: (XmlElement | null)[] = [
-    el("RELATIONSHIP", {
-      SequenceNumber: 1,
-      "xlink:from": PARTY_LABEL,
-      "xlink:to": SUBJECT_LOAN_LABEL,
-      "xlink:arcrole": "urn:fdc:Meta:2009:arcrole:PartyToLoan",
-    }),
-  ];
-  if (deal.loan.currentBalance) {
-    arcs.push(
-      el("RELATIONSHIP", {
-        SequenceNumber: 2,
-        "xlink:from": PARTY_LABEL,
-        "xlink:to": RELATED_LOAN_LABEL,
-        "xlink:arcrole": "urn:fdc:Meta:2009:arcrole:PartyToLoan",
-      })
-    );
+  const arcs: { from: string; to: string; arcrole: string }[] = [];
+  const b = deal.borrower;
+  b.assets.forEach((_, i) =>
+    arcs.push({ from: `ASSET_${i + 1}`, to: BORROWER_ROLE_LABEL, arcrole: `${ULAD_ARC}/ASSET_IsAssociatedWith_ROLE` })
+  );
+  b.liabilities.forEach((_, i) =>
+    arcs.push({ from: `LIABILITY_${i + 1}`, to: BORROWER_ROLE_LABEL, arcrole: `${ULAD_ARC}/LIABILITY_IsAssociatedWith_ROLE` })
+  );
+  if (b.employer) {
+    arcs.push({ from: "CURRENT_INCOME_ITEM_1", to: EMPLOYER_LABEL, arcrole: `${ULAD_ARC}/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER` });
   }
-  return el("RELATIONSHIPS", undefined, arcs);
+  arcs.push({ from: PARTY_LABEL, to: SUBJECT_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
+  if (deal.loan.currentBalance) {
+    arcs.push({ from: PARTY_LABEL, to: RELATED_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
+  }
+  return el(
+    "RELATIONSHIPS",
+    undefined,
+    arcs.map((a, i) =>
+      el("RELATIONSHIP", { SequenceNumber: i + 1, "xlink:from": a.from, "xlink:to": a.to, "xlink:arcrole": a.arcrole })
+    )
+  );
 }
 
 /**
@@ -325,7 +366,9 @@ export function buildMismoXml(deal: MismoDeal): string {
         required("DEAL_SET", { SequenceNumber: 1 }, [
           required("DEALS", undefined, [
             required("DEAL", { SequenceNumber: 1 }, [
+              assets(deal),
               subjectProperty(deal),
+              liabilities(deal),
               required("LOANS", undefined, [subjectLoan(deal), relatedLoan(deal)]),
               required("PARTIES", undefined, [party(deal)]),
               relationships(deal),
