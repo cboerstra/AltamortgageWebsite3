@@ -247,3 +247,23 @@ CREATE TABLE IF NOT EXISTS borrower_document_parts (
   cipher_bytes INT NOT NULL,
   PRIMARY KEY (document_id, part_index)
 );
+
+-- Portal sign-in attempts: one row per code request, so staff can see why a
+-- borrower says "I never got a code".
+--
+-- POST /api/portal/login answers every request identically on purpose — it
+-- must not reveal which emails have applications — so without this log a
+-- failed send is invisible to everyone but the server console. Readable only
+-- through the staff API. Rows include addresses that matched nothing (the
+-- usual cause: the borrower signed in with a different email than they
+-- applied with), so they are pruned by the application after 90 days.
+CREATE TABLE IF NOT EXISTS portal_login_events (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  outcome VARCHAR(30) NOT NULL
+    CHECK (outcome IN ('sent','no_match','rate_limited','email_not_configured','email_failed','error')),
+  detail VARCHAR(500),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_portal_login_events_email ON portal_login_events (email, created_at);
+CREATE INDEX IF NOT EXISTS idx_portal_login_events_created ON portal_login_events (created_at);

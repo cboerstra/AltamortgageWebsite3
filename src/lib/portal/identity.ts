@@ -46,6 +46,11 @@ function sha256(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
 }
 
+/** Error text fit for the staff log: the message only, never a stack. */
+function errorText(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
 function constantTimeEquals(a: string, b: string): boolean {
   const left = Buffer.from(a, "utf8");
   const right = Buffer.from(b, "utf8");
@@ -54,16 +59,20 @@ function constantTimeEquals(a: string, b: string): boolean {
 
 // ---- Eligibility ------------------------------------------------------------
 
+export type EligibilityResult =
+  | { ok: true; name: { firstName: string | null; lastName: string | null } }
+  | { ok: false; reason: "no_match" }
+  | { ok: false; reason: "error"; error: string };
+
 /**
  * Whether this email has anything to see: a submitted application or a
- * draft. Returns the name to greet them with when it can. Null means "send
- * nothing" — and the caller must answer exactly as it would on success.
+ * draft, with the name to greet them by. Not ok means "send nothing" — and
+ * the caller must answer exactly as it would on success. "no_match" and
+ * "error" are told apart only so staff can see which one happened.
  */
-export async function findEligibleIdentity(
-  email: string
-): Promise<{ firstName: string | null; lastName: string | null } | null> {
+export async function findEligibleIdentity(email: string): Promise<EligibilityResult> {
   const p = getPool();
-  if (!p) return null;
+  if (!p) return { ok: false, reason: "error", error: "database not configured" };
   const normalized = normalizeEmail(email);
 
   try {
@@ -75,20 +84,24 @@ export async function findEligibleIdentity(
       [normalized]
     );
     const row = rows[0];
-    return row ? { firstName: row.first_name, lastName: row.last_name } : null;
+    return row
+      ? { ok: true, name: { firstName: row.first_name, lastName: row.last_name } }
+      : { ok: false, reason: "no_match" };
   } catch (err) {
     console.error("findEligibleIdentity error:", err);
-    return null;
+    return { ok: false, reason: "error", error: errorText(err) };
   }
 }
+
+export type EnsureBorrowerResult = { ok: true; borrower: Borrower } | { ok: false; error: string };
 
 /** Get or create the borrower row for an email that has been proven eligible. */
 export async function ensureBorrower(
   email: string,
   name: { firstName: string | null; lastName: string | null }
-): Promise<Borrower | null> {
+): Promise<EnsureBorrowerResult> {
   const p = getPool();
-  if (!p) return null;
+  if (!p) return { ok: false, error: "database not configured" };
 
   try {
     const { rows } = await p.query<BorrowerRow>(
@@ -100,10 +113,10 @@ export async function ensureBorrower(
        RETURNING id, email, first_name, last_name`,
       [normalizeEmail(email), name.firstName, name.lastName]
     );
-    return rows[0] ? toBorrower(rows[0]) : null;
+    return rows[0] ? { ok: true, borrower: toBorrower(rows[0]) } : { ok: false, error: "no row returned" };
   } catch (err) {
     console.error("ensureBorrower error:", err);
-    return null;
+    return { ok: false, error: errorText(err) };
   }
 }
 
@@ -114,13 +127,20 @@ export function generateCode(): string {
   return String(randomInt(0, 1_000_000)).padStart(6, "0");
 }
 
+export type IssueCodeResult =
+  | { ok: true; code: string }
+  | { ok: false; reason: "rate_limited" }
+  | { ok: false; reason: "error"; error: string };
+
 /**
  * Issue a code, subject to the per-email window. Returns the plaintext code
- * to email, or null if the window is exhausted or there is no database.
+ * to email. "rate_limited" means CODES_PER_WINDOW codes already went out in
+ * the window — the borrower is answered exactly as on success, so this is
+ * reported separately for staff, not for them.
  */
-export async function issueCode(borrowerId: number): Promise<string | null> {
+export async function issueCode(borrowerId: number): Promise<IssueCodeResult> {
   const p = getPool();
-  if (!p) return null;
+  if (!p) return { ok: false, reason: "error", error: "database not configured" };
 
   try {
     const recent = await p.query<{ n: string }>(
@@ -128,7 +148,7 @@ export async function issueCode(borrowerId: number): Promise<string | null> {
         WHERE borrower_id = $1 AND created_at > NOW() - make_interval(secs => $2)`,
       [borrowerId, CODE_WINDOW_MS / 1000]
     );
-    if (Number(recent.rows[0]?.n ?? 0) >= CODES_PER_WINDOW) return null;
+    if (Number(recent.rows[0]?.n ?? 0) >= CODES_PER_WINDOW) return { ok: false, reason: "rate_limited" };
 
     // Any earlier live code for this borrower is retired: exactly one code is
     // valid at a time, so a stale email cannot be used after a fresh one.
@@ -144,10 +164,10 @@ export async function issueCode(borrowerId: number): Promise<string | null> {
        VALUES ($1, $2, NOW() + make_interval(secs => $3))`,
       [borrowerId, sha256(code), CODE_TTL_MS / 1000]
     );
-    return code;
+    return { ok: true, code };
   } catch (err) {
     console.error("issueCode error:", err);
-    return null;
+    return { ok: false, reason: "error", error: errorText(err) };
   }
 }
 

@@ -24,8 +24,25 @@ interface DbProbe {
   connectMs: number | null;
   applicationsCount: number | null;
   draftsCount: number | null;
+  /**
+   * Borrower-portal tables that do not exist on this database. db/schema.sql
+   * is run by hand, so the portal can ship without them; when it does, every
+   * sign-in fails silently — the login endpoint answers every request the same
+   * way by design — while everything above still reads healthy. Empty means
+   * the portal's tables are all present; null means the check did not run.
+   */
+  portalTablesMissing: string[] | null;
   error: string | null;
 }
+
+const PORTAL_TABLES = [
+  "borrowers",
+  "borrower_login_codes",
+  "borrower_sessions",
+  "borrower_documents",
+  "borrower_document_parts",
+  "portal_login_events",
+];
 
 async function probeDatabase(): Promise<DbProbe> {
   const result: DbProbe = {
@@ -34,6 +51,7 @@ async function probeDatabase(): Promise<DbProbe> {
     connectMs: null,
     applicationsCount: null,
     draftsCount: null,
+    portalTablesMissing: null,
     error: null,
   };
   if (!result.configured) return result;
@@ -54,6 +72,14 @@ async function probeDatabase(): Promise<DbProbe> {
       result.applicationsCount = Number(counts.rows[0]?.apps ?? 0);
       result.draftsCount = Number(counts.rows[0]?.drafts ?? 0);
       result.reachable = true;
+
+      // to_regclass answers NULL for a missing table instead of raising, so
+      // this cannot fail the probe on exactly the database it is diagnosing.
+      const missing = await client.query<{ name: string }>(
+        `SELECT name FROM unnest($1::text[]) AS name WHERE to_regclass(name) IS NULL`,
+        [PORTAL_TABLES]
+      );
+      result.portalTablesMissing = missing.rows.map((r) => r.name);
     } finally {
       client.release();
     }
