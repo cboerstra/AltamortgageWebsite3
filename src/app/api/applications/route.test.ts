@@ -60,13 +60,24 @@ function post(body: unknown): Promise<Response> {
   return POST(request as NextRequest);
 }
 
-async function writtenFiles(): Promise<string[]> {
-  const monthDir = path.join(storageRoot, "2026", "09");
+/**
+ * Every MISMO document the store wrote, as paths relative to storageRoot.
+ *
+ * The store files each document under <year>/<month> of its submission time,
+ * so this walks the tree rather than naming a month. A fixed month here passed
+ * until the calendar moved on, then failed every run.
+ */
+async function writtenPaths(): Promise<string[]> {
   try {
-    return await readdir(monthDir);
+    const entries = await readdir(storageRoot, { recursive: true });
+    return entries.filter((entry) => entry.endsWith(".xml")).sort();
   } catch {
     return [];
   }
+}
+
+async function writtenFiles(): Promise<string[]> {
+  return (await writtenPaths()).map((entry) => path.basename(entry));
 }
 
 const VALID_BODY = { ...completeApplication, source: "/apply" };
@@ -100,8 +111,8 @@ describe("POST /api/applications", () => {
 
   it("writes a document that carries the applicant's answers", async () => {
     const body = await (await post(VALID_BODY)).json();
-    const [file] = await writtenFiles();
-    const xml = await readFile(path.join(storageRoot, "2026", "09", file), "utf8");
+    const [file] = await writtenPaths();
+    const xml = await readFile(path.join(storageRoot, file), "utf8");
 
     expect(xml).toContain(`<LoanIdentifier>${body.referenceNumber}</LoanIdentifier>`);
     expect(xml).toContain("<CurrentIncomeMonthlyTotalAmount>9400.00</CurrentIncomeMonthlyTotalAmount>");
@@ -112,8 +123,8 @@ describe("POST /api/applications", () => {
 
   it("never writes the full SSN to disk", async () => {
     await post(VALID_BODY);
-    const [file] = await writtenFiles();
-    const xml = await readFile(path.join(storageRoot, "2026", "09", file), "utf8");
+    const [file] = await writtenPaths();
+    const xml = await readFile(path.join(storageRoot, file), "utf8");
 
     expect(xml).not.toContain("123-45-6789");
     expect(xml).not.toContain("123456789");
