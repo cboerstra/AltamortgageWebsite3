@@ -8,6 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import type { ApplicationFormData } from "@/lib/schemas";
 import { Icons } from "@/lib/icons";
+import { CoBorrowerSignature } from "./co-borrower";
 
 function fmt(n: number | undefined): string {
   if (n == null || isNaN(n)) return "$0";
@@ -132,6 +133,42 @@ export function StepReview({
         />
       </div>
 
+      {data.coBorrower && (
+        <>
+          <Separator />
+          <div className="space-y-1">
+            <SectionHeader title="Co-Borrower" stepIndex={1} onEdit={onEditStep} />
+            <Row
+              label="Name"
+              value={[data.coBorrower.firstName, data.coBorrower.middleName, data.coBorrower.lastName, data.coBorrower.suffix]
+                .filter(Boolean)
+                .join(" ")}
+            />
+            <Row label="Relationship" value={data.coBorrower.relationship} />
+            <Row label="Date of Birth" value={data.coBorrower.dateOfBirth} />
+            <Row label="Marital Status" value={data.coBorrower.maritalStatus} />
+            {data.coBorrower.phone && <Row label="Phone" value={data.coBorrower.phone} />}
+            {data.coBorrower.email && <Row label="Email" value={data.coBorrower.email} />}
+            <Row
+              label="Current Address"
+              value={
+                data.coBorrower.sameAddress !== false || !data.coBorrower.currentAddress
+                  ? "Same as yours"
+                  : `${data.coBorrower.currentAddress.street}, ${data.coBorrower.currentAddress.city}, ${data.coBorrower.currentAddress.state} ${data.coBorrower.currentAddress.zip}`
+              }
+            />
+            <Row label="Employment Status" value={data.coBorrower.employmentStatus} />
+            {data.coBorrower.employerName && <Row label="Employer" value={data.coBorrower.employerName} />}
+            <Row label="Monthly Income" value={fmt(data.coBorrower.monthlyIncome)} />
+            <Row label="U.S. Citizenship" value={citizenLabel[data.coBorrower.usCitizen] || "---"} />
+            <Row label="Bankruptcy" value={boolLabel(data.coBorrower.bankruptcy)} />
+            <Row label="Foreclosure" value={boolLabel(data.coBorrower.foreclosure)} />
+            <Row label="Outstanding Judgments" value={boolLabel(data.coBorrower.outstandingJudgments)} />
+            <Row label="Veteran" value={boolLabel(data.coBorrower.veteran)} />
+          </div>
+        </>
+      )}
+
       <Separator />
 
       {/* Employment */}
@@ -232,7 +269,7 @@ export function StepReview({
           Authorization &amp; Consent
         </h3>
         <p className="text-sm text-text-muted leading-relaxed">
-          By signing below, I authorize Alta Mortgage Group to verify the
+          {data.coBorrower ? "By signing below, each of us authorizes" : "By signing below, I authorize"} Alta Mortgage Group to verify the
           information provided in this application, including but not limited to
           obtaining credit reports, employment verification, and asset
           verification. I certify that all information is true, complete, and
@@ -249,7 +286,9 @@ export function StepReview({
             id="consent-auth"
           />
           <Label htmlFor="consent-auth" className="text-sm leading-relaxed">
-            I have read, understand, and agree to the above authorization.
+            {data.coBorrower
+              ? "We have each read, understand, and agree to the above authorization."
+              : "I have read, understand, and agree to the above authorization."}
           </Label>
         </div>
         {errors.consentAuthorization && (
@@ -287,6 +326,8 @@ export function StepReview({
             )}
           </div>
         </div>
+
+        <CoBorrowerSignature form={form} />
       </div>
     </div>
   );

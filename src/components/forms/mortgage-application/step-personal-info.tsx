@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ApplicationFormData } from "@/lib/schemas";
+import { CoBorrowerPersonal } from "./co-borrower";
 
 const selectClass =
   "mt-1 h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
@@ -248,6 +249,8 @@ export function StepPersonalInfo({
           </p>
         )}
       </div>
+
+      <CoBorrowerPersonal form={form} />
     </div>
   );
 }

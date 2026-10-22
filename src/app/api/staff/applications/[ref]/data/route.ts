@@ -22,8 +22,10 @@ const LOCKED = ["ssn", "consentAuthorization", "eSignatureName", "eSignatureDate
 
 // Every borrower-entered field, optional, for the merge. Validation of the
 // merged result is applicationSchema's job, not this one's.
+// The co-borrower is left out: it carries their own signature, and the CRM
+// has no form for editing them yet.
 const editSchema = applicationSchema
-  .omit({ ssn: true, consentAuthorization: true, eSignatureName: true, eSignatureDate: true })
+  .omit({ ssn: true, consentAuthorization: true, eSignatureName: true, eSignatureDate: true, coBorrower: true })
   .partial()
   .extend({
     currentAddress: applicationSchema.shape.currentAddress.partial().optional(),

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import type { ApplicationFormData } from "@/lib/schemas";
 import { Icons } from "@/lib/icons";
+import { CoBorrowerEmployment } from "./co-borrower";
 
 const selectClass =
   "mt-1 h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
@@ -159,6 +160,8 @@ export function StepEmployment({
           </p>
         )}
       </div>
+
+      <CoBorrowerEmployment form={form} />
     </div>
   );
 }

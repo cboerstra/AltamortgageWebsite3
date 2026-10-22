@@ -74,12 +74,24 @@ export function buildDocumentChecklist(app: ApplicationFormData): ChecklistGroup
     items: INCOME_BY_EMPLOYMENT[app.employmentStatus] ?? INCOME_BY_EMPLOYMENT.other,
   });
 
+  const cb = app.coBorrower;
+  if (cb) {
+    const name = cb.firstName.trim() || "your co-borrower";
+    groups.push({
+      title: `From ${name}`,
+      items: [
+        "Photo ID — driver's license or passport, front and back",
+        ...(INCOME_BY_EMPLOYMENT[cb.employmentStatus] ?? INCOME_BY_EMPLOYMENT.other),
+      ],
+    });
+  }
+
   const purposeItems = PURPOSE_ITEMS[app.loanPurpose];
   if (purposeItems) {
     groups.push({ title: "Your property and loan", items: purposeItems });
   }
 
-  if (app.veteran) {
+  if (app.veteran || cb?.veteran) {
     groups.push({
       title: "VA loan eligibility",
       items: [

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
-import { useForm, type Resolver } from "react-hook-form";
+import { useForm, type FieldPath, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -42,7 +42,10 @@ const STEP_LABELS = [
 
 const TOTAL_STEPS = STEP_LABELS.length;
 
-const STEP_FIELDS: (keyof ApplicationFormData)[][] = [
+// Co-borrower paths are listed by field, not as "coBorrower": validating the
+// whole object on step 2 would demand answers that belong to later steps.
+// When there is no co-borrower these paths have nothing to validate.
+const STEP_FIELDS: FieldPath<ApplicationFormData>[][] = [
   // Step 0: Loan Info
   [
     "loanPurpose",
@@ -65,9 +68,17 @@ const STEP_FIELDS: (keyof ApplicationFormData)[][] = [
     "yearsAtAddress",
     "housingStatus",
     "monthlyHousingPayment",
+    "coBorrower.relationship",
+    "coBorrower.firstName",
+    "coBorrower.lastName",
+    "coBorrower.dateOfBirth",
+    "coBorrower.maritalStatus",
+    "coBorrower.email",
+    "coBorrower.currentAddress",
+    "coBorrower.housingStatus",
   ],
   // Step 2: Employment
-  ["employmentStatus", "monthlyIncome"],
+  ["employmentStatus", "monthlyIncome", "coBorrower.employmentStatus", "coBorrower.monthlyIncome"],
   // Step 3: Assets
   [
     "monthlyAutoLoan",
@@ -87,9 +98,14 @@ const STEP_FIELDS: (keyof ApplicationFormData)[][] = [
     "primaryResidence",
     "veteran",
     "firstTimeBuyer",
+    "coBorrower.usCitizen",
+    "coBorrower.bankruptcy",
+    "coBorrower.foreclosure",
+    "coBorrower.outstandingJudgments",
+    "coBorrower.veteran",
   ],
   // Step 5: Review & Consent
-  ["consentAuthorization", "eSignatureName", "eSignatureDate"],
+  ["consentAuthorization", "eSignatureName", "eSignatureDate", "coBorrower.eSignatureName"],
 ];
 
 export function ApplicationWizard() {
@@ -120,7 +136,25 @@ export function ApplicationWizard() {
     },
   });
 
-  const { handleSubmit, trigger, getValues, reset } = form;
+  const { handleSubmit, trigger, getValues, getFieldState, reset, subscribe } = form;
+
+  // An error shown after "Next" must clear the moment its field is corrected.
+  // In "onTouched" mode a field the applicant has not yet left is not
+  // re-checked on change, so the stale message stayed until the next tap —
+  // and disappearing then moved the Next button out from under that tap,
+  // which was lost. Applicants had to press Next twice.
+  useEffect(
+    () =>
+      subscribe({
+        formState: { values: true },
+        callback: ({ name }) => {
+          if (name && getFieldState(name as FieldPath<ApplicationFormData>).error) {
+            void trigger(name as FieldPath<ApplicationFormData>);
+          }
+        },
+      }),
+    [subscribe, trigger, getFieldState]
+  );
 
   // Restore on mount. A resume link wins over the local draft — it is the
   // more deliberate signal — and its token is moved out of the address bar

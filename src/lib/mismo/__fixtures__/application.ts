@@ -108,6 +108,35 @@ export const refinanceApplication: ApplicationFormData = {
   eSignatureDate: "2026-09-08",
 };
 
+/** The complete purchase, applied for jointly with a spouse who lives elsewhere. */
+export const jointApplication: ApplicationFormData = {
+  ...completeApplication,
+  coBorrower: {
+    relationship: "spouse",
+    firstName: "Robin",
+    lastName: "O'Brien",
+    dateOfBirth: "1987-02-03",
+    maritalStatus: "married",
+    phone: "8015550199",
+    email: "",
+    sameAddress: false,
+    currentAddress: { street: "22 E 400 N", city: "Ogden", state: "UT", zip: "84401" },
+    yearsAtAddress: 1,
+    housingStatus: "rent",
+    employmentStatus: "self-employed",
+    employerName: "Robin Designs LLC",
+    jobTitle: "Owner",
+    yearsAtJob: 4,
+    monthlyIncome: 5200,
+    usCitizen: "permanent-resident",
+    bankruptcy: false,
+    foreclosure: true,
+    outstandingJudgments: false,
+    veteran: false,
+    eSignatureName: "Robin O'Brien",
+  },
+};
+
 export const FIXTURE_OPTIONS = {
   referenceNumber: "ALT-K7M2Q",
   submittedAt: "2026-09-08T14:30:12.000Z",

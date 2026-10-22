@@ -54,6 +54,79 @@ const optionalNonNegative = () =>
 const debtAmount = () =>
   z.preprocess(emptyToUndef, z.number().min(0).default(0));
 
+/**
+ * A second applicant on the same loan. Answered inside the existing steps
+ * (personal, employment, declarations, signature) rather than as a step of its
+ * own, so step numbers saved in drafts and resume links keep their meaning.
+ * Assets and debts stay household-wide on the main applicant; the co-borrower
+ * signs the same authorization.
+ */
+export const coBorrowerFields = {
+  relationship: z.enum(["spouse", "domestic-partner", "family", "other"], {
+    error: "Choose how the co-borrower is related to you",
+  }),
+  firstName: z.string().min(1, "Enter the co-borrower's first name"),
+  middleName: z.string().optional(),
+  lastName: z.string().min(1, "Enter the co-borrower's last name"),
+  suffix: z.string().optional(),
+  dateOfBirth: z.string().min(1, "Enter the co-borrower's date of birth"),
+  maritalStatus: z.enum(["single", "married", "separated", "divorced", "widowed"], {
+    error: "Choose the co-borrower's marital status",
+  }),
+  phone: z.string().optional(),
+  email: z.union([z.literal(""), z.string().email("Enter a valid email")]).optional(),
+  sameAddress: z.boolean(),
+  currentAddress: z
+    .object({ street: z.string(), city: z.string(), state: z.string(), zip: z.string() })
+    .optional(),
+  yearsAtAddress: optionalNonNegative(),
+  housingStatus: z.enum(["own", "rent", "other"]).optional(),
+  // Employment & income
+  employmentStatus: z.enum(["employed", "self-employed", "retired", "other"], {
+    error: "Choose the co-borrower's employment status",
+  }),
+  employerName: z.string().optional(),
+  jobTitle: z.string().optional(),
+  yearsAtJob: optionalNonNegative(),
+  monthlyIncome: requiredNonNegative("Enter the co-borrower's monthly income"),
+  // Declarations
+  usCitizen: z.enum(["yes", "permanent-resident", "other"], {
+    error: "Choose the co-borrower's citizenship status",
+  }),
+  bankruptcy: z.boolean({ error: "Answer for the co-borrower" }),
+  foreclosure: z.boolean({ error: "Answer for the co-borrower" }),
+  outstandingJudgments: z.boolean({ error: "Answer for the co-borrower" }),
+  veteran: z.boolean({ error: "Answer for the co-borrower" }),
+  // Signature
+  eSignatureName: z.string({ error: "The co-borrower must sign" }).min(1, "The co-borrower must sign"),
+};
+
+const ADDRESS_PARTS = ["street", "city", "state", "zip"] as const;
+const ADDRESS_MIN: Record<(typeof ADDRESS_PARTS)[number], number> = { street: 1, city: 1, state: 2, zip: 5 };
+
+export const coBorrowerSchema = z.object(coBorrowerFields).superRefine(
+  (cb, ctx) => {
+    // Living elsewhere: the address the main applicant gave is not theirs, so
+    // require their own.
+    if (cb.sameAddress !== false) return;
+    for (const part of ADDRESS_PARTS) {
+      if ((cb.currentAddress?.[part]?.trim().length ?? 0) < ADDRESS_MIN[part]) {
+        ctx.addIssue({ code: "custom", path: ["currentAddress", part], message: "Required" });
+      }
+    }
+    if (!cb.housingStatus) {
+      ctx.addIssue({ code: "custom", path: ["housingStatus"], message: "Choose a housing status" });
+    }
+  },
+  // The co-borrower is answered across several steps. By default this check
+  // would wait until every field is valid, so a missing address would only
+  // surface at submit, on a step the applicant can no longer see. Run it
+  // whenever there is an object to look at; it reads nothing it does not guard.
+  { when: (payload) => typeof payload.value === "object" && payload.value !== null }
+);
+
+export type CoBorrowerData = z.infer<typeof coBorrowerSchema>;
+
 export const applicationSchema = z.object({
   // Step 1: Loan Info
   loanPurpose: z.enum(["purchase", "refinance", "home-equity"]),
@@ -113,6 +186,8 @@ export const applicationSchema = z.object({
   primaryResidence: z.boolean(),
   veteran: z.boolean(),
   firstTimeBuyer: z.boolean(),
+  // Optional second applicant, answered across steps 2, 3, 5 and 6.
+  coBorrower: coBorrowerSchema.optional(),
   // Step 6: Consent
   consentAuthorization: z.boolean().refine((v) => v === true, "You must authorize to continue"),
   eSignatureName: z.string().min(1, "Signature is required"),

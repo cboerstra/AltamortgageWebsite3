@@ -9,19 +9,24 @@
 // value must not throw away everything the applicant has typed.
 
 import { z } from "zod";
-import { applicationSchema, type ApplicationFormData } from "@/lib/schemas";
+import { applicationSchema, coBorrowerFields, type ApplicationFormData } from "@/lib/schemas";
 
 export type DraftData = Partial<Omit<ApplicationFormData, "ssn">>;
 
 /** Every field optional, and every invalid field replaced by undefined. */
-const lenientDraftSchema = z.object(
-  Object.fromEntries(
-    Object.entries(applicationSchema.shape).map(([key, schema]) => [
-      key,
-      (schema as z.ZodTypeAny).optional().catch(undefined),
-    ])
-  )
-);
+function lenient(shape: Record<string, z.ZodType>) {
+  return Object.fromEntries(
+    Object.entries(shape).map(([key, schema]) => [key, (schema as z.ZodTypeAny).optional().catch(undefined)])
+  );
+}
+
+const lenientDraftSchema = z.object({
+  ...lenient(applicationSchema.shape),
+  // A co-borrower is filled in across several steps, so a draft almost always
+  // holds part of one. Judged as a whole it would fail and be dropped; judge
+  // it field by field like everything else.
+  coBorrower: z.object(lenient(coBorrowerFields)).optional().catch(undefined),
+});
 
 /** Drop undefined values so the stored JSON holds only what was actually kept. */
 function compact<T extends Record<string, unknown>>(value: T): T {

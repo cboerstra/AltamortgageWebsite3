@@ -6,7 +6,8 @@
 // schema would auto-leak into email — including, eventually, one that should
 // not be there. Adding a field here is a deliberate act.
 
-import type { ApplicationFormData } from "@/lib/schemas";
+import type { ApplicationFormData, CoBorrowerData } from "@/lib/schemas";
+import { CO_BORROWER_RELATIONSHIP_LABEL } from "@/lib/mismo/map";
 import {
   CITIZENSHIP_LABEL,
   CREDIT_SCORE_RANGE_LABEL,
@@ -47,10 +48,45 @@ function years(value: number | undefined): string {
   return value === 1 ? "1 year" : `${value} years`;
 }
 
-function fullName(app: ApplicationFormData): string {
+function fullName(app: Pick<ApplicationFormData, "firstName" | "middleName" | "lastName" | "suffix">): string {
   return [app.firstName, app.middleName, app.lastName, app.suffix]
     .filter((part) => part && part.trim() !== "")
     .join(" ");
+}
+
+function coBorrowerSection(cb: CoBorrowerData): SummarySection {
+  const address = cb.sameAddress || !cb.currentAddress
+    ? "Same as borrower"
+    : `${cb.currentAddress.street}, ${cb.currentAddress.city}, ${cb.currentAddress.state} ${cb.currentAddress.zip}`;
+  const rows: SummaryRow[] = [
+    { label: "Name", value: fullName(cb) },
+    { label: "Relationship to borrower", value: CO_BORROWER_RELATIONSHIP_LABEL[cb.relationship] },
+    { label: "Date of birth", value: text(cb.dateOfBirth) },
+    { label: "Marital status", value: MARITAL_STATUS_LABEL[cb.maritalStatus] },
+    { label: "Phone", value: text(cb.phone) },
+    { label: "Email", value: text(cb.email) },
+    { label: "Address", value: address },
+  ];
+  if (!cb.sameAddress && cb.currentAddress) {
+    rows.push(
+      { label: "Years at address", value: years(cb.yearsAtAddress) },
+      { label: "Housing status", value: cb.housingStatus ? HOUSING_STATUS_LABEL[cb.housingStatus] : "—" }
+    );
+  }
+  rows.push(
+    { label: "Employment status", value: EMPLOYMENT_STATUS_LABEL[cb.employmentStatus] },
+    { label: "Employer", value: text(cb.employerName) },
+    { label: "Job title", value: text(cb.jobTitle) },
+    { label: "Years at job", value: years(cb.yearsAtJob) },
+    { label: "Monthly income", value: money(cb.monthlyIncome) },
+    { label: "Citizenship", value: CITIZENSHIP_LABEL[cb.usCitizen] },
+    { label: "Bankruptcy (past 7 years)", value: yesNo(cb.bankruptcy) },
+    { label: "Foreclosure (past 7 years)", value: yesNo(cb.foreclosure) },
+    { label: "Outstanding judgments", value: yesNo(cb.outstandingJudgments) },
+    { label: "Veteran", value: yesNo(cb.veteran) },
+    { label: "Electronic signature", value: text(cb.eSignatureName) }
+  );
+  return { title: "Co-borrower", rows };
 }
 
 export interface SummaryContext {
@@ -128,6 +164,7 @@ export function buildApplicationSummary(
         { label: "Monthly income", value: money(app.monthlyIncome) },
       ],
     },
+    ...(app.coBorrower ? [coBorrowerSection(app.coBorrower)] : []),
     { title: "Monthly debts", rows: debts },
     {
       title: "Declarations",
