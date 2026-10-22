@@ -1,8 +1,11 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   applicantsFromPayload,
   documentProgress,
   documentSlots,
+  SLOT_IDS,
   SLOTS,
   type BorrowerDocument,
   type SlotId,
@@ -91,13 +94,13 @@ describe("documentSlots — tailored to the application", () => {
 
   it("asks an employed borrower for pay stubs and W-2s, not tax returns", () => {
     expect(need(documentSlots([{ employmentStatus: "employed" }]))).toEqual({
-      bank_statement: 2, w2: 2, paystub: 2, tax_return: 0, other: 0,
+      photo_id: 1, bank_statement: 2, w2: 2, paystub: 2, tax_return: 0, other: 0,
     });
   });
 
   it("never asks a retiree for pay stubs or W-2s", () => {
     const plan = documentSlots([{ employmentStatus: "retired" }]);
-    expect(need(plan)).toEqual({ bank_statement: 2, w2: 0, paystub: 0, tax_return: 0, other: 1 });
+    expect(need(plan)).toEqual({ photo_id: 1, bank_statement: 2, w2: 0, paystub: 0, tax_return: 0, other: 1 });
     const other = plan.find((s) => s.id === "other")!;
     expect(other.label).toBe("Income documents");
     expect(other.hint).toContain("award letter");
@@ -105,7 +108,7 @@ describe("documentSlots — tailored to the application", () => {
 
   it("asks a self-employed borrower for tax returns and their 1099s / P&L", () => {
     const plan = documentSlots([{ employmentStatus: "self-employed" }]);
-    expect(need(plan)).toEqual({ bank_statement: 2, w2: 0, paystub: 0, tax_return: 2, other: 1 });
+    expect(need(plan)).toEqual({ photo_id: 1, bank_statement: 2, w2: 0, paystub: 0, tax_return: 2, other: 1 });
     expect(plan.find((s) => s.id === "other")!.hint).toContain("profit and loss");
   });
 
@@ -114,14 +117,14 @@ describe("documentSlots — tailored to the application", () => {
       { firstName: "Jane", employmentStatus: "employed" },
       { firstName: "Robin", employmentStatus: "employed" },
     ]);
-    expect(need(both)).toEqual({ bank_statement: 2, w2: 4, paystub: 4, tax_return: 0, other: 0 });
+    expect(need(both)).toEqual({ photo_id: 2, bank_statement: 2, w2: 4, paystub: 4, tax_return: 0, other: 0 });
     expect(both.find((s) => s.id === "paystub")!.hint).toContain("for you and Robin");
 
     const mixed = documentSlots([
       { firstName: "Jane", employmentStatus: "employed" },
       { firstName: "Robin", employmentStatus: "retired" },
     ]);
-    expect(need(mixed)).toEqual({ bank_statement: 2, w2: 2, paystub: 2, tax_return: 0, other: 1 });
+    expect(need(mixed)).toEqual({ photo_id: 2, bank_statement: 2, w2: 2, paystub: 2, tax_return: 0, other: 1 });
     expect(mixed.find((s) => s.id === "other")!.hint).toContain("For Robin: an award letter");
     expect(mixed.find((s) => s.id === "paystub")!.hint).toMatch(/For you\.$/);
   });
@@ -136,7 +139,7 @@ describe("documentProgress — with a tailored list", () => {
   it("hides slots nobody needs, keeping Other open", () => {
     const plan = documentSlots([{ employmentStatus: "retired" }]);
     const ids = documentProgress([], plan).slots.map((s) => s.slot.id);
-    expect(ids).toEqual(["bank_statement", "other"]);
+    expect(ids).toEqual(["photo_id", "bank_statement", "other"]);
   });
 
   it("still shows a hidden slot that has uploads in it", () => {
@@ -147,8 +150,8 @@ describe("documentProgress — with a tailored list", () => {
 
   it("counts against the tailored total", () => {
     const plan = documentSlots([{ employmentStatus: "retired" }]);
-    const p = documentProgress([doc("bank_statement"), doc("bank_statement"), doc("other")], plan);
-    expect([p.received, p.required, p.allRequiredReceived]).toEqual([3, 3, true]);
+    const p = documentProgress([doc("photo_id"), doc("bank_statement"), doc("bank_statement"), doc("other")], plan);
+    expect([p.received, p.required, p.allRequiredReceived]).toEqual([4, 4, true]);
   });
 });
 
@@ -171,5 +174,37 @@ describe("applicantsFromPayload", () => {
     expect(applicantsFromPayload({ firstName: "Jane" })).toEqual([]);
     expect(applicantsFromPayload({ employmentStatus: "astronaut" })).toEqual([]);
     expect(applicantsFromPayload({ employmentStatus: "employed", coBorrower: { firstName: "R" } })).toHaveLength(1);
+  });
+});
+
+describe("photo ID", () => {
+  it("is asked of every applicant, first", () => {
+    expect(SLOTS[0].id).toBe("photo_id");
+    const both = documentSlots([
+      { firstName: "Jane", employmentStatus: "retired" },
+      { firstName: "Robin", employmentStatus: "employed" },
+    ]);
+    const id = both.find((s) => s.id === "photo_id")!;
+    expect(id.required).toBe(2);
+    expect(id.hint).toContain("One each, for you and Robin");
+  });
+
+  it("keeps 'Two each' for slots that need two per person", () => {
+    const both = documentSlots([{ employmentStatus: "employed" }, { firstName: "Robin", employmentStatus: "employed" }]);
+    expect(both.find((s) => s.id === "w2")!.hint).toContain("Two each");
+  });
+});
+
+describe("slot list and database agree", () => {
+  // An upload to a slot the CHECK constraint does not list fails at INSERT.
+  // Both lists are edited by hand, so hold them together here.
+  const schema = readFileSync(path.join(__dirname, "../../../db/schema.sql"), "utf8");
+  const checks = [...schema.matchAll(/CHECK \(slot IN \(([^)]*)\)\)/g)].map((m) =>
+    m[1].split(",").map((v) => v.trim().replace(/'/g, ""))
+  );
+
+  it("CREATE TABLE and the upgrade ALTER both list exactly SLOT_IDS", () => {
+    expect(checks).toHaveLength(2);
+    for (const list of checks) expect(new Set(list)).toEqual(new Set(SLOT_IDS));
   });
 });
