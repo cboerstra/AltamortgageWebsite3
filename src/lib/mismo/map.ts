@@ -4,7 +4,7 @@
 // (reference number, submission timestamp) is passed in, so the same input
 // always maps to the same output and the golden-file test can assert bytes.
 
-import type { ApplicationFormData } from "@/lib/schemas";
+import type { ApplicationFormData, CoBorrowerData } from "@/lib/schemas";
 import {
   CITIZENSHIP,
   CITIZENSHIP_LABEL,
@@ -64,8 +64,38 @@ export interface MismoDeclarations {
   outstandingJudgments: boolean;
   borrowedDownPayment: boolean;
   intentToOccupy: boolean;
-  /** ULAD asks whether the borrower owned a home in the past three years. */
-  homeownerPastThreeYears: "Yes" | "No";
+  /**
+   * ULAD asks whether the borrower owned a home in the past three years. The
+   * wizard derives it from "first-time buyer", which it asks only of the main
+   * applicant, so a co-borrower leaves it unanswered.
+   */
+  homeownerPastThreeYears?: "Yes" | "No";
+}
+
+export interface MismoBorrower {
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  suffixName?: string;
+  birthDate?: string;
+  maritalStatusType: string;
+  citizenshipType: string;
+  email?: string;
+  phone?: string;
+  ssnMasked?: string;
+  militaryService: boolean;
+  residence: {
+    address: MismoAddress;
+    residencyBasisType: string;
+    durationMonths: number;
+    monthlyRentAmount?: number;
+    monthlyOwnerPayment?: number;
+  };
+  employer?: MismoEmployer;
+  incomeType: string;
+  monthlyIncome: number;
+  otherIncome: MismoOtherIncome[];
+  declarations: MismoDeclarations;
 }
 
 export interface MismoDeal {
@@ -85,33 +115,13 @@ export interface MismoDeal {
     profile: PropertyProfile;
     valueAmount: number;
   };
-  borrower: {
-    firstName: string;
-    middleName?: string;
-    lastName: string;
-    suffixName?: string;
-    birthDate?: string;
-    maritalStatusType: string;
-    citizenshipType: string;
+  /** Assets and debts are household-wide and sit with the main applicant. */
+  borrower: MismoBorrower & {
     email: string;
-    phone?: string;
-    ssnMasked?: string;
-    militaryService: boolean;
-    residence: {
-      address: MismoAddress;
-      residencyBasisType: string;
-      durationMonths: number;
-      monthlyRentAmount?: number;
-      monthlyOwnerPayment?: number;
-    };
-    employer?: MismoEmployer;
-    incomeType: string;
-    monthlyIncome: number;
-    otherIncome: MismoOtherIncome[];
     liabilities: MismoLiability[];
     assets: MismoAsset[];
-    declarations: MismoDeclarations;
   };
+  coBorrower?: MismoBorrower;
   extension: {
     loanPurposeLabel: string;
     propertyTypeLabel: string;
@@ -129,6 +139,15 @@ export interface MismoDeal {
     eSignatureName: string;
     eSignatureDate: string;
     sourcePage?: string;
+    coBorrower?: {
+      relationshipLabel: string;
+      maritalStatusLabel: string;
+      citizenshipLabel: string;
+      employmentStatusLabel: string;
+      employerName?: string;
+      veteran: boolean;
+      eSignatureName: string;
+    };
   };
 }
 
@@ -176,6 +195,65 @@ function buildLiabilities(app: ApplicationFormData): MismoLiability[] {
     { type: "Other", description: "Other monthly debt", monthlyPayment: app.monthlyOtherDebt },
   ];
   return candidates.filter((l) => typeof l.monthlyPayment === "number" && l.monthlyPayment > 0);
+}
+
+const RELATIONSHIP_LABEL: Record<CoBorrowerData["relationship"], string> = {
+  spouse: "Spouse",
+  "domestic-partner": "Domestic partner",
+  family: "Family member",
+  other: "Other",
+};
+
+export { RELATIONSHIP_LABEL as CO_BORROWER_RELATIONSHIP_LABEL };
+
+function mapCoBorrower(app: ApplicationFormData, cb: CoBorrowerData): MismoBorrower {
+  // Sharing the main applicant's home means sharing its tenure and length of
+  // stay. The housing payment is not repeated: it is the household's, counted
+  // once on the main applicant.
+  const residence = cb.sameAddress || !cb.currentAddress
+    ? {
+        address: app.currentAddress,
+        residencyBasisType: RESIDENCY_BASIS[app.housingStatus],
+        durationMonths: monthsFromYears(app.yearsAtAddress),
+      }
+    : {
+        address: cb.currentAddress,
+        residencyBasisType: RESIDENCY_BASIS[cb.housingStatus ?? "other"],
+        durationMonths: monthsFromYears(cb.yearsAtAddress),
+      };
+
+  return {
+    firstName: cb.firstName,
+    middleName: cb.middleName,
+    lastName: cb.lastName,
+    suffixName: cb.suffix,
+    birthDate: isoDate(cb.dateOfBirth),
+    maritalStatusType: MARITAL_STATUS[cb.maritalStatus],
+    citizenshipType: CITIZENSHIP[cb.usCitizen],
+    email: cb.email?.trim() || undefined,
+    phone: cb.phone?.trim() || undefined,
+    militaryService: cb.veteran,
+    residence,
+    employer: hasEmployer(cb.employmentStatus)
+      ? {
+          name: cb.employerName,
+          jobTitle: cb.jobTitle,
+          durationMonths: cb.yearsAtJob ? monthsFromYears(cb.yearsAtJob) : undefined,
+          selfEmployed: isSelfEmployed(cb.employmentStatus),
+        }
+      : undefined,
+    incomeType: INCOME_TYPE[cb.employmentStatus],
+    monthlyIncome: cb.monthlyIncome,
+    otherIncome: [],
+    declarations: {
+      bankruptcy: cb.bankruptcy,
+      priorForeclosure: cb.foreclosure,
+      outstandingJudgments: cb.outstandingJudgments,
+      // These two are about the loan, not the person, so they hold for both.
+      borrowedDownPayment: app.downPaymentBorrowed,
+      intentToOccupy: app.primaryResidence,
+    },
+  };
 }
 
 export interface MapOptions {
@@ -267,6 +345,8 @@ export function mapToDeal(app: ApplicationFormData, options: MapOptions): MismoD
       },
     },
 
+    coBorrower: app.coBorrower ? mapCoBorrower(app, app.coBorrower) : undefined,
+
     extension: {
       loanPurposeLabel: LOAN_PURPOSE_LABEL[app.loanPurpose],
       propertyTypeLabel: profile.description,
@@ -284,6 +364,17 @@ export function mapToDeal(app: ApplicationFormData, options: MapOptions): MismoD
       eSignatureName: app.eSignatureName,
       eSignatureDate: app.eSignatureDate,
       sourcePage: options.sourcePage,
+      coBorrower: app.coBorrower
+        ? {
+            relationshipLabel: RELATIONSHIP_LABEL[app.coBorrower.relationship],
+            maritalStatusLabel: MARITAL_STATUS_LABEL[app.coBorrower.maritalStatus],
+            citizenshipLabel: CITIZENSHIP_LABEL[app.coBorrower.usCitizen],
+            employmentStatusLabel: EMPLOYMENT_STATUS_LABEL[app.coBorrower.employmentStatus],
+            employerName: app.coBorrower.employerName,
+            veteran: app.coBorrower.veteran,
+            eSignatureName: app.coBorrower.eSignatureName,
+          }
+        : undefined,
     },
   };
 }

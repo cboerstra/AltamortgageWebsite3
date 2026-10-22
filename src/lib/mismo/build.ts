@@ -4,21 +4,48 @@
 //
 // Scope note: this is a conformant SUBSET covering the fields the wizard
 // actually collects. It is a lead-quality application, not a fundable one —
-// there is a single borrower, no assets, no REO schedule, and the taxpayer
-// identifier is masked by policy. Validate field-level placement against the
+// at most one co-borrower, assets and debts tied to the main applicant only,
+// no REO schedule, and the taxpayer identifier is masked by policy. Validate field-level placement against the
 // target LOS or the licensed v3.4 XSD before wiring it into a live import.
 
 import { el, leaf, render, required, type XmlElement } from "./xml";
-import type { MismoDeal } from "./map";
+import type { MismoBorrower, MismoDeal } from "./map";
 
 const MISMO_NS = "http://www.mismo.org/residential/2009/schemas";
 const XLINK_NS = "http://www.w3.org/1999/xlink";
 const ALTA_NS = "http://altamortgagegroup.net/schemas/application/1.0";
 const REFERENCE_MODEL = "3.4.0322";
 
-const PARTY_LABEL = "Party1";
-const BORROWER_ROLE_LABEL = "BORROWER_1";
-const EMPLOYER_LABEL = "EMPLOYER_1";
+/** The xlink labels and classification that tell two borrowers apart. */
+interface BorrowerLabels {
+  sequence: number;
+  party: string;
+  role: string;
+  employer: string;
+  /** Prefix for CURRENT_INCOME_ITEM labels; the item number is appended. */
+  incomeItem: string;
+  classification: "Primary" | "Secondary";
+}
+
+const PRIMARY: BorrowerLabels = {
+  sequence: 1,
+  party: "Party1",
+  role: "BORROWER_1",
+  employer: "EMPLOYER_1",
+  incomeItem: "CURRENT_INCOME_ITEM_",
+  classification: "Primary",
+};
+
+const SECONDARY: BorrowerLabels = {
+  sequence: 2,
+  party: "Party2",
+  role: "BORROWER_2",
+  employer: "EMPLOYER_2",
+  incomeItem: "CO_BORROWER_INCOME_ITEM_",
+  classification: "Secondary",
+};
+
+const BORROWER_ROLE_LABEL = PRIMARY.role;
 const SUBJECT_LOAN_LABEL = "Loan1";
 const RELATED_LOAN_LABEL = "Loan2";
 const ULAD_ARC = "urn:fdc:mismo.org:2009:residential";
@@ -113,15 +140,18 @@ function relatedLoan(deal: MismoDeal): XmlElement | null {
   ]);
 }
 
-function contactPoints(deal: MismoDeal): XmlElement | null {
-  const b = deal.borrower;
+function contactPoints(b: MismoBorrower): XmlElement | null {
+  // The main applicant always has an email; a co-borrower may not.
+  const phoneSequence = b.email ? 2 : 1;
   return el("CONTACT_POINTS", undefined, [
-    el("CONTACT_POINT", { SequenceNumber: 1 }, [
-      el("CONTACT_POINT_EMAIL", undefined, [leaf("ContactPointEmailValue", b.email)]),
-      el("CONTACT_POINT_DETAIL", undefined, [leaf("ContactPointRoleType", "Home")]),
-    ]),
+    b.email
+      ? el("CONTACT_POINT", { SequenceNumber: 1 }, [
+          el("CONTACT_POINT_EMAIL", undefined, [leaf("ContactPointEmailValue", b.email)]),
+          el("CONTACT_POINT_DETAIL", undefined, [leaf("ContactPointRoleType", "Home")]),
+        ])
+      : null,
     b.phone
-      ? el("CONTACT_POINT", { SequenceNumber: 2 }, [
+      ? el("CONTACT_POINT", { SequenceNumber: phoneSequence }, [
           el("CONTACT_POINT_TELEPHONE", undefined, [
             leaf("ContactPointTelephoneValue", b.phone),
           ]),
@@ -131,13 +161,13 @@ function contactPoints(deal: MismoDeal): XmlElement | null {
   ]);
 }
 
-function declarations(deal: MismoDeal): XmlElement | null {
-  const d = deal.borrower.declarations;
+function declarations(b: MismoBorrower): XmlElement | null {
+  const d = b.declarations;
   return el("DECLARATION", undefined, [
     el("DECLARATION_DETAIL", undefined, [
       leaf("BankruptcyIndicator", d.bankruptcy),
       leaf("BorrowedDownPaymentIndicator", d.borrowedDownPayment),
-      leaf("CitizenshipResidencyType", deal.borrower.citizenshipType),
+      leaf("CitizenshipResidencyType", b.citizenshipType),
       leaf("HomeownerPastThreeYearsType", d.homeownerPastThreeYears),
       leaf("IntentToOccupyType", d.intentToOccupy ? "Yes" : "No"),
       leaf("OutstandingJudgmentsIndicator", d.outstandingJudgments),
@@ -146,11 +176,11 @@ function declarations(deal: MismoDeal): XmlElement | null {
   ]);
 }
 
-function employers(deal: MismoDeal): XmlElement | null {
-  const e = deal.borrower.employer;
+function employers(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
+  const e = b.employer;
   if (!e) return null;
   return el("EMPLOYERS", undefined, [
-    el("EMPLOYER", { SequenceNumber: 1, "xlink:label": EMPLOYER_LABEL }, [
+    el("EMPLOYER", { SequenceNumber: 1, "xlink:label": labels.employer }, [
       el("LEGAL_ENTITY", undefined, [
         el("LEGAL_ENTITY_DETAIL", undefined, [leaf("FullName", e.name)]),
       ]),
@@ -165,10 +195,9 @@ function employers(deal: MismoDeal): XmlElement | null {
   ]);
 }
 
-function currentIncome(deal: MismoDeal): XmlElement | null {
-  const b = deal.borrower;
+function currentIncome(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
   const items: XmlElement[] = [
-    el("CURRENT_INCOME_ITEM", { SequenceNumber: 1, "xlink:label": "CURRENT_INCOME_ITEM_1" }, [
+    el("CURRENT_INCOME_ITEM", { SequenceNumber: 1, "xlink:label": `${labels.incomeItem}1` }, [
       el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
         leaf("CurrentIncomeMonthlyTotalAmount", amount(b.monthlyIncome)),
         leaf("EmploymentIncomeIndicator", Boolean(b.employer)),
@@ -178,7 +207,7 @@ function currentIncome(deal: MismoDeal): XmlElement | null {
   ];
   b.otherIncome.forEach((o, i) => {
     items.push(
-      el("CURRENT_INCOME_ITEM", { SequenceNumber: i + 2, "xlink:label": `CURRENT_INCOME_ITEM_${i + 2}` }, [
+      el("CURRENT_INCOME_ITEM", { SequenceNumber: i + 2, "xlink:label": `${labels.incomeItem}${i + 2}` }, [
         el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
           leaf("CurrentIncomeMonthlyTotalAmount", amount(o.monthlyAmount)),
           leaf("EmploymentIncomeIndicator", false),
@@ -233,8 +262,8 @@ function liabilities(deal: MismoDeal): XmlElement | null {
   );
 }
 
-function residences(deal: MismoDeal): XmlElement | null {
-  const r = deal.borrower.residence;
+function residences(b: MismoBorrower): XmlElement | null {
+  const r = b.residence;
   return el("RESIDENCES", undefined, [
     el("RESIDENCE", { SequenceNumber: 1 }, [
       address(r.address),
@@ -248,13 +277,12 @@ function residences(deal: MismoDeal): XmlElement | null {
   ]);
 }
 
-function party(deal: MismoDeal): XmlElement {
-  const b = deal.borrower;
-  return required("PARTY", { "xlink:label": PARTY_LABEL, SequenceNumber: 1 }, [
+function party(b: MismoBorrower, labels: BorrowerLabels): XmlElement {
+  return required("PARTY", { "xlink:label": labels.party, SequenceNumber: labels.sequence }, [
     // Schema sequence: CONTACT_POINTS precedes NAME. A validating importer
     // drops the whole INDIVIDUAL — and with it the borrower — if reversed.
     el("INDIVIDUAL", undefined, [
-      contactPoints(deal),
+      contactPoints(b),
       el("NAME", undefined, [
         leaf("FirstName", b.firstName),
         leaf("FullName", [b.firstName, b.middleName, b.lastName, b.suffixName].filter(Boolean).join(" ")),
@@ -264,19 +292,19 @@ function party(deal: MismoDeal): XmlElement {
       ]),
     ]),
     el("ROLES", undefined, [
-      el("ROLE", { SequenceNumber: 1, "xlink:label": BORROWER_ROLE_LABEL }, [
+      el("ROLE", { SequenceNumber: 1, "xlink:label": labels.role }, [
         el("BORROWER", undefined, [
           el("BORROWER_DETAIL", undefined, [
             leaf("BorrowerBirthDate", b.birthDate),
             // Importers (Arive, Encompass) locate the primary borrower by this.
-            leaf("BorrowerClassificationType", "Primary"),
+            leaf("BorrowerClassificationType", labels.classification),
             leaf("MaritalStatusType", b.maritalStatusType),
             leaf("SelfDeclaredMilitaryServiceIndicator", b.militaryService),
           ]),
-          currentIncome(deal),
-          declarations(deal),
-          employers(deal),
-          residences(deal),
+          currentIncome(b, labels),
+          declarations(b),
+          employers(b, labels),
+          residences(b),
         ]),
         el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "Borrower")]),
       ]),
@@ -295,12 +323,18 @@ function relationships(deal: MismoDeal): XmlElement | null {
   b.liabilities.forEach((_, i) =>
     arcs.push({ from: `LIABILITY_${i + 1}`, to: BORROWER_ROLE_LABEL, arcrole: `${ULAD_ARC}/LIABILITY_IsAssociatedWith_ROLE` })
   );
-  if (b.employer) {
-    arcs.push({ from: "CURRENT_INCOME_ITEM_1", to: EMPLOYER_LABEL, arcrole: `${ULAD_ARC}/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER` });
+  const borrowers: [MismoBorrower, BorrowerLabels][] = [[b, PRIMARY]];
+  if (deal.coBorrower) borrowers.push([deal.coBorrower, SECONDARY]);
+  for (const [borrower, labels] of borrowers) {
+    if (borrower.employer) {
+      arcs.push({ from: `${labels.incomeItem}1`, to: labels.employer, arcrole: `${ULAD_ARC}/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER` });
+    }
   }
-  arcs.push({ from: PARTY_LABEL, to: SUBJECT_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
-  if (deal.loan.currentBalance) {
-    arcs.push({ from: PARTY_LABEL, to: RELATED_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
+  for (const [, labels] of borrowers) {
+    arcs.push({ from: labels.party, to: SUBJECT_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
+    if (deal.loan.currentBalance) {
+      arcs.push({ from: labels.party, to: RELATED_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
+    }
   }
   return el(
     "RELATIONSHIPS",
@@ -341,7 +375,18 @@ function extension(deal: MismoDeal): XmlElement | null {
           leaf("alta:AuthorizationGivenIndicator", x.consentGiven),
           leaf("alta:ElectronicSignatureName", x.eSignatureName),
           leaf("alta:ElectronicSignatureDate", x.eSignatureDate),
+          leaf("alta:CoBorrowerElectronicSignatureName", x.coBorrower?.eSignatureName),
         ]),
+        x.coBorrower
+          ? el("alta:CO_BORROWER", undefined, [
+              leaf("alta:RelationshipToBorrowerLabel", x.coBorrower.relationshipLabel),
+              leaf("alta:MaritalStatusLabel", x.coBorrower.maritalStatusLabel),
+              leaf("alta:CitizenshipLabel", x.coBorrower.citizenshipLabel),
+              leaf("alta:EmploymentStatusLabel", x.coBorrower.employmentStatusLabel),
+              leaf("alta:EmployerName", x.coBorrower.employerName),
+              leaf("alta:VeteranIndicator", x.coBorrower.veteran),
+            ])
+          : null,
       ]),
     ]),
   ]);
@@ -370,7 +415,10 @@ export function buildMismoXml(deal: MismoDeal): string {
               subjectProperty(deal),
               liabilities(deal),
               required("LOANS", undefined, [subjectLoan(deal), relatedLoan(deal)]),
-              required("PARTIES", undefined, [party(deal)]),
+              required("PARTIES", undefined, [
+                party(deal.borrower, PRIMARY),
+                deal.coBorrower ? party(deal.coBorrower, SECONDARY) : null,
+              ]),
               relationships(deal),
             ]),
           ]),
