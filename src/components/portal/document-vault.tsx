@@ -19,6 +19,7 @@ import {
   documentProgress,
   type BorrowerDocument,
   type SlotId,
+  type SlotSpec,
 } from "@/lib/portal/document-types";
 
 type UploadPhase = "uploading" | "verifying";
@@ -133,7 +134,14 @@ async function uploadFile(
   return ((await complete.json()) as { document: BorrowerDocument }).document;
 }
 
-export function DocumentVault({ initialDocuments }: { initialDocuments: BorrowerDocument[] }) {
+export function DocumentVault({
+  initialDocuments,
+  plan,
+}: {
+  initialDocuments: BorrowerDocument[];
+  /** The slots and counts this borrower needs; see documentSlots. */
+  plan: SlotSpec[];
+}) {
   const [documents, setDocuments] = useState<BorrowerDocument[]>(initialDocuments);
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [errors, setErrors] = useState<SlotError[]>([]);
@@ -189,7 +197,7 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
     [setError]
   );
 
-  const progress = documentProgress(documents);
+  const progress = documentProgress(documents, plan);
   const percent = progress.required ? Math.round((progress.received / progress.required) * 100) : 100;
   const stillNeeded = progress.required - progress.received;
 
@@ -235,11 +243,11 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div>
-                <h3 id={`slot-${slot.id}-title`} className="flex items-center gap-2 font-semibold text-text">
+                <h3 id={`slot-${slot.id}-title`} className="flex flex-wrap items-center gap-x-2 font-semibold text-text">
                   {complete && <Icons.check className="h-5 w-5 text-emerald" aria-hidden />}
                   {slot.label}
                   {slot.required > 0 && (
-                    <span className="text-sm font-normal text-text-muted">
+                    <span className="whitespace-nowrap text-sm font-normal text-text-muted">
                       {counted} of {slot.required}
                     </span>
                   )}
