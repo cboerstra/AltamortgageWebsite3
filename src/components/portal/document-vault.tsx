@@ -11,11 +11,12 @@
 // which is what keyboard and screen-reader users get.
 
 import { useCallback, useRef, useState } from "react";
+import Link from "next/link";
 import { Icons } from "@/lib/icons";
 import {
   ALLOWED_TYPES,
   MAX_FILE_BYTES,
-  SLOTS,
+  documentProgress,
   type BorrowerDocument,
   type SlotId,
 } from "@/lib/portal/document-types";
@@ -33,6 +34,12 @@ interface PendingUpload {
 interface SlotError {
   slot: SlotId;
   message: string;
+}
+
+/** The confirmation shown in a slot after its latest upload finishes. */
+interface SlotSuccess {
+  slot: SlotId;
+  filename: string;
 }
 
 const ACCEPT = Object.entries(ALLOWED_TYPES)
@@ -130,6 +137,7 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
   const [documents, setDocuments] = useState<BorrowerDocument[]>(initialDocuments);
   const [pending, setPending] = useState<PendingUpload[]>([]);
   const [errors, setErrors] = useState<SlotError[]>([]);
+  const [successes, setSuccesses] = useState<SlotSuccess[]>([]);
   const [dragOver, setDragOver] = useState<SlotId | null>(null);
   const inputs = useRef<Partial<Record<SlotId, HTMLInputElement | null>>>({});
 
@@ -143,6 +151,7 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
   const handleFiles = useCallback(
     async (slot: SlotId, files: FileList | File[]) => {
       setError(slot, null);
+      setSuccesses((prev) => prev.filter((x) => x.slot !== slot));
       const list = Array.from(files);
       for (const file of list) {
         if (file.size > MAX_FILE_BYTES) {
@@ -156,6 +165,7 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
             setPending((prev) => prev.map((p) => (p.key === key ? { ...p, progress, phase } : p)))
           );
           setDocuments((prev) => [...prev, doc]);
+          setSuccesses((prev) => [...prev.filter((x) => x.slot !== slot), { slot, filename: file.name }]);
         } catch (err) {
           setError(slot, err instanceof Error ? err.message : "Upload failed.");
         } finally {
@@ -170,19 +180,51 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
     async (doc: BorrowerDocument) => {
       if (!window.confirm(`Remove ${doc.filename}?`)) return;
       const res = await fetch(`/api/portal/documents/${doc.id}`, { method: "DELETE" });
-      if (res.ok) setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+      if (res.ok) {
+        setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+        setSuccesses((prev) => prev.filter((x) => x.slot !== doc.slot));
+      }
       else setError(doc.slot, await readError(res, "Could not remove that file."));
     },
     [setError]
   );
 
+  const progress = documentProgress(documents);
+  const percent = progress.required ? Math.round((progress.received / progress.required) * 100) : 100;
+  const stillNeeded = progress.required - progress.received;
+
   return (
     <div className="space-y-5">
-      {SLOTS.map((slot) => {
-        const uploaded = documents.filter((d) => d.slot === slot.id);
+      <div className="rounded-xl border border-border bg-white p-5 shadow-sm" aria-live="polite">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div className="font-semibold text-text">
+            {progress.allRequiredReceived
+              ? "All required documents uploaded"
+              : `${progress.received} of ${progress.required} required documents uploaded`}
+          </div>
+          {!progress.allRequiredReceived && (
+            <div className="text-sm text-text-muted">{stillNeeded} still needed</div>
+          )}
+        </div>
+        <div
+          className="mt-3 h-2 w-full overflow-hidden rounded-full bg-surface"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={progress.required}
+          aria-valuenow={progress.received}
+          aria-label="Required documents uploaded"
+        >
+          <div
+            className={`h-full rounded-full transition-all ${progress.allRequiredReceived ? "bg-emerald" : "bg-navy"}`}
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+      </div>
+
+      {progress.slots.map(({ slot, documents: uploaded, counted, remaining, complete }) => {
         const inFlight = pending.filter((p) => p.slot === slot.id);
         const error = errors.find((e) => e.slot === slot.id)?.message;
-        const complete = slot.required > 0 && uploaded.length >= slot.required;
+        const success = successes.find((x) => x.slot === slot.id);
         const isOver = dragOver === slot.id;
 
         return (
@@ -198,7 +240,7 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
                   {slot.label}
                   {slot.required > 0 && (
                     <span className="text-sm font-normal text-text-muted">
-                      {Math.min(uploaded.length, slot.required)} of {slot.required}
+                      {counted} of {slot.required}
                     </span>
                   )}
                 </h3>
@@ -295,6 +337,23 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
               />
             </div>
 
+            {success && !error && inFlight.length === 0 && (
+              <p
+                role="status"
+                className="mt-3 flex items-start gap-2 rounded-lg border border-emerald/30 bg-emerald/5 px-3 py-2 text-sm text-text"
+              >
+                <Icons.success className="mt-0.5 h-4 w-4 shrink-0 text-emerald" aria-hidden />
+                <span>
+                  <span className="font-medium">{success.filename}</span> uploaded.{" "}
+                  {slot.required === 0
+                    ? "Your loan specialist can see it now."
+                    : complete
+                      ? `All ${slot.required} ${slot.label.toLowerCase()} received.`
+                      : `${slot.label}: ${counted} of ${slot.required} received — ${remaining} more to go.`}
+                </span>
+              </p>
+            )}
+
             {error && (
               <p role="alert" className="mt-3 rounded-lg border border-error/30 bg-error/5 px-3 py-2 text-sm text-error">
                 {error}
@@ -303,6 +362,26 @@ export function DocumentVault({ initialDocuments }: { initialDocuments: Borrower
           </section>
         );
       })}
+
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-warm p-5">
+        <p className="text-sm text-text-muted">
+          {progress.allRequiredReceived
+            ? "Everything required is in. See the summary of what you sent."
+            : pending.length > 0
+              ? "Wait for uploads to finish, then review what's in and what's still needed."
+              : "Done for now? Review what's in and what's still needed."}
+        </p>
+        <Link
+          href="/portal/documents"
+          aria-disabled={pending.length > 0}
+          onClick={(e) => pending.length > 0 && e.preventDefault()}
+          className={`inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white ${
+            pending.length > 0 ? "cursor-not-allowed bg-navy/50" : "bg-navy hover:bg-navy-light"
+          }`}
+        >
+          Review my documents <Icons.next className="h-4 w-4" />
+        </Link>
+      </div>
     </div>
   );
 }

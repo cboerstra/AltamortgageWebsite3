@@ -57,3 +57,48 @@ export interface BorrowerDocument {
   completedAt: string | null;
 }
 
+
+// ---- Progress ---------------------------------------------------------------
+
+export interface SlotProgress {
+  slot: SlotSpec;
+  /** Files in this slot, oldest first. */
+  documents: BorrowerDocument[];
+  /** Uploaded files that count toward the requirement (never above it). */
+  counted: number;
+  /** How many more are needed; 0 for optional slots and finished ones. */
+  remaining: number;
+  complete: boolean;
+}
+
+export interface DocumentProgress {
+  slots: SlotProgress[];
+  /** Required files received, counting at most `required` per slot. */
+  received: number;
+  required: number;
+  allRequiredReceived: boolean;
+}
+
+/**
+ * Where a borrower stands, slot by slot. Only finished uploads count, and an
+ * extra file in one slot never makes up for a missing one in another: three
+ * bank statements and no W-2s is still two W-2s short.
+ */
+export function documentProgress(documents: readonly BorrowerDocument[]): DocumentProgress {
+  const slots = SLOTS.map((slot) => {
+    const inSlot = documents
+      .filter((d) => d.slot === slot.id && d.status === "available")
+      .sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt));
+    const counted = Math.min(inSlot.length, slot.required);
+    return {
+      slot,
+      documents: inSlot,
+      counted,
+      remaining: slot.required - counted,
+      complete: slot.required > 0 && counted >= slot.required,
+    };
+  });
+  const required = SLOTS.reduce((sum, s) => sum + s.required, 0);
+  const received = slots.reduce((sum, s) => sum + s.counted, 0);
+  return { slots, received, required, allRequiredReceived: received >= required };
+}

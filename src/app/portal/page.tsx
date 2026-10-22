@@ -113,7 +113,7 @@ export default async function PortalPage() {
       </section>
 
       {/* ---- Documents ---- */}
-      <section className="mt-10">
+      <section id="documents" className="mt-10 scroll-mt-24">
         <h2 className="text-lg font-semibold text-navy">Your documents</h2>
         <p className="mt-1 text-sm text-text-muted">
           Upload the items below so we can move your application forward. Files are encrypted
