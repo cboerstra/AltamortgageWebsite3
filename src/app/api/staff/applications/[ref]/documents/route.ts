@@ -5,7 +5,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { getApplicationByRef } from "@/lib/db";
-import { listDocumentsByEmail, SLOTS } from "@/lib/portal/documents";
+import { listDocumentsByEmail } from "@/lib/portal/documents";
+import { applicantsFromPayload, documentSlots } from "@/lib/portal/document-types";
 import { requireStaffKey, STAFF_HEADERS } from "@/lib/staff-auth";
 
 export const runtime = "nodejs";
@@ -32,7 +33,8 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ ref: st
     {
       refNumber,
       email: app.email,
-      slots: SLOTS,
+      // What THIS application needs, so the CRM's counts match the borrower's.
+      slots: documentSlots(applicantsFromPayload(app.rawPayload)),
       documents: documents.map((d) => ({
         id: d.id,
         slot: d.slot,

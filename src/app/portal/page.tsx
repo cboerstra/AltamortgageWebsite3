@@ -3,7 +3,7 @@ import Link from "next/link";
 import { SignOutButton } from "@/components/portal/sign-out-button";
 import { DocumentVault } from "@/components/portal/document-vault";
 import { requireBorrowerPage } from "@/lib/portal/session";
-import { getBorrowerOverview } from "@/lib/portal/overview";
+import { getBorrowerOverview, getDocumentPlan } from "@/lib/portal/overview";
 import { listBorrowerDocuments } from "@/lib/portal/documents";
 import { Icons } from "@/lib/icons";
 
@@ -35,9 +35,10 @@ function when(iso: string): string {
 
 export default async function PortalPage() {
   const borrower = await requireBorrowerPage();
-  const [overview, documents] = await Promise.all([
+  const [overview, documents, plan] = await Promise.all([
     getBorrowerOverview(borrower),
     listBorrowerDocuments(borrower.id),
+    getDocumentPlan(borrower.email),
   ]);
 
   const greeting = borrower.firstName ? `Welcome back, ${borrower.firstName}` : "Welcome back";
@@ -121,7 +122,7 @@ export default async function PortalPage() {
           up to 25 MB each. Clear phone photos are fine as long as the whole page is visible.
         </p>
         <div className="mt-5">
-          <DocumentVault initialDocuments={documents} />
+          <DocumentVault initialDocuments={documents} plan={plan} />
         </div>
       </section>
     </div>

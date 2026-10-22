@@ -1,9 +1,10 @@
 // What a signed-in borrower sees at the top of the portal: their submitted
 // applications and, if they stopped partway, the way back into the wizard.
 
-import { listApplicationsByEmail, type ApplicationListItem } from "@/lib/db";
+import { getApplicationByRef, listApplicationsByEmail, type ApplicationListItem } from "@/lib/db";
 import { findOpenDraftByEmail, resumeTokenFor } from "@/lib/drafts/store";
 import type { Borrower } from "./identity";
+import { applicantsFromPayload, documentSlots, type SlotSpec } from "./document-types";
 
 export interface OpenDraft {
   furthestStep: number;
@@ -34,4 +35,19 @@ export async function getBorrowerOverview(borrower: Borrower): Promise<BorrowerO
   }
 
   return { applications, draft: openDraft };
+}
+
+/**
+ * The document list for this borrower, tailored to their latest submitted
+ * application, or to an unfinished one when that is all there is.
+ */
+export async function getDocumentPlan(email: string): Promise<SlotSpec[]> {
+  const [latest] = await listApplicationsByEmail(email);
+  if (latest) {
+    const app = await getApplicationByRef(latest.refNumber);
+    const applicants = applicantsFromPayload(app?.rawPayload);
+    if (applicants.length > 0) return documentSlots(applicants);
+  }
+  const draft = await findOpenDraftByEmail(email);
+  return documentSlots(applicantsFromPayload(draft?.data));
 }

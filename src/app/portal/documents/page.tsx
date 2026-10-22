@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { requireBorrowerPage } from "@/lib/portal/session";
 import { listBorrowerDocuments } from "@/lib/portal/documents";
+import { getDocumentPlan } from "@/lib/portal/overview";
 import { documentProgress } from "@/lib/portal/document-types";
 import { Icons } from "@/lib/icons";
 
@@ -23,7 +24,11 @@ function when(iso: string): string {
  */
 export default async function PortalDocumentsPage() {
   const borrower = await requireBorrowerPage();
-  const progress = documentProgress(await listBorrowerDocuments(borrower.id));
+  const [documents, plan] = await Promise.all([
+    listBorrowerDocuments(borrower.id),
+    getDocumentPlan(borrower.email),
+  ]);
+  const progress = documentProgress(documents, plan);
   const outstanding = progress.slots.filter((s) => s.remaining > 0);
   const received = progress.slots.filter((s) => s.documents.length > 0);
 

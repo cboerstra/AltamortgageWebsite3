@@ -22,6 +22,103 @@ export const SLOTS: readonly SlotSpec[] = [
   { id: "other", label: "Other documents", required: 0, hint: "Anything else your loan specialist has asked for." },
 ];
 
+// ---- Tailoring --------------------------------------------------------------
+
+export type EmploymentStatus = "employed" | "self-employed" | "retired" | "other";
+
+/** One applicant, as far as the document list cares. */
+export interface PlanApplicant {
+  firstName?: string;
+  employmentStatus?: EmploymentStatus;
+}
+
+/** What each way of earning has to prove, mirroring the emailed checklist. */
+const BY_EMPLOYMENT: Record<EmploymentStatus, { slots: Partial<Record<SlotId, number>>; otherIncome?: string }> = {
+  employed: { slots: { paystub: 2, w2: 2 } },
+  "self-employed": {
+    slots: { tax_return: 2, other: 1 },
+    otherIncome: "1099 forms for the last two years and a year-to-date profit and loss statement",
+  },
+  retired: {
+    slots: { other: 1 },
+    otherIncome: "an award letter (Social Security, pension or annuity) and 1099-R forms for the last two years",
+  },
+  other: { slots: { tax_return: 2, other: 1 }, otherIncome: "documentation of your income source" },
+};
+
+const BASE_HINT: Record<SlotId, string> = Object.fromEntries(SLOTS.map((s) => [s.id, s.hint])) as Record<SlotId, string>;
+
+/**
+ * The document list for one application: each applicant adds what their kind
+ * of income needs, so a retiree is never asked for pay stubs and a couple who
+ * are both employed are asked for both sets. With no application to go on, the
+ * general list stands.
+ *
+ * Every slot is returned; one with nothing required and nothing uploaded is
+ * hidden by documentProgress, except "other", which always stays open.
+ */
+export function documentSlots(applicants: readonly PlanApplicant[] | null): SlotSpec[] {
+  const known = (applicants ?? []).filter((a) => a.employmentStatus);
+  if (known.length === 0) return [...SLOTS];
+
+  const required: Record<SlotId, number> = { bank_statement: 2, w2: 0, paystub: 0, tax_return: 0, other: 0 };
+  const whoNeeds: Record<SlotId, string[]> = { bank_statement: [], w2: [], paystub: [], tax_return: [], other: [] };
+  const otherIncome: string[] = [];
+
+  known.forEach((a, index) => {
+    const who = index === 0 ? "you" : a.firstName?.trim() || "your co-borrower";
+    const rule = BY_EMPLOYMENT[a.employmentStatus!];
+    for (const [slot, count] of Object.entries(rule.slots) as [SlotId, number][]) {
+      required[slot] += count;
+      whoNeeds[slot].push(who);
+    }
+    if (rule.otherIncome) otherIncome.push(known.length > 1 ? `For ${who}: ${rule.otherIncome}.` : `${capitalize(rule.otherIncome)}.`);
+  });
+
+  return SLOTS.map((slot) => {
+    if (slot.id === "other" && required.other > 0) {
+      return {
+        ...slot,
+        label: "Income documents",
+        required: required.other,
+        hint: `${otherIncome.join(" ")} Anything else your loan specialist asks for can go here too.`,
+      };
+    }
+    // With two applicants, say whose these are.
+    const names = whoNeeds[slot.id];
+    const hint =
+      names.length > 1
+        ? `${BASE_HINT[slot.id]} Two each, for ${names.join(" and ")}.`
+        : names.length === 1 && known.length > 1
+          ? `${BASE_HINT[slot.id]} For ${names[0]}.`
+          : BASE_HINT[slot.id];
+    return { ...slot, required: required[slot.id], hint };
+  });
+}
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** The applicants in a stored application or draft payload, read defensively. */
+export function applicantsFromPayload(payload: unknown): PlanApplicant[] {
+  if (!payload || typeof payload !== "object") return [];
+  const read = (value: unknown): PlanApplicant | null => {
+    if (!value || typeof value !== "object") return null;
+    const v = value as Record<string, unknown>;
+    const status = v.employmentStatus;
+    if (typeof status !== "string" || !(status in BY_EMPLOYMENT)) return null;
+    return {
+      firstName: typeof v.firstName === "string" ? v.firstName : undefined,
+      employmentStatus: status as EmploymentStatus,
+    };
+  };
+  const main = read(payload);
+  if (!main) return [];
+  const co = read((payload as Record<string, unknown>).coBorrower);
+  return co ? [main, co] : [main];
+}
+
 export function isSlotId(value: unknown): value is SlotId {
   return typeof value === "string" && (SLOT_IDS as readonly string[]).includes(value);
 }
@@ -84,8 +181,11 @@ export interface DocumentProgress {
  * extra file in one slot never makes up for a missing one in another: three
  * bank statements and no W-2s is still two W-2s short.
  */
-export function documentProgress(documents: readonly BorrowerDocument[]): DocumentProgress {
-  const slots = SLOTS.map((slot) => {
+export function documentProgress(
+  documents: readonly BorrowerDocument[],
+  plan: readonly SlotSpec[] = SLOTS
+): DocumentProgress {
+  const slots = plan.map((slot) => {
     const inSlot = documents
       .filter((d) => d.slot === slot.id && d.status === "available")
       .sort((a, b) => a.uploadedAt.localeCompare(b.uploadedAt));
@@ -98,7 +198,10 @@ export function documentProgress(documents: readonly BorrowerDocument[]): Docume
       complete: slot.required > 0 && counted >= slot.required,
     };
   });
-  const required = SLOTS.reduce((sum, s) => sum + s.required, 0);
-  const received = slots.reduce((sum, s) => sum + s.counted, 0);
-  return { slots, received, required, allRequiredReceived: received >= required };
+  // A slot nobody needs is hidden, unless something was uploaded to it (say,
+  // before the application said what was needed). "Other" always stays open.
+  const shown = slots.filter((s) => s.slot.required > 0 || s.slot.id === "other" || s.documents.length > 0);
+  const required = plan.reduce((sum, s) => sum + s.required, 0);
+  const received = shown.reduce((sum, s) => sum + s.counted, 0);
+  return { slots: shown, received, required, allRequiredReceived: received >= required };
 }
