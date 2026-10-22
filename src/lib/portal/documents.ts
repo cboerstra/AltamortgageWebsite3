@@ -240,6 +240,17 @@ export async function startDocument(
     );
     return { ok: true, documentId: rows[0].id, partCount: input.partCount, chunkBytes: CHUNK_BYTES };
   } catch (err) {
+    // 23514: the database's slot list predates this one (db/schema.sql's
+    // ALTER for borrower_documents_slot_check has not been run). Say what to
+    // do instead of "could not start".
+    if ((err as { code?: string })?.code === "23514") {
+      console.error(`startDocument: slot "${input.slot}" rejected by borrower_documents_slot_check; run the ALTER in db/schema.sql`);
+      return {
+        ok: false,
+        status: 503,
+        error: "This document type can't be uploaded yet. Please email it to your loan specialist for now.",
+      };
+    }
     console.error("startDocument error:", err);
     return { ok: false, status: 500, error: "Could not start the upload." };
   }

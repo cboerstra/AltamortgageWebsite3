@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS borrower_documents (
   id SERIAL PRIMARY KEY,
   borrower_id INT NOT NULL REFERENCES borrowers(id) ON DELETE CASCADE,
   slot VARCHAR(20) NOT NULL
-    CHECK (slot IN ('bank_statement','w2','paystub','tax_return','other')),
+    CHECK (slot IN ('photo_id','bank_statement','w2','paystub','tax_return','other')),
   original_filename VARCHAR(255) NOT NULL,
   mime_type VARCHAR(50) NOT NULL,
   byte_size INT NOT NULL,
@@ -239,6 +239,10 @@ CREATE TABLE IF NOT EXISTS borrower_documents (
   deleted_at TIMESTAMPTZ
 );
 CREATE INDEX IF NOT EXISTS idx_documents_borrower ON borrower_documents (borrower_id, status);
+-- Databases created before the photo ID slot existed. Safe to re-run.
+ALTER TABLE borrower_documents DROP CONSTRAINT IF EXISTS borrower_documents_slot_check;
+ALTER TABLE borrower_documents ADD CONSTRAINT borrower_documents_slot_check
+  CHECK (slot IN ('photo_id','bank_statement','w2','paystub','tax_return','other'));
 
 CREATE TABLE IF NOT EXISTS borrower_document_parts (
   document_id INT NOT NULL REFERENCES borrower_documents(id) ON DELETE CASCADE,

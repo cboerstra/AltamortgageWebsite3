@@ -11,6 +11,7 @@ import { NextResponse } from "next/server";
 import { getPool, isDbConfigured } from "@/lib/db";
 import { mismoBackend } from "@/lib/mismo/store";
 import { isDocumentEncryptionConfigured } from "@/lib/portal/crypto";
+import { SLOT_IDS } from "@/lib/portal/document-types";
 
 export const runtime = "nodejs";
 
@@ -32,6 +33,12 @@ interface DbProbe {
    * the portal's tables are all present; null means the check did not run.
    */
   portalTablesMissing: string[] | null;
+  /**
+   * Document slots the code offers that the database's slot CHECK constraint
+   * would reject, so uploads to them fail. Fixed by the borrower_documents
+   * ALTER in db/schema.sql. Empty is healthy; null means the check did not run.
+   */
+  portalSlotsMissing: string[] | null;
   error: string | null;
 }
 
@@ -52,6 +59,7 @@ async function probeDatabase(): Promise<DbProbe> {
     applicationsCount: null,
     draftsCount: null,
     portalTablesMissing: null,
+    portalSlotsMissing: null,
     error: null,
   };
   if (!result.configured) return result;
@@ -80,6 +88,12 @@ async function probeDatabase(): Promise<DbProbe> {
         [PORTAL_TABLES]
       );
       result.portalTablesMissing = missing.rows.map((r) => r.name);
+
+      const slotCheck = await client.query<{ def: string }>(
+        `SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'borrower_documents_slot_check'`
+      );
+      const def = slotCheck.rows[0]?.def;
+      if (def) result.portalSlotsMissing = SLOT_IDS.filter((id) => !def.includes(`'${id}'`));
     } finally {
       client.release();
     }

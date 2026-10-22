@@ -4,7 +4,8 @@
 
 // ---- Slots ------------------------------------------------------------------
 
-export const SLOT_IDS = ["bank_statement", "w2", "paystub", "tax_return", "other"] as const;
+// Must match the CHECK constraint on borrower_documents.slot in db/schema.sql.
+export const SLOT_IDS = ["photo_id", "bank_statement", "w2", "paystub", "tax_return", "other"] as const;
 export type SlotId = (typeof SLOT_IDS)[number];
 
 export interface SlotSpec {
@@ -15,6 +16,7 @@ export interface SlotSpec {
 }
 
 export const SLOTS: readonly SlotSpec[] = [
+  { id: "photo_id", label: "Photo ID", required: 1, hint: "Driver's license or passport — front and back, as one file or two." },
   { id: "bank_statement", label: "Bank statements", required: 2, hint: "The last two months, every page — including blank ones." },
   { id: "w2", label: "W-2 forms", required: 2, hint: "The last two years." },
   { id: "paystub", label: "Pay stubs", required: 2, hint: "Covering the most recent 30 days." },
@@ -61,12 +63,15 @@ export function documentSlots(applicants: readonly PlanApplicant[] | null): Slot
   const known = (applicants ?? []).filter((a) => a.employmentStatus);
   if (known.length === 0) return [...SLOTS];
 
-  const required: Record<SlotId, number> = { bank_statement: 2, w2: 0, paystub: 0, tax_return: 0, other: 0 };
-  const whoNeeds: Record<SlotId, string[]> = { bank_statement: [], w2: [], paystub: [], tax_return: [], other: [] };
+  const required: Record<SlotId, number> = { photo_id: 0, bank_statement: 2, w2: 0, paystub: 0, tax_return: 0, other: 0 };
+  const whoNeeds: Record<SlotId, string[]> = { photo_id: [], bank_statement: [], w2: [], paystub: [], tax_return: [], other: [] };
   const otherIncome: string[] = [];
 
   known.forEach((a, index) => {
     const who = index === 0 ? "you" : a.firstName?.trim() || "your co-borrower";
+    // Everyone on the loan proves who they are.
+    required.photo_id += 1;
+    whoNeeds.photo_id.push(who);
     const rule = BY_EMPLOYMENT[a.employmentStatus!];
     for (const [slot, count] of Object.entries(rule.slots) as [SlotId, number][]) {
       required[slot] += count;
@@ -88,7 +93,7 @@ export function documentSlots(applicants: readonly PlanApplicant[] | null): Slot
     const names = whoNeeds[slot.id];
     const hint =
       names.length > 1
-        ? `${BASE_HINT[slot.id]} Two each, for ${names.join(" and ")}.`
+        ? `${BASE_HINT[slot.id]} ${required[slot.id] / names.length === 1 ? "One" : "Two"} each, for ${names.join(" and ")}.`
         : names.length === 1 && known.length > 1
           ? `${BASE_HINT[slot.id]} For ${names[0]}.`
           : BASE_HINT[slot.id];
