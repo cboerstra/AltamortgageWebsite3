@@ -15,6 +15,43 @@ type Citizenship = ApplicationFormData["usCitizen"];
 type HousingStatus = ApplicationFormData["housingStatus"];
 type EmploymentStatus = ApplicationFormData["employmentStatus"];
 type CreditScoreRange = ApplicationFormData["creditScoreRange"];
+type LoanProgram = NonNullable<ApplicationFormData["loanProgram"]>;
+type Demographics = NonNullable<ApplicationFormData["demographics"]>;
+
+/** MISMO MortgageType. "Not sure" has no value; the element is left out. */
+export const MORTGAGE_TYPE: Record<LoanProgram, string | undefined> = {
+  conventional: "Conventional",
+  fha: "FHA",
+  va: "VA",
+  usda: "USDARuralDevelopment",
+  "not-sure": undefined,
+};
+
+/** MISMO HMDAEthnicityOriginType */
+export const HMDA_ETHNICITY_ORIGIN: Record<NonNullable<Demographics["ethnicityOrigins"]>[number], string> = {
+  mexican: "Mexican",
+  "puerto-rican": "PuertoRican",
+  cuban: "Cuban",
+  "other-hispanic": "Other",
+};
+
+/** MISMO HMDARaceType. "decline" is carried by the refusal indicator instead. */
+export const HMDA_RACE: Record<Demographics["races"][number], string> = {
+  "american-indian": "AmericanIndianOrAlaskaNative",
+  asian: "Asian",
+  black: "BlackOrAfricanAmerican",
+  "pacific-islander": "NativeHawaiianOrOtherPacificIslander",
+  white: "White",
+  decline: "",
+};
+
+/** The community property states (plus WI's marital property regime). */
+const COMMUNITY_PROPERTY_STATES = new Set(["AZ", "CA", "ID", "LA", "NV", "NM", "TX", "WA", "WI"]);
+
+export function isCommunityPropertyState(state: string | undefined): boolean | undefined {
+  if (!state || state.trim().length !== 2) return undefined;
+  return COMMUNITY_PROPERTY_STATES.has(state.trim().toUpperCase());
+}
 
 /** MISMO LoanPurposeType. Home equity has no enumeration, so it rides on Other. */
 export const LOAN_PURPOSE: Record<LoanPurpose, { type: string; otherDescription?: string }> = {
@@ -31,6 +68,11 @@ export interface PropertyProfile {
   financedUnitCount: number;
   manufacturedHome: boolean;
   description: string;
+}
+
+/** MISMO ConstructionMethodType, which is where ULAD records a manufactured home. */
+export function constructionMethod(profile: PropertyProfile): string {
+  return profile.manufacturedHome ? "Manufactured" : "SiteBuilt";
 }
 
 export const PROPERTY_PROFILE: Record<PropertyType, PropertyProfile> = {

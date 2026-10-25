@@ -3,9 +3,10 @@
 import { UseFormReturn } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import type { ApplicationFormData } from "@/lib/schemas";
 import { CoBorrowerDeclarations } from "./co-borrower";
-import { YesNoRadio } from "./yes-no-radio";
+import { DemographicsFields, UrlaDeclarations, YesNoQuestion } from "./shared-fields";
 
 export function StepDeclarations({
   form,
@@ -18,8 +19,7 @@ export function StepDeclarations({
     formState: { errors },
   } = form;
 
-  const veteran = watch("veteran");
-  const firstTimeBuyer = watch("firstTimeBuyer");
+  const isPurchase = watch("loanPurpose") === "purchase";
 
   return (
     <div className="space-y-5">
@@ -57,96 +57,58 @@ export function StepDeclarations({
       </div>
 
       <div className="space-y-4">
-        <YesNoRadio
-          name="bankruptcy"
-          label="Have you declared bankruptcy in the past 7 years?"
-          value={watch("bankruptcy")}
-          onChange={(v) => setValue("bankruptcy", v)}
-        />
-        {errors.bankruptcy && (
-          <p className="text-xs text-error mt-1">{errors.bankruptcy.message}</p>
-        )}
-
-        <YesNoRadio
-          name="foreclosure"
-          label="Have you had a property foreclosed in the past 7 years?"
-          value={watch("foreclosure")}
-          onChange={(v) => setValue("foreclosure", v)}
-        />
-        {errors.foreclosure && (
-          <p className="text-xs text-error mt-1">
-            {errors.foreclosure.message}
-          </p>
-        )}
-
-        <YesNoRadio
-          name="outstandingJudgments"
-          label="Do you have any outstanding judgments against you?"
-          value={watch("outstandingJudgments")}
-          onChange={(v) => setValue("outstandingJudgments", v)}
-        />
-        {errors.outstandingJudgments && (
-          <p className="text-xs text-error mt-1">
-            {errors.outstandingJudgments.message}
-          </p>
-        )}
-
-        <YesNoRadio
-          name="downPaymentBorrowed"
-          label="Is any part of the down payment borrowed?"
-          value={watch("downPaymentBorrowed")}
-          onChange={(v) => setValue("downPaymentBorrowed", v)}
-        />
-        {errors.downPaymentBorrowed && (
-          <p className="text-xs text-error mt-1">
-            {errors.downPaymentBorrowed.message}
-          </p>
-        )}
-
-        <YesNoRadio
+        <YesNoQuestion
+          form={form}
           name="primaryResidence"
           label="Will you occupy the property as your primary residence?"
-          value={watch("primaryResidence")}
-          onChange={(v) => setValue("primaryResidence", v)}
         />
-        {errors.primaryResidence && (
-          <p className="text-xs text-error mt-1">
-            {errors.primaryResidence.message}
-          </p>
-        )}
-
-        <YesNoRadio
-          name="veteran"
-          label="Are you a veteran or active-duty military?"
-          value={veteran}
-          onChange={(v) => setValue("veteran", v)}
-          note={
-            veteran === true
-              ? "You may be eligible for VA loan benefits with zero down payment."
-              : undefined
-          }
-        />
-        {errors.veteran && (
-          <p className="text-xs text-error mt-1">{errors.veteran.message}</p>
-        )}
-
-        <YesNoRadio
+        <YesNoQuestion
+          form={form}
           name="firstTimeBuyer"
-          label="Are you a first-time homebuyer?"
-          value={firstTimeBuyer}
-          onChange={(v) => setValue("firstTimeBuyer", v)}
-          note={
-            firstTimeBuyer === true
+          label="Are you a first-time homebuyer (no ownership interest in a home in the past three years)?"
+          note={(v) =>
+            v === true
               ? "You may qualify for first-time homebuyer programs and down payment assistance."
               : undefined
           }
         />
-        {errors.firstTimeBuyer && (
-          <p className="text-xs text-error mt-1">
-            {errors.firstTimeBuyer.message}
-          </p>
-        )}
+        <YesNoQuestion
+          form={form}
+          name="downPaymentBorrowed"
+          label="Are you borrowing any money for this transaction (for example, for your down payment or closing costs), or receiving money from another party, that is not disclosed on this application?"
+        />
+        <YesNoQuestion
+          form={form}
+          name="outstandingJudgments"
+          label="Are there any outstanding judgments against you?"
+        />
+        <YesNoQuestion
+          form={form}
+          name="foreclosure"
+          label="Have you had a property foreclosed upon in the past 7 years?"
+        />
+        <YesNoQuestion
+          form={form}
+          name="bankruptcy"
+          label="Have you declared bankruptcy in the past 7 years?"
+        />
+        <YesNoQuestion
+          form={form}
+          name="veteran"
+          label="Are you a veteran or active-duty military?"
+          note={(v) =>
+            v === true
+              ? "You may be eligible for VA loan benefits with zero down payment."
+              : undefined
+          }
+        />
+        <UrlaDeclarations form={form} prefix="" isPurchase={isPurchase} />
       </div>
+
+      <Separator />
+
+      <h3 className="text-base font-semibold text-text">Demographic Information</h3>
+      <DemographicsFields form={form} prefix="" />
 
       <CoBorrowerDeclarations form={form} />
     </div>

@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ApplicationFormData, CoBorrowerData } from "@/lib/schemas";
 import { YesNoRadio } from "./yes-no-radio";
+import { DemographicsFields, UrlaDeclarations, YesNoQuestion } from "./shared-fields";
 
 type Form = UseFormReturn<ApplicationFormData>;
 
@@ -49,7 +50,11 @@ export function CoBorrowerPersonal({ form }: { form: Form }) {
 
   const toggle = (on: boolean) => {
     if (on) {
-      setValue("coBorrower", { sameAddress: true } as CoBorrowerData, { shouldDirty: true });
+      // An empty demographics answer, so each unanswered part gets its own
+      // message rather than one error on the whole section.
+      setValue("coBorrower", { sameAddress: true, demographics: { races: [] } } as unknown as CoBorrowerData, {
+        shouldDirty: true,
+      });
     } else {
       // Drop every answer, not just hide them: a removed co-borrower must not
       // be submitted.
@@ -280,6 +285,35 @@ export function CoBorrowerEmployment({ form }: { form: Form }) {
         </div>
       </div>
 
+      {showEmployer && (
+        <>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <Label>{status === "self-employed" ? "Business Phone" : "Employer Phone"}</Label>
+              <Input {...register("coBorrower.employerPhone")} type="tel" className="mt-1" />
+            </div>
+            <div>
+              <Label>Start Date</Label>
+              <Input {...register("coBorrower.employmentStartDate")} type="date" className="mt-1" />
+            </div>
+            <div>
+              <Label>Years in This Line of Work</Label>
+              <Input
+                {...register("coBorrower.yearsInLineOfWork", { valueAsNumber: true })}
+                type="number"
+                className="mt-1"
+                min={0}
+              />
+            </div>
+          </div>
+          <YesNoQuestion
+            form={form}
+            name="coBorrower.employedByPartyToTransaction"
+            label={`Is ${coName(cb)} employed by a family member, the property seller, a real estate agent, or another party to this transaction?`}
+          />
+        </>
+      )}
+
       <div>
         <Label>Monthly Gross Income ($)</Label>
         <Input
@@ -302,6 +336,7 @@ export function CoBorrowerDeclarations({ form }: { form: Form }) {
     formState: { errors },
   } = form;
   const cb = watch("coBorrower");
+  const isPurchase = watch("loanPurpose") === "purchase";
   if (cb == null) return null;
   const e = errors.coBorrower;
   const name = coName(cb);
@@ -367,7 +402,27 @@ export function CoBorrowerDeclarations({ form }: { form: Form }) {
           onChange={set("veteran")}
         />
         <FieldError message={e?.veteran?.message} />
+
+        <YesNoQuestion
+          form={form}
+          name="coBorrower.primaryResidence"
+          label={`Will ${name} occupy the property as their primary residence?`}
+        />
+        <YesNoQuestion
+          form={form}
+          name="coBorrower.ownedHomePastThreeYears"
+          label={`Has ${name} had an ownership interest in a home in the past three years?`}
+        />
+        <YesNoQuestion
+          form={form}
+          name="coBorrower.downPaymentBorrowed"
+          label={`Is ${name} borrowing any money for this transaction, or receiving money from another party, that is not disclosed on this application?`}
+        />
+        <UrlaDeclarations form={form} prefix="coBorrower." isPurchase={isPurchase} you="they" />
       </div>
+
+      <h4 className="text-sm font-semibold text-navy pt-2">Demographic Information for {name}</h4>
+      <DemographicsFields form={form} prefix="coBorrower." />
     </Section>
   );
 }

@@ -2,52 +2,33 @@
 //
 // Pure. Consumes the object from map.ts and emits a string.
 //
-// Scope note: this is a conformant SUBSET covering the fields the wizard
-// actually collects. It is a lead-quality application, not a fundable one —
-// at most one co-borrower, assets and debts tied to the main applicant only,
-// no REO schedule, and the taxpayer identifier is masked by policy. Validate field-level placement against the
-// target LOS or the licensed v3.4 XSD before wiring it into a live import.
+// The layout follows the DU-wrapper 3.4 document ARIVE itself exports (its
+// "MISMO 3.4" download): the same namespaces and reference model, DEAL-level
+// assets and liabilities tied to borrower roles by labeled RELATIONSHIPs,
+// rent under LANDLORD, the newer declarations and HMDA ethnicity/sex in their
+// ULAD extensions, and loan originator parties. MISMO containers and data
+// points are xsd:sequences in alphabetical order; a validating importer drops
+// an element that is out of order, so the order below is deliberate.
+//
+// Scope note: this is a lead-quality application, not a fundable one. There
+// is no REO schedule and no taxpayer identifier (the site does not collect
+// the SSN), and everything the loan officer prices — rate, fees, housing
+// expenses — is left for the LOS.
 
 import { el, leaf, render, required, type XmlElement } from "./xml";
-import type { MismoBorrower, MismoDeal } from "./map";
+import { constructionMethod, isCommunityPropertyState } from "./enums";
+import type { MismoAddress, MismoBorrower, MismoDeal } from "./map";
 
 const MISMO_NS = "http://www.mismo.org/residential/2009/schemas";
+const DU_NS = "http://www.datamodelextension.org/Schema/DU";
+const ULAD_NS = "http://www.datamodelextension.org/Schema/ULAD";
 const XLINK_NS = "http://www.w3.org/1999/xlink";
+const XSI_NS = "http://www.w3.org/2001/XMLSchema-instance";
+const SCHEMA_LOCATION = `${MISMO_NS} DU_Wrapper_3.4.0_B324.xsd`;
 const ALTA_NS = "http://altamortgagegroup.net/schemas/application/1.0";
-const REFERENCE_MODEL = "3.4.0322";
+const REFERENCE_MODEL = "3.4.032420160128";
 
-/** The xlink labels and classification that tell two borrowers apart. */
-interface BorrowerLabels {
-  sequence: number;
-  party: string;
-  role: string;
-  employer: string;
-  /** Prefix for CURRENT_INCOME_ITEM labels; the item number is appended. */
-  incomeItem: string;
-  classification: "Primary" | "Secondary";
-}
-
-const PRIMARY: BorrowerLabels = {
-  sequence: 1,
-  party: "Party1",
-  role: "BORROWER_1",
-  employer: "EMPLOYER_1",
-  incomeItem: "CURRENT_INCOME_ITEM_",
-  classification: "Primary",
-};
-
-const SECONDARY: BorrowerLabels = {
-  sequence: 2,
-  party: "Party2",
-  role: "BORROWER_2",
-  employer: "EMPLOYER_2",
-  incomeItem: "CO_BORROWER_INCOME_ITEM_",
-  classification: "Secondary",
-};
-
-const BORROWER_ROLE_LABEL = PRIMARY.role;
-const SUBJECT_LOAN_LABEL = "Loan1";
-const RELATED_LOAN_LABEL = "Loan2";
+const SUBJECT_LOAN_LABEL = "LOAN_1";
 const ULAD_ARC = "urn:fdc:mismo.org:2009:residential";
 
 /** MISMO amounts are unformatted decimals — no separators, no currency sign. */
@@ -56,180 +37,60 @@ function amount(value: number | undefined): string | undefined {
   return value.toFixed(2);
 }
 
-function address(a: { street: string; city: string; state: string; zip: string }): XmlElement | null {
+const roleLabel = (index: number) => `BORROWER_${index + 1}`;
+
+/**
+ * Labels are document-wide, so a co-borrower's employer and income items are
+ * numbered after the primary borrower's.
+ */
+interface BorrowerLabels {
+  role: string;
+  employer?: string;
+  incomeItems: string[];
+}
+
+function assignLabels(deal: MismoDeal): BorrowerLabels[] {
+  let employers = 0;
+  let incomeItems = 0;
+  return deal.borrowers.map((b, i) => ({
+    role: roleLabel(i),
+    employer: b.employer ? `EMPLOYER_${++employers}` : undefined,
+    incomeItems: Array.from({ length: 1 + b.otherIncome.length }, () => `CURRENT_INCOME_ITEM_${++incomeItems}`),
+  }));
+}
+
+function address(a: MismoAddress, opts: { type?: string; country?: boolean; county?: boolean } = {}): XmlElement | null {
   return el("ADDRESS", undefined, [
     leaf("AddressLineText", a.street),
+    leaf("AddressType", opts.type),
     leaf("CityName", a.city),
     leaf("CountryCode", "US"),
+    opts.country ? leaf("CountryName", "United States") : null,
+    opts.county ? leaf("CountyName", a.county) : null,
     leaf("PostalCode", a.zip),
     leaf("StateCode", a.state),
   ]);
 }
 
-function subjectProperty(deal: MismoDeal): XmlElement | null {
-  const { profile } = deal.property;
-  return el("COLLATERALS", undefined, [
-    el("COLLATERAL", { SequenceNumber: 1 }, [
-      el("SUBJECT_PROPERTY", undefined, [
-        deal.property.address ? address(deal.property.address) : null,
-        el("PROPERTY_DETAIL", undefined, [
-          leaf("AttachmentType", profile.attachmentType),
-          leaf("FinancedUnitCount", profile.financedUnitCount),
-          leaf("ManufacturedHomeIndicator", profile.manufacturedHome),
-          leaf("PropertyUsageType", deal.property.usageType),
-        ]),
-        profile.projectType
-          ? el("PROJECT", undefined, [
-              el("PROJECT_DETAIL", undefined, [leaf("ProjectType", profile.projectType)]),
-            ])
-          : null,
-        el("PROPERTY_VALUATIONS", undefined, [
-          el("PROPERTY_VALUATION", undefined, [
-            el("PROPERTY_VALUATION_DETAIL", undefined, [
-              leaf("PropertyValuationAmount", amount(deal.property.valueAmount)),
-              // No valuation was performed — this figure is what the applicant
-              // typed into the wizard. "None" is the honest method here; the
-              // extension block records that it is applicant-stated.
-              leaf("PropertyValuationMethodType", "None"),
-            ]),
-          ]),
-        ]),
-      ]),
-    ]),
+function telephone(seq: number, value: string | undefined, role: string): XmlElement | null {
+  if (!value) return null;
+  return el("CONTACT_POINT", { SequenceNumber: seq }, [
+    el("CONTACT_POINT_TELEPHONE", undefined, [leaf("ContactPointTelephoneValue", value)]),
+    el("CONTACT_POINT_DETAIL", undefined, [leaf("ContactPointRoleType", role)]),
   ]);
 }
 
-function subjectLoan(deal: MismoDeal): XmlElement {
-  const { loan } = deal;
-  return required("LOAN", { "xlink:label": SUBJECT_LOAN_LABEL, LoanRoleType: "SubjectLoan" }, [
-    el("LOAN_DETAIL", undefined, [leaf("ApplicationReceivedDate", deal.submittedAt.slice(0, 10))]),
-    el("LOAN_IDENTIFIERS", undefined, [
-      el("LOAN_IDENTIFIER", undefined, [
-        leaf("LoanIdentifier", deal.referenceNumber),
-        leaf("LoanIdentifierType", "LenderLoan"),
-      ]),
-    ]),
-    el("TERMS_OF_LOAN", undefined, [
-      leaf("BaseLoanAmount", amount(loan.baseLoanAmount)),
-      leaf("LienPriorityType", "FirstLien"),
-      leaf("LoanPurposeType", loan.purposeType),
-      leaf("LoanPurposeTypeOtherDescription", loan.purposeOtherDescription),
-    ]),
-    loan.downPayment
-      ? el("DOWN_PAYMENTS", undefined, [
-          el("DOWN_PAYMENT", undefined, [
-            leaf("DownPaymentAmount", amount(loan.downPayment)),
-          ]),
-        ])
-      : null,
-    loan.isRefinance ? el("REFINANCE", undefined, [leaf("RefinanceCashOutDeterminationType", "NoCashOut")]) : null,
-  ]);
-}
-
-/**
- * The balance being refinanced is a separate loan in MISMO, not a field on the
- * subject loan. Emitted only when the applicant gave one.
- */
-function relatedLoan(deal: MismoDeal): XmlElement | null {
-  if (!deal.loan.currentBalance) return null;
-  return el("LOAN", { "xlink:label": RELATED_LOAN_LABEL, LoanRoleType: "RelatedLoan" }, [
-    el("TERMS_OF_LOAN", undefined, [
-      leaf("NoteAmount", amount(deal.loan.currentBalance)),
-      leaf("LienPriorityType", "FirstLien"),
-    ]),
-  ]);
-}
-
-function contactPoints(b: MismoBorrower): XmlElement | null {
-  // The main applicant always has an email; a co-borrower may not.
-  const phoneSequence = b.email ? 2 : 1;
-  return el("CONTACT_POINTS", undefined, [
-    b.email
-      ? el("CONTACT_POINT", { SequenceNumber: 1 }, [
-          el("CONTACT_POINT_EMAIL", undefined, [leaf("ContactPointEmailValue", b.email)]),
-          el("CONTACT_POINT_DETAIL", undefined, [leaf("ContactPointRoleType", "Home")]),
-        ])
-      : null,
-    b.phone
-      ? el("CONTACT_POINT", { SequenceNumber: phoneSequence }, [
-          el("CONTACT_POINT_TELEPHONE", undefined, [
-            leaf("ContactPointTelephoneValue", b.phone),
-          ]),
-          el("CONTACT_POINT_DETAIL", undefined, [leaf("ContactPointRoleType", "Mobile")]),
-        ])
-      : null,
-  ]);
-}
-
-function declarations(b: MismoBorrower): XmlElement | null {
-  const d = b.declarations;
-  return el("DECLARATION", undefined, [
-    el("DECLARATION_DETAIL", undefined, [
-      leaf("BankruptcyIndicator", d.bankruptcy),
-      leaf("BorrowedDownPaymentIndicator", d.borrowedDownPayment),
-      leaf("CitizenshipResidencyType", b.citizenshipType),
-      leaf("HomeownerPastThreeYearsType", d.homeownerPastThreeYears),
-      leaf("IntentToOccupyType", d.intentToOccupy ? "Yes" : "No"),
-      leaf("OutstandingJudgmentsIndicator", d.outstandingJudgments),
-      leaf("PriorPropertyForeclosureCompletedIndicator", d.priorForeclosure),
-    ]),
-  ]);
-}
-
-function employers(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
-  const e = b.employer;
-  if (!e) return null;
-  return el("EMPLOYERS", undefined, [
-    el("EMPLOYER", { SequenceNumber: 1, "xlink:label": labels.employer }, [
-      el("LEGAL_ENTITY", undefined, [
-        el("LEGAL_ENTITY_DETAIL", undefined, [leaf("FullName", e.name)]),
-      ]),
-      el("EMPLOYMENT", undefined, [
-        leaf("EmploymentBorrowerSelfEmployedIndicator", e.selfEmployed),
-        leaf("EmploymentClassificationType", "Primary"),
-        leaf("EmploymentPositionDescription", e.jobTitle),
-        leaf("EmploymentStatusType", "Current"),
-        leaf("EmploymentTimeInLineOfWorkMonthsCount", e.durationMonths),
-      ]),
-    ]),
-  ]);
-}
-
-function currentIncome(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
-  const items: XmlElement[] = [
-    el("CURRENT_INCOME_ITEM", { SequenceNumber: 1, "xlink:label": `${labels.incomeItem}1` }, [
-      el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
-        leaf("CurrentIncomeMonthlyTotalAmount", amount(b.monthlyIncome)),
-        leaf("EmploymentIncomeIndicator", Boolean(b.employer)),
-        leaf("IncomeType", b.incomeType),
-      ]),
-    ]) as XmlElement,
-  ];
-  b.otherIncome.forEach((o, i) => {
-    items.push(
-      el("CURRENT_INCOME_ITEM", { SequenceNumber: i + 2, "xlink:label": `${labels.incomeItem}${i + 2}` }, [
-        el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
-          leaf("CurrentIncomeMonthlyTotalAmount", amount(o.monthlyAmount)),
-          leaf("EmploymentIncomeIndicator", false),
-          leaf("IncomeType", "Other"),
-          leaf("IncomeTypeOtherDescription", o.description),
-        ]),
-      ]) as XmlElement
-    );
-  });
-  return el("CURRENT_INCOME", undefined, [el("CURRENT_INCOME_ITEMS", undefined, items)]);
-}
+// ---- DEAL-level containers -------------------------------------------------
 
 // Assets and liabilities are DEAL-level in ULAD, tied to the borrower role by
 // labeled relationships. Importers (DU, Arive) read them there, not inside
 // BORROWER.
 function assets(deal: MismoDeal): XmlElement | null {
-  const items = deal.borrower.assets;
-  if (items.length === 0) return null;
+  if (deal.assets.length === 0) return null;
   return el(
     "ASSETS",
     undefined,
-    items.map((a, index) =>
+    deal.assets.map((a, index) =>
       el("ASSET", { SequenceNumber: index + 1, "xlink:label": `ASSET_${index + 1}` }, [
         el("ASSET_DETAIL", undefined, [
           leaf("AssetCashOrMarketValueAmount", amount(a.amount)),
@@ -241,20 +102,66 @@ function assets(deal: MismoDeal): XmlElement | null {
   );
 }
 
+function subjectProperty(deal: MismoDeal): XmlElement | null {
+  const { profile, address: subject } = deal.property;
+  return el("COLLATERALS", undefined, [
+    el("COLLATERAL", undefined, [
+      el("SUBJECT_PROPERTY", { SequenceNumber: 1 }, [
+        subject ? address(subject, { country: true, county: true }) : null,
+        profile.projectType
+          ? el("PROJECT", undefined, [
+              el("PROJECT_DETAIL", undefined, [leaf("ProjectType", profile.projectType)]),
+            ])
+          : null,
+        el("PROPERTY_DETAIL", undefined, [
+          leaf("AttachmentType", profile.attachmentType),
+          leaf("CommunityPropertyStateIndicator", subject ? isCommunityPropertyState(subject.state) : undefined),
+          leaf("ConstructionMethodType", constructionMethod(profile)),
+          leaf("FinancedUnitCount", profile.financedUnitCount),
+          leaf("PropertyEstimatedValueAmount", amount(deal.property.valueAmount)),
+          // Known to be in a project only for a condominium; otherwise unknown.
+          leaf("PropertyInProjectIndicator", profile.projectType ? true : undefined),
+          leaf("PropertyUsageType", deal.property.usageType),
+        ]),
+        el("PROPERTY_VALUATIONS", undefined, [
+          el("PROPERTY_VALUATION", undefined, [
+            el("PROPERTY_VALUATION_DETAIL", undefined, [
+              leaf("PropertyValuationAmount", amount(deal.property.valueAmount)),
+              // No valuation was performed — this figure is what the applicant
+              // typed into the wizard. "None" is the honest method here.
+              leaf("PropertyValuationMethodType", "None"),
+            ]),
+          ]),
+        ]),
+        deal.property.salesContractAmount
+          ? el("SALES_CONTRACTS", undefined, [
+              el("SALES_CONTRACT", undefined, [
+                el("SALES_CONTRACT_DETAIL", undefined, [
+                  leaf("SalesContractAmount", amount(deal.property.salesContractAmount)),
+                ]),
+              ]),
+            ])
+          : null,
+      ]),
+    ]),
+  ]);
+}
+
 function liabilities(deal: MismoDeal): XmlElement | null {
-  const items = deal.borrower.liabilities;
-  if (items.length === 0) return null;
+  if (deal.liabilities.length === 0) return null;
   return el(
     "LIABILITIES",
     undefined,
-    items.map((l, index) =>
+    deal.liabilities.map((l, index) =>
       el("LIABILITY", { SequenceNumber: index + 1, "xlink:label": `LIABILITY_${index + 1}` }, [
         el("LIABILITY_DETAIL", undefined, [
           leaf("LiabilityDescription", l.description),
           leaf("LiabilityExclusionIndicator", false),
           leaf("LiabilityMonthlyPaymentAmount", amount(l.monthlyPayment)),
-          leaf("LiabilityPayoffStatusIndicator", false),
+          leaf("LiabilityPaymentIncludesTaxesInsuranceIndicator", l.excludesTaxesAndInsurance ? false : undefined),
+          leaf("LiabilityPayoffStatusIndicator", l.payoff),
           leaf("LiabilityType", l.type),
+          leaf("LiabilityUnpaidBalanceAmount", amount(l.unpaidBalance)),
         ]),
         el("LIABILITY_HOLDER", undefined, [el("NAME", undefined, [leaf("FullName", l.description)])]),
       ])
@@ -262,27 +169,232 @@ function liabilities(deal: MismoDeal): XmlElement | null {
   );
 }
 
-function residences(b: MismoBorrower): XmlElement | null {
-  const r = b.residence;
-  return el("RESIDENCES", undefined, [
-    el("RESIDENCE", { SequenceNumber: 1 }, [
-      address(r.address),
-      el("RESIDENCE_DETAIL", undefined, [
-        leaf("BorrowerResidencyBasisType", r.residencyBasisType),
-        leaf("BorrowerResidencyDurationMonthsCount", r.durationMonths || undefined),
-        leaf("BorrowerResidencyType", "Current"),
-        leaf("MonthlyRentAmount", amount(r.monthlyRentAmount)),
+function subjectLoan(deal: MismoDeal): XmlElement {
+  const { loan } = deal;
+  return required("LOAN", { LoanRoleType: "SubjectLoan", "xlink:label": SUBJECT_LOAN_LABEL, SequenceNumber: 1 }, [
+    el("AMORTIZATION", undefined, [
+      el("AMORTIZATION_RULE", undefined, [
+        leaf("AmortizationType", loan.amortizationType),
+        leaf("LoanAmortizationMaximumTermMonthsCount", loan.termMonths),
+        leaf("LoanAmortizationPeriodCount", loan.termMonths),
+        leaf("LoanAmortizationPeriodType", loan.termMonths ? "Month" : undefined),
+      ]),
+    ]),
+    el("DOCUMENT_SPECIFIC_DATA_SETS", undefined, [
+      el("DOCUMENT_SPECIFIC_DATA_SET", { SequenceNumber: 1 }, [
+        el("URLA", undefined, [
+          el("URLA_DETAIL", undefined, [leaf("ApplicationTakenMethodType", "Internet")]),
+        ]),
+      ]),
+    ]),
+    loan.downPayment
+      ? el("DOWN_PAYMENTS", undefined, [
+          el("DOWN_PAYMENT", undefined, [leaf("DownPaymentAmount", amount(loan.downPayment))]),
+        ])
+      : null,
+    el("LOAN_DETAIL", undefined, [leaf("ApplicationReceivedDate", deal.submittedAt.slice(0, 10))]),
+    el("LOAN_IDENTIFIERS", undefined, [
+      el("LOAN_IDENTIFIER", { SequenceNumber: 1 }, [
+        leaf("LoanIdentifier", deal.referenceNumber),
+        leaf("LoanIdentifierType", "LenderLoan"),
+      ]),
+    ]),
+    loan.cashOutType
+      ? el("REFINANCE", undefined, [leaf("RefinanceCashOutDeterminationType", loan.cashOutType)])
+      : null,
+    el("TERMS_OF_LOAN", undefined, [
+      leaf("BaseLoanAmount", amount(loan.baseLoanAmount)),
+      leaf("LienPriorityType", loan.lienPriorityType),
+      leaf("LoanPurposeType", loan.purposeType),
+      leaf("LoanPurposeTypeOtherDescription", loan.purposeOtherDescription),
+      leaf("MortgageType", loan.mortgageType),
+      leaf("NoteAmount", amount(loan.baseLoanAmount)),
+    ]),
+  ]);
+}
+
+// ---- Borrower ---------------------------------------------------------------
+
+function currentIncome(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
+  const items: (XmlElement | null)[] = [
+    el("CURRENT_INCOME_ITEM", { SequenceNumber: 1, "xlink:label": labels.incomeItems[0] }, [
+      el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
+        leaf("CurrentIncomeMonthlyTotalAmount", amount(b.monthlyIncome)),
+        leaf("EmploymentIncomeIndicator", Boolean(b.employer)),
+        leaf("IncomeType", b.incomeType),
+      ]),
+    ]),
+  ];
+  b.otherIncome.forEach((o, i) => {
+    items.push(
+      el("CURRENT_INCOME_ITEM", { SequenceNumber: i + 2, "xlink:label": labels.incomeItems[i + 1] }, [
+        el("CURRENT_INCOME_ITEM_DETAIL", undefined, [
+          leaf("CurrentIncomeMonthlyTotalAmount", amount(o.monthlyAmount)),
+          leaf("EmploymentIncomeIndicator", false),
+          leaf("IncomeType", "Other"),
+          leaf("IncomeTypeOtherDescription", o.description),
+        ]),
+      ])
+    );
+  });
+  return el("CURRENT_INCOME", undefined, [el("CURRENT_INCOME_ITEMS", undefined, items)]);
+}
+
+function declarations(b: MismoBorrower): XmlElement | null {
+  const d = b.declarations;
+  return el("DECLARATION", undefined, [
+    el("DECLARATION_DETAIL", undefined, [
+      leaf("BankruptcyIndicator", d.bankruptcy),
+      leaf("CitizenshipResidencyType", b.citizenshipType),
+      leaf("HomeownerPastThreeYearsType", d.homeownerPastThreeYears),
+      leaf("IntentToOccupyType", d.intentToOccupy ? "Yes" : "No"),
+      leaf("OutstandingJudgmentsIndicator", d.outstandingJudgments),
+      leaf("PartyToLawsuitIndicator", d.partyToLawsuit),
+      leaf("PresentlyDelinquentIndicator", d.presentlyDelinquent),
+      leaf("PriorPropertyDeedInLieuConveyedIndicator", d.deedInLieu),
+      leaf("PriorPropertyForeclosureCompletedIndicator", d.priorForeclosure),
+      leaf("PriorPropertyShortSaleCompletedIndicator", d.shortSale),
+      leaf("PropertyProposedCleanEnergyLienIndicator", d.cleanEnergyLien),
+      leaf("UndisclosedBorrowedFundsIndicator", d.undisclosedBorrowedFunds),
+      leaf("UndisclosedComakerOfNoteIndicator", d.undisclosedComaker),
+      leaf("UndisclosedCreditApplicationIndicator", d.undisclosedCreditApplication),
+      leaf("UndisclosedMortgageApplicationIndicator", d.undisclosedMortgageApplication),
+      el("EXTENSION", undefined, [
+        el("OTHER", undefined, [
+          el("ULAD:DECLARATION_DETAIL_EXTENSION", undefined, [
+            leaf("ULAD:SpecialBorrowerSellerRelationshipIndicator", d.sellerRelationship),
+          ]),
+        ]),
       ]),
     ]),
   ]);
 }
 
-function party(b: MismoBorrower, labels: BorrowerLabels): XmlElement {
-  return required("PARTY", { "xlink:label": labels.party, SequenceNumber: labels.sequence }, [
+function dependents(b: MismoBorrower): XmlElement | null {
+  return el(
+    "DEPENDENTS",
+    undefined,
+    b.dependentAges.map((age) => el("DEPENDENT", undefined, [leaf("DependentAgeYearsCount", age)]))
+  );
+}
+
+function employers(b: MismoBorrower, labels: BorrowerLabels): XmlElement | null {
+  const e = b.employer;
+  if (!e || !labels.employer) return null;
+  return el("EMPLOYERS", undefined, [
+    el("EMPLOYER", { SequenceNumber: 1, "xlink:label": labels.employer }, [
+      el("LEGAL_ENTITY", undefined, [
+        el("CONTACTS", undefined, [
+          el("CONTACT", undefined, [el("CONTACT_POINTS", undefined, [telephone(1, e.phone, "Work")])]),
+        ]),
+        el("LEGAL_ENTITY_DETAIL", undefined, [leaf("FullName", e.name)]),
+      ]),
+      el("EMPLOYMENT", undefined, [
+        leaf("EmploymentBorrowerSelfEmployedIndicator", e.selfEmployed),
+        leaf("EmploymentClassificationType", "Primary"),
+        leaf("EmploymentPositionDescription", e.jobTitle),
+        leaf("EmploymentStartDate", e.startDate),
+        leaf("EmploymentStatusType", "Current"),
+        leaf("EmploymentTimeInLineOfWorkMonthsCount", e.lineOfWorkMonths),
+        leaf("SpecialBorrowerEmployerRelationshipIndicator", e.specialRelationship),
+      ]),
+    ]),
+  ]);
+}
+
+/**
+ * HMDA demographic information. The application is taken online, so nothing
+ * was collected by visual observation. Sex and ethnicity live in ULAD
+ * extensions in this version of the model, as in ARIVE's own export.
+ */
+function governmentMonitoring(b: MismoBorrower): XmlElement | null {
+  const d = b.demographics;
+  if (!d) return null;
+  return el("GOVERNMENT_MONITORING", undefined, [
+    el("GOVERNMENT_MONITORING_DETAIL", undefined, [
+      leaf("HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator", false),
+      leaf("HMDAEthnicityRefusalIndicator", d.ethnicityRefused),
+      leaf("HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator", false),
+      leaf("HMDAGenderRefusalIndicator", d.genderRefused),
+      leaf("HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator", false),
+      leaf("HMDARaceRefusalIndicator", d.raceRefused),
+      el("EXTENSION", undefined, [
+        el("OTHER", undefined, [
+          el("ULAD:GOVERNMENT_MONITORING_DETAIL_EXTENSION", undefined, [
+            leaf("ULAD:ApplicationTakenMethodType", "Internet"),
+            leaf("ULAD:HMDAGenderType", d.genderType),
+          ]),
+        ]),
+      ]),
+    ]),
+    el(
+      "HMDA_ETHNICITY_ORIGINS",
+      undefined,
+      d.ethnicityOrigins.map((o, i) =>
+        el("HMDA_ETHNICITY_ORIGIN", { SequenceNumber: i + 1 }, [leaf("HMDAEthnicityOriginType", o)])
+      )
+    ),
+    el(
+      "HMDA_RACES",
+      undefined,
+      d.races.map((r, i) =>
+        el("HMDA_RACE", { SequenceNumber: i + 1 }, [el("HMDA_RACE_DETAIL", undefined, [leaf("HMDARaceType", r)])])
+      )
+    ),
+    d.ethnicityType
+      ? el("EXTENSION", undefined, [
+          el("OTHER", undefined, [
+            el("ULAD:GOVERNMENT_MONITORING_EXTENSION", undefined, [
+              el("ULAD:HMDA_ETHNICITIES", undefined, [
+                el("ULAD:HMDA_ETHNICITY", undefined, [leaf("ULAD:HMDAEthnicityType", d.ethnicityType)]),
+              ]),
+            ]),
+          ]),
+        ])
+      : null,
+  ]);
+}
+
+function residences(b: MismoBorrower): XmlElement | null {
+  const r = b.residence;
+  return el("RESIDENCES", undefined, [
+    el("RESIDENCE", { SequenceNumber: 1 }, [
+      address(r.address),
+      // ULAD carries rent on the landlord, not on the residence.
+      r.monthlyRentAmount
+        ? el("LANDLORD", undefined, [
+            el("LANDLORD_DETAIL", undefined, [leaf("MonthlyRentAmount", amount(r.monthlyRentAmount))]),
+          ])
+        : null,
+      el("RESIDENCE_DETAIL", undefined, [
+        leaf("BorrowerResidencyBasisType", r.residencyBasisType),
+        leaf("BorrowerResidencyDurationMonthsCount", r.durationMonths || undefined),
+        leaf("BorrowerResidencyType", "Current"),
+      ]),
+    ]),
+    b.priorResidence
+      ? el("RESIDENCE", { SequenceNumber: 2 }, [
+          address(b.priorResidence),
+          el("RESIDENCE_DETAIL", undefined, [leaf("BorrowerResidencyType", "Prior")]),
+        ])
+      : null,
+  ]);
+}
+
+function borrowerParty(b: MismoBorrower, index: number, labels: BorrowerLabels): XmlElement {
+  return required("PARTY", { SequenceNumber: index + 1 }, [
     // Schema sequence: CONTACT_POINTS precedes NAME. A validating importer
     // drops the whole INDIVIDUAL — and with it the borrower — if reversed.
     el("INDIVIDUAL", undefined, [
-      contactPoints(b),
+      // The main applicant always has an email; a co-borrower may not.
+      el("CONTACT_POINTS", undefined, [
+        b.email
+          ? el("CONTACT_POINT", { SequenceNumber: 1 }, [
+              el("CONTACT_POINT_EMAIL", undefined, [leaf("ContactPointEmailValue", b.email)]),
+            ])
+          : null,
+        telephone(b.email ? 2 : 1, b.phone, "Mobile"),
+      ]),
       el("NAME", undefined, [
         leaf("FirstName", b.firstName),
         leaf("FullName", [b.firstName, b.middleName, b.lastName, b.suffixName].filter(Boolean).join(" ")),
@@ -291,19 +403,24 @@ function party(b: MismoBorrower, labels: BorrowerLabels): XmlElement {
         leaf("SuffixName", b.suffixName),
       ]),
     ]),
+    el("ADDRESSES", undefined, [address(b.mailingAddress, { type: "Mailing" })]),
     el("ROLES", undefined, [
       el("ROLE", { SequenceNumber: 1, "xlink:label": labels.role }, [
         el("BORROWER", undefined, [
           el("BORROWER_DETAIL", undefined, [
             leaf("BorrowerBirthDate", b.birthDate),
             // Importers (Arive, Encompass) locate the primary borrower by this.
-            leaf("BorrowerClassificationType", labels.classification),
+            leaf("BorrowerClassificationType", b.classification),
+            leaf("CommunityPropertyStateResidentIndicator", isCommunityPropertyState(b.residence.address.state)),
+            leaf("DependentCount", b.dependentCount),
             leaf("MaritalStatusType", b.maritalStatusType),
             leaf("SelfDeclaredMilitaryServiceIndicator", b.militaryService),
           ]),
           currentIncome(b, labels),
           declarations(b),
+          dependents(b),
           employers(b, labels),
+          governmentMonitoring(b),
           residences(b),
         ]),
         el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "Borrower")]),
@@ -314,27 +431,89 @@ function party(b: MismoBorrower, labels: BorrowerLabels): XmlElement {
   ]);
 }
 
-function relationships(deal: MismoDeal): XmlElement | null {
+// ---- Originator ---------------------------------------------------------------
+
+function originatorParties(deal: MismoDeal, firstSequence: number): XmlElement[] {
+  const o = deal.originator;
+  const company = required("PARTY", { SequenceNumber: firstSequence }, [
+    el("LEGAL_ENTITY", undefined, [el("LEGAL_ENTITY_DETAIL", undefined, [leaf("FullName", o.companyName)])]),
+    el("ADDRESSES", undefined, [address(o.companyAddress, { type: "Mailing" })]),
+    el("ROLES", undefined, [
+      el("ROLE", { SequenceNumber: 1, "xlink:label": "LOAN_ORIGINATION_COMPANY_1" }, [
+        el("LICENSES", undefined, [
+          el("LICENSE", { SequenceNumber: 1 }, [
+            el("LICENSE_DETAIL", undefined, [
+              leaf("LicenseAuthorityLevelType", "Private"),
+              leaf("LicenseIdentifier", o.companyNmlsId),
+            ]),
+          ]),
+          el("LICENSE", { SequenceNumber: 2 }, [
+            el("LICENSE_DETAIL", undefined, [
+              leaf("LicenseAuthorityLevelType", "PublicState"),
+              leaf("LicenseIdentifier", o.companyStateLicenseId),
+              leaf("LicenseIssuingAuthorityStateCode", o.companyAddress.state),
+            ]),
+          ]),
+        ]),
+        el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "LoanOriginationCompany")]),
+      ]),
+    ]),
+  ]);
+
+  const individual = required("PARTY", { SequenceNumber: firstSequence + 1 }, [
+    el("INDIVIDUAL", undefined, [
+      el("CONTACT_POINTS", undefined, [
+        telephone(1, o.phone, "Work"),
+        el("CONTACT_POINT", { SequenceNumber: 2 }, [
+          el("CONTACT_POINT_EMAIL", undefined, [leaf("ContactPointEmailValue", o.email)]),
+        ]),
+      ]),
+      el("NAME", undefined, [
+        leaf("FirstName", o.firstName),
+        leaf("FullName", `${o.firstName} ${o.lastName}`),
+        leaf("IndividualTitleDescription", o.title),
+        leaf("LastName", o.lastName),
+      ]),
+    ]),
+    el("ROLES", undefined, [
+      el("ROLE", { SequenceNumber: 1, "xlink:label": "LOAN_ORIGINATOR_1" }, [
+        el("LOAN_ORIGINATOR", undefined, [leaf("LoanOriginatorType", "Broker")]),
+        el("LICENSES", undefined, [
+          el("LICENSE", { SequenceNumber: 1 }, [
+            el("LICENSE_DETAIL", undefined, [
+              leaf("LicenseAuthorityLevelType", "Private"),
+              leaf("LicenseIdentifier", o.nmlsId),
+            ]),
+          ]),
+        ]),
+        el("ROLE_DETAIL", undefined, [leaf("PartyRoleType", "LoanOriginator")]),
+      ]),
+    ]),
+  ]);
+
+  return [company, individual];
+}
+
+// ---- Relationships --------------------------------------------------------------
+
+function relationships(deal: MismoDeal, labels: BorrowerLabels[]): XmlElement | null {
   const arcs: { from: string; to: string; arcrole: string }[] = [];
-  const b = deal.borrower;
-  b.assets.forEach((_, i) =>
-    arcs.push({ from: `ASSET_${i + 1}`, to: BORROWER_ROLE_LABEL, arcrole: `${ULAD_ARC}/ASSET_IsAssociatedWith_ROLE` })
+  const primary = labels[0].role;
+  deal.assets.forEach((_, i) =>
+    arcs.push({ from: `ASSET_${i + 1}`, to: primary, arcrole: `${ULAD_ARC}/ASSET_IsAssociatedWith_ROLE` })
   );
-  b.liabilities.forEach((_, i) =>
-    arcs.push({ from: `LIABILITY_${i + 1}`, to: BORROWER_ROLE_LABEL, arcrole: `${ULAD_ARC}/LIABILITY_IsAssociatedWith_ROLE` })
+  deal.liabilities.forEach((_, i) =>
+    arcs.push({ from: `LIABILITY_${i + 1}`, to: primary, arcrole: `${ULAD_ARC}/LIABILITY_IsAssociatedWith_ROLE` })
   );
-  const borrowers: [MismoBorrower, BorrowerLabels][] = [[b, PRIMARY]];
-  if (deal.coBorrower) borrowers.push([deal.coBorrower, SECONDARY]);
-  for (const [borrower, labels] of borrowers) {
-    if (borrower.employer) {
-      arcs.push({ from: `${labels.incomeItem}1`, to: labels.employer, arcrole: `${ULAD_ARC}/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER` });
+  for (const l of labels) {
+    if (l.employer) {
+      arcs.push({ from: l.incomeItems[0], to: l.employer, arcrole: `${ULAD_ARC}/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER` });
     }
   }
-  for (const [, labels] of borrowers) {
-    arcs.push({ from: labels.party, to: SUBJECT_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
-    if (deal.loan.currentBalance) {
-      arcs.push({ from: labels.party, to: RELATED_LOAN_LABEL, arcrole: "urn:fdc:Meta:2009:arcrole:PartyToLoan" });
-    }
+  // Borrowers on one URLA share a credit report; this is how ULAD says they
+  // are on the same application rather than two separate ones.
+  for (const l of labels.slice(1)) {
+    arcs.push({ from: l.role, to: primary, arcrole: `${ULAD_ARC}/ROLE_SharesJointCreditReportWith_ROLE` });
   }
   return el(
     "RELATIONSHIPS",
@@ -366,7 +545,7 @@ function extension(deal: MismoDeal): XmlElement | null {
         leaf("alta:EmploymentStatusLabel", x.employmentStatusLabel),
         leaf("alta:EmployerName", x.employerName),
         leaf("alta:HousingStatusLabel", x.housingStatusLabel),
-        leaf("alta:MonthlyOwnerHousingPayment", amount(deal.borrower.residence.monthlyOwnerPayment)),
+        leaf("alta:MonthlyOwnerHousingPayment", amount(x.monthlyOwnerHousingPayment)),
         leaf("alta:SelfReportedCreditScoreRange", x.creditScoreRangeLabel),
         leaf("alta:FirstTimeHomebuyerIndicator", x.firstTimeHomebuyer),
         leaf("alta:VeteranIndicator", x.veteran),
@@ -393,33 +572,35 @@ function extension(deal: MismoDeal): XmlElement | null {
 }
 
 export function buildMismoXml(deal: MismoDeal): string {
+  const labels = assignLabels(deal);
   const root = required(
     "MESSAGE",
     {
-      xmlns: MISMO_NS,
-      "xmlns:xlink": XLINK_NS,
       MISMOReferenceModelIdentifier: REFERENCE_MODEL,
+      xmlns: MISMO_NS,
+      "xmlns:DU": DU_NS,
+      "xmlns:ULAD": ULAD_NS,
+      "xmlns:xlink": XLINK_NS,
+      "xmlns:xsi": XSI_NS,
+      "xsi:schemaLocation": SCHEMA_LOCATION,
     },
     [
       el("ABOUT_VERSIONS", undefined, [
-        el("ABOUT_VERSION", undefined, [
-          leaf("AboutVersionIdentifier", REFERENCE_MODEL),
-          leaf("CreatedDatetime", deal.submittedAt),
-        ]),
+        el("ABOUT_VERSION", undefined, [leaf("CreatedDatetime", deal.submittedAt)]),
       ]),
       required("DEAL_SETS", undefined, [
-        required("DEAL_SET", { SequenceNumber: 1 }, [
+        required("DEAL_SET", undefined, [
           required("DEALS", undefined, [
-            required("DEAL", { SequenceNumber: 1 }, [
+            required("DEAL", undefined, [
               assets(deal),
               subjectProperty(deal),
               liabilities(deal),
-              required("LOANS", undefined, [subjectLoan(deal), relatedLoan(deal)]),
+              required("LOANS", undefined, [subjectLoan(deal)]),
               required("PARTIES", undefined, [
-                party(deal.borrower, PRIMARY),
-                deal.coBorrower ? party(deal.coBorrower, SECONDARY) : null,
+                ...deal.borrowers.map((b, i) => borrowerParty(b, i, labels[i])),
+                ...originatorParties(deal, deal.borrowers.length + 1),
               ]),
-              relationships(deal),
+              relationships(deal, labels),
             ]),
           ]),
         ]),

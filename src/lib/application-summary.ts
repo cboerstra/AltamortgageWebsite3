@@ -54,7 +54,74 @@ function fullName(app: Pick<ApplicationFormData, "firstName" | "middleName" | "l
     .join(" ");
 }
 
-function coBorrowerSection(cb: CoBorrowerData): SummarySection {
+/** Unanswered is not "No": older applications were never asked. */
+function answered(value: boolean | undefined): string {
+  return typeof value === "boolean" ? yesNo(value) : "—";
+}
+
+function addressText(a: { street: string; city: string; state: string; zip: string } | undefined): string {
+  if (!a || a.street.trim() === "") return "—";
+  return `${a.street}, ${a.city}, ${a.state} ${a.zip}`;
+}
+
+const LOAN_PROGRAM_LABEL: Record<NonNullable<ApplicationFormData["loanProgram"]>, string> = {
+  conventional: "Conventional",
+  fha: "FHA",
+  va: "VA",
+  usda: "USDA",
+  "not-sure": "Not sure",
+};
+
+const ETHNICITY_LABEL = { hispanic: "Hispanic or Latino", "not-hispanic": "Not Hispanic or Latino", decline: "Declined to provide" };
+const ORIGIN_LABEL = { mexican: "Mexican", "puerto-rican": "Puerto Rican", cuban: "Cuban", "other-hispanic": "Other Hispanic or Latino" };
+const RACE_LABEL = {
+  "american-indian": "American Indian or Alaska Native",
+  asian: "Asian",
+  black: "Black or African American",
+  "pacific-islander": "Native Hawaiian or Other Pacific Islander",
+  white: "White",
+  decline: "Declined to provide",
+};
+const SEX_LABEL = { female: "Female", male: "Male", decline: "Declined to provide" };
+
+function demographicRows(d: ApplicationFormData["demographics"]): SummaryRow[] {
+  if (!d) return [{ label: "Demographic information", value: "—" }];
+  const origins = d.ethnicity === "hispanic" ? (d.ethnicityOrigins ?? []).map((o) => ORIGIN_LABEL[o]) : [];
+  return [
+    { label: "Ethnicity", value: [ETHNICITY_LABEL[d.ethnicity], ...origins].join(" — ") },
+    { label: "Race", value: d.races.map((r) => RACE_LABEL[r]).join(", ") },
+    { label: "Sex", value: SEX_LABEL[d.sex] },
+  ];
+}
+
+type UrlaAnswers = Pick<
+  ApplicationFormData,
+  | "sellerRelationship"
+  | "undisclosedMortgageApplication"
+  | "undisclosedCreditApplication"
+  | "cleanEnergyLien"
+  | "coSignerOnUndisclosedDebt"
+  | "delinquentFederalDebt"
+  | "partyToLawsuit"
+  | "deedInLieu"
+  | "shortSale"
+>;
+
+function urlaDeclarationRows(d: UrlaAnswers, isPurchase: boolean): SummaryRow[] {
+  return [
+    ...(isPurchase ? [{ label: "Relationship with the seller", value: answered(d.sellerRelationship) }] : []),
+    { label: "Other mortgage applications not disclosed", value: answered(d.undisclosedMortgageApplication) },
+    { label: "New credit not disclosed", value: answered(d.undisclosedCreditApplication) },
+    { label: "Clean energy (PACE) lien", value: answered(d.cleanEnergyLien) },
+    { label: "Co-signer on undisclosed debt", value: answered(d.coSignerOnUndisclosedDebt) },
+    { label: "Delinquent on federal debt", value: answered(d.delinquentFederalDebt) },
+    { label: "Party to a lawsuit", value: answered(d.partyToLawsuit) },
+    { label: "Deed in lieu (past 7 years)", value: answered(d.deedInLieu) },
+    { label: "Short sale (past 7 years)", value: answered(d.shortSale) },
+  ];
+}
+
+function coBorrowerSection(cb: CoBorrowerData, isPurchase: boolean): SummarySection {
   const address = cb.sameAddress || !cb.currentAddress
     ? "Same as borrower"
     : `${cb.currentAddress.street}, ${cb.currentAddress.city}, ${cb.currentAddress.state} ${cb.currentAddress.zip}`;
@@ -76,14 +143,23 @@ function coBorrowerSection(cb: CoBorrowerData): SummarySection {
   rows.push(
     { label: "Employment status", value: EMPLOYMENT_STATUS_LABEL[cb.employmentStatus] },
     { label: "Employer", value: text(cb.employerName) },
+    { label: "Employer phone", value: text(cb.employerPhone) },
     { label: "Job title", value: text(cb.jobTitle) },
+    { label: "Start date", value: text(cb.employmentStartDate) },
     { label: "Years at job", value: years(cb.yearsAtJob) },
+    { label: "Years in line of work", value: years(cb.yearsInLineOfWork) },
+    { label: "Employed by a party to the transaction", value: answered(cb.employedByPartyToTransaction) },
     { label: "Monthly income", value: money(cb.monthlyIncome) },
     { label: "Citizenship", value: CITIZENSHIP_LABEL[cb.usCitizen] },
     { label: "Bankruptcy (past 7 years)", value: yesNo(cb.bankruptcy) },
     { label: "Foreclosure (past 7 years)", value: yesNo(cb.foreclosure) },
     { label: "Outstanding judgments", value: yesNo(cb.outstandingJudgments) },
     { label: "Veteran", value: yesNo(cb.veteran) },
+    { label: "Will occupy as primary residence", value: answered(cb.primaryResidence) },
+    { label: "Owned a home in past 3 years", value: answered(cb.ownedHomePastThreeYears) },
+    { label: "Borrowing undisclosed funds", value: answered(cb.downPaymentBorrowed) },
+    ...urlaDeclarationRows(cb, isPurchase),
+    ...demographicRows(cb.demographics),
     { label: "Electronic signature", value: text(cb.eSignatureName) }
   );
   return { title: "Co-borrower", rows };
@@ -130,6 +206,19 @@ export function buildApplicationSummary(
         { label: "Loan amount", value: money(app.loanAmount) },
         { label: "Down payment", value: money(app.downPayment) },
         { label: "Current balance", value: money(app.currentBalance) },
+        { label: "Loan program", value: app.loanProgram ? LOAN_PROGRAM_LABEL[app.loanProgram] : "—" },
+        { label: "Term", value: app.loanTermYears ? `${app.loanTermYears} years` : "—" },
+        {
+          label: "Rate type",
+          value: app.amortizationType ? (app.amortizationType === "fixed" ? "Fixed" : "Adjustable (ARM)") : "—",
+        },
+        ...(app.loanPurpose === "refinance" ? [{ label: "Cash out", value: answered(app.cashOut) }] : []),
+        {
+          label: "Property address",
+          value:
+            addressText(app.propertyAddress) +
+            (app.propertyAddress?.county?.trim() ? ` (${app.propertyAddress.county.trim()})` : ""),
+        },
       ],
     },
     {
@@ -140,6 +229,13 @@ export function buildApplicationSummary(
         { label: "Marital status", value: MARITAL_STATUS_LABEL[app.maritalStatus] },
         { label: "Phone", value: text(app.phone) },
         { label: "Email", value: text(app.email) },
+        {
+          label: "Dependents",
+          value:
+            typeof app.dependentCount === "number"
+              ? `${app.dependentCount}${app.dependentAges?.trim() ? ` (ages ${app.dependentAges.trim()})` : ""}`
+              : "—",
+        },
       ],
     },
     {
@@ -152,6 +248,7 @@ export function buildApplicationSummary(
         { label: "Years at address", value: years(app.yearsAtAddress) },
         { label: "Housing status", value: HOUSING_STATUS_LABEL[app.housingStatus] },
         { label: "Monthly housing payment", value: money(app.monthlyHousingPayment) },
+        { label: "Previous address", value: addressText(app.previousAddress) },
       ],
     },
     {
@@ -159,12 +256,16 @@ export function buildApplicationSummary(
       rows: [
         { label: "Employment status", value: EMPLOYMENT_STATUS_LABEL[app.employmentStatus] },
         { label: "Employer", value: text(app.employerName) },
+        { label: "Employer phone", value: text(app.employerPhone) },
         { label: "Job title", value: text(app.jobTitle) },
+        { label: "Start date", value: text(app.employmentStartDate) },
         { label: "Years at job", value: years(app.yearsAtJob) },
+        { label: "Years in line of work", value: years(app.yearsInLineOfWork) },
+        { label: "Employed by a party to the transaction", value: answered(app.employedByPartyToTransaction) },
         { label: "Monthly income", value: money(app.monthlyIncome) },
       ],
     },
-    ...(app.coBorrower ? [coBorrowerSection(app.coBorrower)] : []),
+    ...(app.coBorrower ? [coBorrowerSection(app.coBorrower, app.loanPurpose === "purchase")] : []),
     { title: "Monthly debts", rows: debts },
     {
       title: "Declarations",
@@ -173,12 +274,14 @@ export function buildApplicationSummary(
         { label: "Bankruptcy (past 7 years)", value: yesNo(app.bankruptcy) },
         { label: "Foreclosure (past 7 years)", value: yesNo(app.foreclosure) },
         { label: "Outstanding judgments", value: yesNo(app.outstandingJudgments) },
-        { label: "Down payment borrowed", value: yesNo(app.downPaymentBorrowed) },
+        { label: "Borrowing undisclosed funds", value: yesNo(app.downPaymentBorrowed) },
         { label: "Will occupy as primary residence", value: yesNo(app.primaryResidence) },
         { label: "Veteran", value: yesNo(app.veteran) },
         { label: "First-time buyer", value: yesNo(app.firstTimeBuyer) },
+        ...urlaDeclarationRows(app, app.loanPurpose === "purchase"),
       ],
     },
+    { title: "Demographic information", rows: demographicRows(app.demographics) },
     {
       title: "Consent & signature",
       rows: [

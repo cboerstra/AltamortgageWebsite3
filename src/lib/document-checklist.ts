@@ -1,7 +1,7 @@
 // What an applicant has to send us after the wizard is submitted.
 //
-// The site has no document upload, so the confirmation email asks the
-// applicant to send these by email. The list is tailored to what they actually
+// The confirmation email lists these and links to the borrower portal, where
+// they are uploaded. The list is tailored to what they actually
 // told us -- a retiree should not be asked for pay stubs, and only a veteran
 // needs a Certificate of Eligibility -- because a checklist full of
 // irrelevant items is one people skim and then ignore.

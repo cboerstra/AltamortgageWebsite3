@@ -215,6 +215,11 @@ export async function sendApplicantDocumentRequest(input: {
           <p style="margin:24px 0 8px">
             <a href="${escapeHtml(input.portalUrl)}" style="display:inline-block;background:#003087;color:#ffffff;text-decoration:none;font-weight:600;padding:12px 20px;border-radius:6px">Upload your documents securely</a>
           </p>
+          <!-- The address in plain sight too: some mail clients strip styled
+               buttons or disable links in mail from a new sender. -->
+          <p style="margin:0 0 12px;font-size:14px;color:#4b5563">
+            Or go to <a href="${escapeHtml(input.portalUrl)}">${escapeHtml(input.portalUrl)}</a>
+          </p>
           <ul style="margin:0;padding-left:20px;font-size:14px;color:#4b5563">
             <li style="margin:4px 0">Sign in with this email address — we send you a one-time code. No password needed.</li>
             <li style="margin:4px 0">PDF, JPG or PNG. Clear phone photos are fine, as long as the whole page is visible.</li>

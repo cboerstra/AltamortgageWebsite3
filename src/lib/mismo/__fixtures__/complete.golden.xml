@@ -1,29 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<MESSAGE xmlns="http://www.mismo.org/residential/2009/schemas" xmlns:xlink="http://www.w3.org/1999/xlink" MISMOReferenceModelIdentifier="3.4.0322">
+<MESSAGE MISMOReferenceModelIdentifier="3.4.032420160128" xmlns="http://www.mismo.org/residential/2009/schemas" xmlns:DU="http://www.datamodelextension.org/Schema/DU" xmlns:ULAD="http://www.datamodelextension.org/Schema/ULAD" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mismo.org/residential/2009/schemas DU_Wrapper_3.4.0_B324.xsd">
   <ABOUT_VERSIONS>
     <ABOUT_VERSION>
-      <AboutVersionIdentifier>3.4.0322</AboutVersionIdentifier>
       <CreatedDatetime>2026-09-08T14:30:12.000Z</CreatedDatetime>
     </ABOUT_VERSION>
   </ABOUT_VERSIONS>
   <DEAL_SETS>
-    <DEAL_SET SequenceNumber="1">
+    <DEAL_SET>
       <DEALS>
-        <DEAL SequenceNumber="1">
+        <DEAL>
           <COLLATERALS>
-            <COLLATERAL SequenceNumber="1">
-              <SUBJECT_PROPERTY>
-                <PROPERTY_DETAIL>
-                  <AttachmentType>Attached</AttachmentType>
-                  <FinancedUnitCount>1</FinancedUnitCount>
-                  <ManufacturedHomeIndicator>false</ManufacturedHomeIndicator>
-                  <PropertyUsageType>PrimaryResidence</PropertyUsageType>
-                </PROPERTY_DETAIL>
+            <COLLATERAL>
+              <SUBJECT_PROPERTY SequenceNumber="1">
+                <ADDRESS>
+                  <AddressLineText>706 Cook Street</AddressLineText>
+                  <CityName>Ogden</CityName>
+                  <CountryCode>US</CountryCode>
+                  <CountryName>United States</CountryName>
+                  <CountyName>Weber County</CountyName>
+                  <PostalCode>84404</PostalCode>
+                  <StateCode>UT</StateCode>
+                </ADDRESS>
                 <PROJECT>
                   <PROJECT_DETAIL>
                     <ProjectType>Condominium</ProjectType>
                   </PROJECT_DETAIL>
                 </PROJECT>
+                <PROPERTY_DETAIL>
+                  <AttachmentType>Attached</AttachmentType>
+                  <CommunityPropertyStateIndicator>false</CommunityPropertyStateIndicator>
+                  <ConstructionMethodType>SiteBuilt</ConstructionMethodType>
+                  <FinancedUnitCount>1</FinancedUnitCount>
+                  <PropertyEstimatedValueAmount>545000.00</PropertyEstimatedValueAmount>
+                  <PropertyInProjectIndicator>true</PropertyInProjectIndicator>
+                  <PropertyUsageType>PrimaryResidence</PropertyUsageType>
+                </PROPERTY_DETAIL>
                 <PROPERTY_VALUATIONS>
                   <PROPERTY_VALUATION>
                     <PROPERTY_VALUATION_DETAIL>
@@ -32,6 +43,13 @@
                     </PROPERTY_VALUATION_DETAIL>
                   </PROPERTY_VALUATION>
                 </PROPERTY_VALUATIONS>
+                <SALES_CONTRACTS>
+                  <SALES_CONTRACT>
+                    <SALES_CONTRACT_DETAIL>
+                      <SalesContractAmount>545000.00</SalesContractAmount>
+                    </SALES_CONTRACT_DETAIL>
+                  </SALES_CONTRACT>
+                </SALES_CONTRACTS>
               </SUBJECT_PROPERTY>
             </COLLATERAL>
           </COLLATERALS>
@@ -41,6 +59,7 @@
                 <LiabilityDescription>Auto loan</LiabilityDescription>
                 <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
                 <LiabilityMonthlyPaymentAmount>415.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPaymentIncludesTaxesInsuranceIndicator>false</LiabilityPaymentIncludesTaxesInsuranceIndicator>
                 <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
                 <LiabilityType>Installment</LiabilityType>
               </LIABILITY_DETAIL>
@@ -55,6 +74,7 @@
                 <LiabilityDescription>Student loan</LiabilityDescription>
                 <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
                 <LiabilityMonthlyPaymentAmount>260.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPaymentIncludesTaxesInsuranceIndicator>false</LiabilityPaymentIncludesTaxesInsuranceIndicator>
                 <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
                 <LiabilityType>Installment</LiabilityType>
               </LIABILITY_DETAIL>
@@ -69,6 +89,7 @@
                 <LiabilityDescription>Credit cards</LiabilityDescription>
                 <LiabilityExclusionIndicator>false</LiabilityExclusionIndicator>
                 <LiabilityMonthlyPaymentAmount>130.00</LiabilityMonthlyPaymentAmount>
+                <LiabilityPaymentIncludesTaxesInsuranceIndicator>false</LiabilityPaymentIncludesTaxesInsuranceIndicator>
                 <LiabilityPayoffStatusIndicator>false</LiabilityPayoffStatusIndicator>
                 <LiabilityType>Revolving</LiabilityType>
               </LIABILITY_DETAIL>
@@ -80,12 +101,34 @@
             </LIABILITY>
           </LIABILITIES>
           <LOANS>
-            <LOAN xlink:label="Loan1" LoanRoleType="SubjectLoan">
+            <LOAN LoanRoleType="SubjectLoan" xlink:label="LOAN_1" SequenceNumber="1">
+              <AMORTIZATION>
+                <AMORTIZATION_RULE>
+                  <AmortizationType>Fixed</AmortizationType>
+                  <LoanAmortizationMaximumTermMonthsCount>360</LoanAmortizationMaximumTermMonthsCount>
+                  <LoanAmortizationPeriodCount>360</LoanAmortizationPeriodCount>
+                  <LoanAmortizationPeriodType>Month</LoanAmortizationPeriodType>
+                </AMORTIZATION_RULE>
+              </AMORTIZATION>
+              <DOCUMENT_SPECIFIC_DATA_SETS>
+                <DOCUMENT_SPECIFIC_DATA_SET SequenceNumber="1">
+                  <URLA>
+                    <URLA_DETAIL>
+                      <ApplicationTakenMethodType>Internet</ApplicationTakenMethodType>
+                    </URLA_DETAIL>
+                  </URLA>
+                </DOCUMENT_SPECIFIC_DATA_SET>
+              </DOCUMENT_SPECIFIC_DATA_SETS>
+              <DOWN_PAYMENTS>
+                <DOWN_PAYMENT>
+                  <DownPaymentAmount>109000.00</DownPaymentAmount>
+                </DOWN_PAYMENT>
+              </DOWN_PAYMENTS>
               <LOAN_DETAIL>
                 <ApplicationReceivedDate>2026-09-08</ApplicationReceivedDate>
               </LOAN_DETAIL>
               <LOAN_IDENTIFIERS>
-                <LOAN_IDENTIFIER>
+                <LOAN_IDENTIFIER SequenceNumber="1">
                   <LoanIdentifier>ALT-K7M2Q</LoanIdentifier>
                   <LoanIdentifierType>LenderLoan</LoanIdentifierType>
                 </LOAN_IDENTIFIER>
@@ -94,25 +137,19 @@
                 <BaseLoanAmount>436000.00</BaseLoanAmount>
                 <LienPriorityType>FirstLien</LienPriorityType>
                 <LoanPurposeType>Purchase</LoanPurposeType>
+                <MortgageType>Conventional</MortgageType>
+                <NoteAmount>436000.00</NoteAmount>
               </TERMS_OF_LOAN>
-              <DOWN_PAYMENTS>
-                <DOWN_PAYMENT>
-                  <DownPaymentAmount>109000.00</DownPaymentAmount>
-                </DOWN_PAYMENT>
-              </DOWN_PAYMENTS>
             </LOAN>
           </LOANS>
           <PARTIES>
-            <PARTY xlink:label="Party1" SequenceNumber="1">
+            <PARTY SequenceNumber="1">
               <INDIVIDUAL>
                 <CONTACT_POINTS>
                   <CONTACT_POINT SequenceNumber="1">
                     <CONTACT_POINT_EMAIL>
                       <ContactPointEmailValue>dana.obrien@example.com</ContactPointEmailValue>
                     </CONTACT_POINT_EMAIL>
-                    <CONTACT_POINT_DETAIL>
-                      <ContactPointRoleType>Home</ContactPointRoleType>
-                    </CONTACT_POINT_DETAIL>
                   </CONTACT_POINT>
                   <CONTACT_POINT SequenceNumber="2">
                     <CONTACT_POINT_TELEPHONE>
@@ -131,12 +168,24 @@
                   <SuffixName>Jr.</SuffixName>
                 </NAME>
               </INDIVIDUAL>
+              <ADDRESSES>
+                <ADDRESS>
+                  <AddressLineText>1490 S &lt;Main&gt; St Apt 4</AddressLineText>
+                  <AddressType>Mailing</AddressType>
+                  <CityName>Salt Lake City</CityName>
+                  <CountryCode>US</CountryCode>
+                  <PostalCode>84115</PostalCode>
+                  <StateCode>UT</StateCode>
+                </ADDRESS>
+              </ADDRESSES>
               <ROLES>
                 <ROLE SequenceNumber="1" xlink:label="BORROWER_1">
                   <BORROWER>
                     <BORROWER_DETAIL>
                       <BorrowerBirthDate>1985-04-17</BorrowerBirthDate>
                       <BorrowerClassificationType>Primary</BorrowerClassificationType>
+                      <CommunityPropertyStateResidentIndicator>false</CommunityPropertyStateResidentIndicator>
+                      <DependentCount>2</DependentCount>
                       <MaritalStatusType>Married</MaritalStatusType>
                       <SelfDeclaredMilitaryServiceIndicator>true</SelfDeclaredMilitaryServiceIndicator>
                     </BORROWER_DETAIL>
@@ -154,17 +203,54 @@
                     <DECLARATION>
                       <DECLARATION_DETAIL>
                         <BankruptcyIndicator>false</BankruptcyIndicator>
-                        <BorrowedDownPaymentIndicator>false</BorrowedDownPaymentIndicator>
                         <CitizenshipResidencyType>USCitizen</CitizenshipResidencyType>
                         <HomeownerPastThreeYearsType>Yes</HomeownerPastThreeYearsType>
                         <IntentToOccupyType>Yes</IntentToOccupyType>
                         <OutstandingJudgmentsIndicator>false</OutstandingJudgmentsIndicator>
+                        <PartyToLawsuitIndicator>false</PartyToLawsuitIndicator>
+                        <PresentlyDelinquentIndicator>false</PresentlyDelinquentIndicator>
+                        <PriorPropertyDeedInLieuConveyedIndicator>false</PriorPropertyDeedInLieuConveyedIndicator>
                         <PriorPropertyForeclosureCompletedIndicator>false</PriorPropertyForeclosureCompletedIndicator>
+                        <PriorPropertyShortSaleCompletedIndicator>false</PriorPropertyShortSaleCompletedIndicator>
+                        <PropertyProposedCleanEnergyLienIndicator>false</PropertyProposedCleanEnergyLienIndicator>
+                        <UndisclosedBorrowedFundsIndicator>false</UndisclosedBorrowedFundsIndicator>
+                        <UndisclosedComakerOfNoteIndicator>false</UndisclosedComakerOfNoteIndicator>
+                        <UndisclosedCreditApplicationIndicator>false</UndisclosedCreditApplicationIndicator>
+                        <UndisclosedMortgageApplicationIndicator>false</UndisclosedMortgageApplicationIndicator>
+                        <EXTENSION>
+                          <OTHER>
+                            <ULAD:DECLARATION_DETAIL_EXTENSION>
+                              <ULAD:SpecialBorrowerSellerRelationshipIndicator>true</ULAD:SpecialBorrowerSellerRelationshipIndicator>
+                            </ULAD:DECLARATION_DETAIL_EXTENSION>
+                          </OTHER>
+                        </EXTENSION>
                       </DECLARATION_DETAIL>
                     </DECLARATION>
+                    <DEPENDENTS>
+                      <DEPENDENT>
+                        <DependentAgeYearsCount>1</DependentAgeYearsCount>
+                      </DEPENDENT>
+                      <DEPENDENT>
+                        <DependentAgeYearsCount>3</DependentAgeYearsCount>
+                      </DEPENDENT>
+                    </DEPENDENTS>
                     <EMPLOYERS>
                       <EMPLOYER SequenceNumber="1" xlink:label="EMPLOYER_1">
                         <LEGAL_ENTITY>
+                          <CONTACTS>
+                            <CONTACT>
+                              <CONTACT_POINTS>
+                                <CONTACT_POINT SequenceNumber="1">
+                                  <CONTACT_POINT_TELEPHONE>
+                                    <ContactPointTelephoneValue>8015550100</ContactPointTelephoneValue>
+                                  </CONTACT_POINT_TELEPHONE>
+                                  <CONTACT_POINT_DETAIL>
+                                    <ContactPointRoleType>Work</ContactPointRoleType>
+                                  </CONTACT_POINT_DETAIL>
+                                </CONTACT_POINT>
+                              </CONTACT_POINTS>
+                            </CONTACT>
+                          </CONTACTS>
                           <LEGAL_ENTITY_DETAIL>
                             <FullName>Wasatch Analytics</FullName>
                           </LEGAL_ENTITY_DETAIL>
@@ -173,11 +259,54 @@
                           <EmploymentBorrowerSelfEmployedIndicator>false</EmploymentBorrowerSelfEmployedIndicator>
                           <EmploymentClassificationType>Primary</EmploymentClassificationType>
                           <EmploymentPositionDescription>Senior Analyst</EmploymentPositionDescription>
+                          <EmploymentStartDate>2020-12-20</EmploymentStartDate>
                           <EmploymentStatusType>Current</EmploymentStatusType>
-                          <EmploymentTimeInLineOfWorkMonthsCount>72</EmploymentTimeInLineOfWorkMonthsCount>
+                          <EmploymentTimeInLineOfWorkMonthsCount>120</EmploymentTimeInLineOfWorkMonthsCount>
+                          <SpecialBorrowerEmployerRelationshipIndicator>false</SpecialBorrowerEmployerRelationshipIndicator>
                         </EMPLOYMENT>
                       </EMPLOYER>
                     </EMPLOYERS>
+                    <GOVERNMENT_MONITORING>
+                      <GOVERNMENT_MONITORING_DETAIL>
+                        <HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator>false</HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator>
+                        <HMDAEthnicityRefusalIndicator>false</HMDAEthnicityRefusalIndicator>
+                        <HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator>false</HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator>
+                        <HMDAGenderRefusalIndicator>false</HMDAGenderRefusalIndicator>
+                        <HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator>false</HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator>
+                        <HMDARaceRefusalIndicator>false</HMDARaceRefusalIndicator>
+                        <EXTENSION>
+                          <OTHER>
+                            <ULAD:GOVERNMENT_MONITORING_DETAIL_EXTENSION>
+                              <ULAD:ApplicationTakenMethodType>Internet</ULAD:ApplicationTakenMethodType>
+                              <ULAD:HMDAGenderType>Female</ULAD:HMDAGenderType>
+                            </ULAD:GOVERNMENT_MONITORING_DETAIL_EXTENSION>
+                          </OTHER>
+                        </EXTENSION>
+                      </GOVERNMENT_MONITORING_DETAIL>
+                      <HMDA_ETHNICITY_ORIGINS>
+                        <HMDA_ETHNICITY_ORIGIN SequenceNumber="1">
+                          <HMDAEthnicityOriginType>PuertoRican</HMDAEthnicityOriginType>
+                        </HMDA_ETHNICITY_ORIGIN>
+                      </HMDA_ETHNICITY_ORIGINS>
+                      <HMDA_RACES>
+                        <HMDA_RACE SequenceNumber="1">
+                          <HMDA_RACE_DETAIL>
+                            <HMDARaceType>White</HMDARaceType>
+                          </HMDA_RACE_DETAIL>
+                        </HMDA_RACE>
+                      </HMDA_RACES>
+                      <EXTENSION>
+                        <OTHER>
+                          <ULAD:GOVERNMENT_MONITORING_EXTENSION>
+                            <ULAD:HMDA_ETHNICITIES>
+                              <ULAD:HMDA_ETHNICITY>
+                                <ULAD:HMDAEthnicityType>HispanicOrLatino</ULAD:HMDAEthnicityType>
+                              </ULAD:HMDA_ETHNICITY>
+                            </ULAD:HMDA_ETHNICITIES>
+                          </ULAD:GOVERNMENT_MONITORING_EXTENSION>
+                        </OTHER>
+                      </EXTENSION>
+                    </GOVERNMENT_MONITORING>
                     <RESIDENCES>
                       <RESIDENCE SequenceNumber="1">
                         <ADDRESS>
@@ -187,11 +316,15 @@
                           <PostalCode>84115</PostalCode>
                           <StateCode>UT</StateCode>
                         </ADDRESS>
+                        <LANDLORD>
+                          <LANDLORD_DETAIL>
+                            <MonthlyRentAmount>1850.00</MonthlyRentAmount>
+                          </LANDLORD_DETAIL>
+                        </LANDLORD>
                         <RESIDENCE_DETAIL>
                           <BorrowerResidencyBasisType>Rent</BorrowerResidencyBasisType>
                           <BorrowerResidencyDurationMonthsCount>42</BorrowerResidencyDurationMonthsCount>
                           <BorrowerResidencyType>Current</BorrowerResidencyType>
-                          <MonthlyRentAmount>1850.00</MonthlyRentAmount>
                         </RESIDENCE_DETAIL>
                       </RESIDENCE>
                     </RESIDENCES>
@@ -202,13 +335,263 @@
                 </ROLE>
               </ROLES>
             </PARTY>
+            <PARTY SequenceNumber="2">
+              <INDIVIDUAL>
+                <CONTACT_POINTS>
+                  <CONTACT_POINT SequenceNumber="1">
+                    <CONTACT_POINT_EMAIL>
+                      <ContactPointEmailValue>carlos.resto@example.com</ContactPointEmailValue>
+                    </CONTACT_POINT_EMAIL>
+                  </CONTACT_POINT>
+                  <CONTACT_POINT SequenceNumber="2">
+                    <CONTACT_POINT_TELEPHONE>
+                      <ContactPointTelephoneValue>8015550199</ContactPointTelephoneValue>
+                    </CONTACT_POINT_TELEPHONE>
+                    <CONTACT_POINT_DETAIL>
+                      <ContactPointRoleType>Mobile</ContactPointRoleType>
+                    </CONTACT_POINT_DETAIL>
+                  </CONTACT_POINT>
+                </CONTACT_POINTS>
+                <NAME>
+                  <FirstName>Carlos</FirstName>
+                  <FullName>Carlos Omar Resto</FullName>
+                  <LastName>Resto</LastName>
+                  <MiddleName>Omar</MiddleName>
+                </NAME>
+              </INDIVIDUAL>
+              <ADDRESSES>
+                <ADDRESS>
+                  <AddressLineText>1490 S &lt;Main&gt; St Apt 4</AddressLineText>
+                  <AddressType>Mailing</AddressType>
+                  <CityName>Salt Lake City</CityName>
+                  <CountryCode>US</CountryCode>
+                  <PostalCode>84115</PostalCode>
+                  <StateCode>UT</StateCode>
+                </ADDRESS>
+              </ADDRESSES>
+              <ROLES>
+                <ROLE SequenceNumber="1" xlink:label="BORROWER_2">
+                  <BORROWER>
+                    <BORROWER_DETAIL>
+                      <BorrowerBirthDate>1989-08-24</BorrowerBirthDate>
+                      <BorrowerClassificationType>Secondary</BorrowerClassificationType>
+                      <CommunityPropertyStateResidentIndicator>false</CommunityPropertyStateResidentIndicator>
+                      <DependentCount>2</DependentCount>
+                      <MaritalStatusType>Married</MaritalStatusType>
+                      <SelfDeclaredMilitaryServiceIndicator>false</SelfDeclaredMilitaryServiceIndicator>
+                    </BORROWER_DETAIL>
+                    <CURRENT_INCOME>
+                      <CURRENT_INCOME_ITEMS>
+                        <CURRENT_INCOME_ITEM SequenceNumber="1" xlink:label="CURRENT_INCOME_ITEM_2">
+                          <CURRENT_INCOME_ITEM_DETAIL>
+                            <CurrentIncomeMonthlyTotalAmount>3813.33</CurrentIncomeMonthlyTotalAmount>
+                            <EmploymentIncomeIndicator>true</EmploymentIncomeIndicator>
+                            <IncomeType>Base</IncomeType>
+                          </CURRENT_INCOME_ITEM_DETAIL>
+                        </CURRENT_INCOME_ITEM>
+                      </CURRENT_INCOME_ITEMS>
+                    </CURRENT_INCOME>
+                    <DECLARATION>
+                      <DECLARATION_DETAIL>
+                        <BankruptcyIndicator>false</BankruptcyIndicator>
+                        <CitizenshipResidencyType>USCitizen</CitizenshipResidencyType>
+                        <HomeownerPastThreeYearsType>No</HomeownerPastThreeYearsType>
+                        <IntentToOccupyType>Yes</IntentToOccupyType>
+                        <OutstandingJudgmentsIndicator>false</OutstandingJudgmentsIndicator>
+                        <PartyToLawsuitIndicator>false</PartyToLawsuitIndicator>
+                        <PresentlyDelinquentIndicator>false</PresentlyDelinquentIndicator>
+                        <PriorPropertyDeedInLieuConveyedIndicator>false</PriorPropertyDeedInLieuConveyedIndicator>
+                        <PriorPropertyForeclosureCompletedIndicator>false</PriorPropertyForeclosureCompletedIndicator>
+                        <PriorPropertyShortSaleCompletedIndicator>false</PriorPropertyShortSaleCompletedIndicator>
+                        <PropertyProposedCleanEnergyLienIndicator>false</PropertyProposedCleanEnergyLienIndicator>
+                        <UndisclosedBorrowedFundsIndicator>false</UndisclosedBorrowedFundsIndicator>
+                        <UndisclosedComakerOfNoteIndicator>false</UndisclosedComakerOfNoteIndicator>
+                        <UndisclosedCreditApplicationIndicator>false</UndisclosedCreditApplicationIndicator>
+                        <UndisclosedMortgageApplicationIndicator>false</UndisclosedMortgageApplicationIndicator>
+                        <EXTENSION>
+                          <OTHER>
+                            <ULAD:DECLARATION_DETAIL_EXTENSION>
+                              <ULAD:SpecialBorrowerSellerRelationshipIndicator>false</ULAD:SpecialBorrowerSellerRelationshipIndicator>
+                            </ULAD:DECLARATION_DETAIL_EXTENSION>
+                          </OTHER>
+                        </EXTENSION>
+                      </DECLARATION_DETAIL>
+                    </DECLARATION>
+                    <DEPENDENTS>
+                      <DEPENDENT>
+                        <DependentAgeYearsCount>1</DependentAgeYearsCount>
+                      </DEPENDENT>
+                      <DEPENDENT>
+                        <DependentAgeYearsCount>3</DependentAgeYearsCount>
+                      </DEPENDENT>
+                    </DEPENDENTS>
+                    <EMPLOYERS>
+                      <EMPLOYER SequenceNumber="1" xlink:label="EMPLOYER_2">
+                        <LEGAL_ENTITY>
+                          <CONTACTS>
+                            <CONTACT>
+                              <CONTACT_POINTS>
+                                <CONTACT_POINT SequenceNumber="1">
+                                  <CONTACT_POINT_TELEPHONE>
+                                    <ContactPointTelephoneValue>8015550142</ContactPointTelephoneValue>
+                                  </CONTACT_POINT_TELEPHONE>
+                                  <CONTACT_POINT_DETAIL>
+                                    <ContactPointRoleType>Work</ContactPointRoleType>
+                                  </CONTACT_POINT_DETAIL>
+                                </CONTACT_POINT>
+                              </CONTACT_POINTS>
+                            </CONTACT>
+                          </CONTACTS>
+                          <LEGAL_ENTITY_DETAIL>
+                            <FullName>The Front Climbing Club</FullName>
+                          </LEGAL_ENTITY_DETAIL>
+                        </LEGAL_ENTITY>
+                        <EMPLOYMENT>
+                          <EmploymentBorrowerSelfEmployedIndicator>false</EmploymentBorrowerSelfEmployedIndicator>
+                          <EmploymentClassificationType>Primary</EmploymentClassificationType>
+                          <EmploymentPositionDescription>Shift Lead</EmploymentPositionDescription>
+                          <EmploymentStartDate>2023-01-01</EmploymentStartDate>
+                          <EmploymentStatusType>Current</EmploymentStatusType>
+                          <EmploymentTimeInLineOfWorkMonthsCount>36</EmploymentTimeInLineOfWorkMonthsCount>
+                        </EMPLOYMENT>
+                      </EMPLOYER>
+                    </EMPLOYERS>
+                    <GOVERNMENT_MONITORING>
+                      <GOVERNMENT_MONITORING_DETAIL>
+                        <HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator>false</HMDAEthnicityCollectedBasedOnVisualObservationOrSurnameIndicator>
+                        <HMDAEthnicityRefusalIndicator>true</HMDAEthnicityRefusalIndicator>
+                        <HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator>false</HMDAGenderCollectedBasedOnVisualObservationOrNameIndicator>
+                        <HMDAGenderRefusalIndicator>false</HMDAGenderRefusalIndicator>
+                        <HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator>false</HMDARaceCollectedBasedOnVisualObservationOrSurnameIndicator>
+                        <HMDARaceRefusalIndicator>true</HMDARaceRefusalIndicator>
+                        <EXTENSION>
+                          <OTHER>
+                            <ULAD:GOVERNMENT_MONITORING_DETAIL_EXTENSION>
+                              <ULAD:ApplicationTakenMethodType>Internet</ULAD:ApplicationTakenMethodType>
+                              <ULAD:HMDAGenderType>Male</ULAD:HMDAGenderType>
+                            </ULAD:GOVERNMENT_MONITORING_DETAIL_EXTENSION>
+                          </OTHER>
+                        </EXTENSION>
+                      </GOVERNMENT_MONITORING_DETAIL>
+                    </GOVERNMENT_MONITORING>
+                    <RESIDENCES>
+                      <RESIDENCE SequenceNumber="1">
+                        <ADDRESS>
+                          <AddressLineText>1490 S &lt;Main&gt; St Apt 4</AddressLineText>
+                          <CityName>Salt Lake City</CityName>
+                          <CountryCode>US</CountryCode>
+                          <PostalCode>84115</PostalCode>
+                          <StateCode>UT</StateCode>
+                        </ADDRESS>
+                        <LANDLORD>
+                          <LANDLORD_DETAIL>
+                            <MonthlyRentAmount>1850.00</MonthlyRentAmount>
+                          </LANDLORD_DETAIL>
+                        </LANDLORD>
+                        <RESIDENCE_DETAIL>
+                          <BorrowerResidencyBasisType>Rent</BorrowerResidencyBasisType>
+                          <BorrowerResidencyDurationMonthsCount>42</BorrowerResidencyDurationMonthsCount>
+                          <BorrowerResidencyType>Current</BorrowerResidencyType>
+                        </RESIDENCE_DETAIL>
+                      </RESIDENCE>
+                    </RESIDENCES>
+                  </BORROWER>
+                  <ROLE_DETAIL>
+                    <PartyRoleType>Borrower</PartyRoleType>
+                  </ROLE_DETAIL>
+                </ROLE>
+              </ROLES>
+            </PARTY>
+            <PARTY SequenceNumber="3">
+              <LEGAL_ENTITY>
+                <LEGAL_ENTITY_DETAIL>
+                  <FullName>Clarke and Associates</FullName>
+                </LEGAL_ENTITY_DETAIL>
+              </LEGAL_ENTITY>
+              <ADDRESSES>
+                <ADDRESS>
+                  <AddressLineText>4824 S 6150 W</AddressLineText>
+                  <AddressType>Mailing</AddressType>
+                  <CityName>Hooper</CityName>
+                  <CountryCode>US</CountryCode>
+                  <PostalCode>84315</PostalCode>
+                  <StateCode>UT</StateCode>
+                </ADDRESS>
+              </ADDRESSES>
+              <ROLES>
+                <ROLE SequenceNumber="1" xlink:label="LOAN_ORIGINATION_COMPANY_1">
+                  <LICENSES>
+                    <LICENSE SequenceNumber="1">
+                      <LICENSE_DETAIL>
+                        <LicenseAuthorityLevelType>Private</LicenseAuthorityLevelType>
+                        <LicenseIdentifier>565137</LicenseIdentifier>
+                      </LICENSE_DETAIL>
+                    </LICENSE>
+                    <LICENSE SequenceNumber="2">
+                      <LICENSE_DETAIL>
+                        <LicenseAuthorityLevelType>PublicState</LicenseAuthorityLevelType>
+                        <LicenseIdentifier>5452345-NMLM</LicenseIdentifier>
+                        <LicenseIssuingAuthorityStateCode>UT</LicenseIssuingAuthorityStateCode>
+                      </LICENSE_DETAIL>
+                    </LICENSE>
+                  </LICENSES>
+                  <ROLE_DETAIL>
+                    <PartyRoleType>LoanOriginationCompany</PartyRoleType>
+                  </ROLE_DETAIL>
+                </ROLE>
+              </ROLES>
+            </PARTY>
+            <PARTY SequenceNumber="4">
+              <INDIVIDUAL>
+                <CONTACT_POINTS>
+                  <CONTACT_POINT SequenceNumber="1">
+                    <CONTACT_POINT_TELEPHONE>
+                      <ContactPointTelephoneValue>8016289400</ContactPointTelephoneValue>
+                    </CONTACT_POINT_TELEPHONE>
+                    <CONTACT_POINT_DETAIL>
+                      <ContactPointRoleType>Work</ContactPointRoleType>
+                    </CONTACT_POINT_DETAIL>
+                  </CONTACT_POINT>
+                  <CONTACT_POINT SequenceNumber="2">
+                    <CONTACT_POINT_EMAIL>
+                      <ContactPointEmailValue>info@altamortgagegroup.net</ContactPointEmailValue>
+                    </CONTACT_POINT_EMAIL>
+                  </CONTACT_POINT>
+                </CONTACT_POINTS>
+                <NAME>
+                  <FirstName>Scott</FirstName>
+                  <FullName>Scott Boerstra</FullName>
+                  <IndividualTitleDescription>Broker/Manager</IndividualTitleDescription>
+                  <LastName>Boerstra</LastName>
+                </NAME>
+              </INDIVIDUAL>
+              <ROLES>
+                <ROLE SequenceNumber="1" xlink:label="LOAN_ORIGINATOR_1">
+                  <LOAN_ORIGINATOR>
+                    <LoanOriginatorType>Broker</LoanOriginatorType>
+                  </LOAN_ORIGINATOR>
+                  <LICENSES>
+                    <LICENSE SequenceNumber="1">
+                      <LICENSE_DETAIL>
+                        <LicenseAuthorityLevelType>Private</LicenseAuthorityLevelType>
+                        <LicenseIdentifier>258624</LicenseIdentifier>
+                      </LICENSE_DETAIL>
+                    </LICENSE>
+                  </LICENSES>
+                  <ROLE_DETAIL>
+                    <PartyRoleType>LoanOriginator</PartyRoleType>
+                  </ROLE_DETAIL>
+                </ROLE>
+              </ROLES>
+            </PARTY>
           </PARTIES>
           <RELATIONSHIPS>
             <RELATIONSHIP SequenceNumber="1" xlink:from="LIABILITY_1" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
             <RELATIONSHIP SequenceNumber="2" xlink:from="LIABILITY_2" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
             <RELATIONSHIP SequenceNumber="3" xlink:from="LIABILITY_3" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/LIABILITY_IsAssociatedWith_ROLE" />
             <RELATIONSHIP SequenceNumber="4" xlink:from="CURRENT_INCOME_ITEM_1" xlink:to="EMPLOYER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER" />
-            <RELATIONSHIP SequenceNumber="5" xlink:from="Party1" xlink:to="Loan1" xlink:arcrole="urn:fdc:Meta:2009:arcrole:PartyToLoan" />
+            <RELATIONSHIP SequenceNumber="5" xlink:from="CURRENT_INCOME_ITEM_2" xlink:to="EMPLOYER_2" xlink:arcrole="urn:fdc:mismo.org:2009:residential/CURRENT_INCOME_ITEM_IsAssociatedWith_EMPLOYER" />
+            <RELATIONSHIP SequenceNumber="6" xlink:from="BORROWER_2" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/ROLE_SharesJointCreditReportWith_ROLE" />
           </RELATIONSHIPS>
         </DEAL>
       </DEALS>
@@ -236,7 +619,16 @@
           <alta:AuthorizationGivenIndicator>true</alta:AuthorizationGivenIndicator>
           <alta:ElectronicSignatureName>Dana Lee O'Brien</alta:ElectronicSignatureName>
           <alta:ElectronicSignatureDate>2026-09-08</alta:ElectronicSignatureDate>
+          <alta:CoBorrowerElectronicSignatureName>Carlos Omar Resto</alta:CoBorrowerElectronicSignatureName>
         </alta:CONSENT>
+        <alta:CO_BORROWER>
+          <alta:RelationshipToBorrowerLabel>Spouse</alta:RelationshipToBorrowerLabel>
+          <alta:MaritalStatusLabel>Married</alta:MaritalStatusLabel>
+          <alta:CitizenshipLabel>U.S. Citizen</alta:CitizenshipLabel>
+          <alta:EmploymentStatusLabel>Employed</alta:EmploymentStatusLabel>
+          <alta:EmployerName>The Front Climbing Club</alta:EmployerName>
+          <alta:VeteranIndicator>false</alta:VeteranIndicator>
+        </alta:CO_BORROWER>
       </alta:APPLICATION_METADATA>
     </OTHER>
   </EXTENSION>

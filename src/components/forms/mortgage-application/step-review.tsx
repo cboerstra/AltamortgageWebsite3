@@ -39,6 +39,31 @@ function SectionHeader({
   );
 }
 
+function addressLine(a: { street: string; city: string; state: string; zip: string } | undefined): string | undefined {
+  if (!a || !a.street?.trim()) return undefined;
+  return `${a.street}, ${a.city}, ${a.state} ${a.zip}`;
+}
+
+/** Short names for the newer URLA questions, so a "Yes" stands out on review. */
+const DECLARATION_LABEL: Record<string, string> = {
+  sellerRelationship: "Relationship with seller",
+  undisclosedMortgageApplication: "Other mortgage application",
+  undisclosedCreditApplication: "New credit",
+  cleanEnergyLien: "PACE lien",
+  coSignerOnUndisclosedDebt: "Co-signer on other debt",
+  delinquentFederalDebt: "Delinquent federal debt",
+  partyToLawsuit: "Lawsuit",
+  deedInLieu: "Deed in lieu",
+  shortSale: "Short sale",
+};
+
+function yesAnswers(answers: object): string[] {
+  const values = answers as Record<string, unknown>;
+  return Object.keys(DECLARATION_LABEL)
+    .filter((key) => values[key] === true)
+    .map((key) => DECLARATION_LABEL[key]);
+}
+
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex justify-between text-sm py-1">
@@ -96,6 +121,14 @@ export function StepReview({
         {data.currentBalance != null && (
           <Row label="Current Balance" value={fmt(data.currentBalance)} />
         )}
+        {data.loanPurpose === "refinance" && <Row label="Cash Out" value={boolLabel(data.cashOut)} />}
+        <Row label="Loan Program" value={data.loanProgram} />
+        <Row label="Loan Term" value={data.loanTermYears ? `${data.loanTermYears} years` : undefined} />
+        <Row
+          label="Rate Type"
+          value={data.amortizationType === "arm" ? "Adjustable (ARM)" : data.amortizationType && "Fixed"}
+        />
+        <Row label="Property Address" value={addressLine(data.propertyAddress)} />
       </div>
 
       <Separator />
@@ -131,6 +164,14 @@ export function StepReview({
           label="Monthly Housing Payment"
           value={fmt(data.monthlyHousingPayment)}
         />
+        <Row
+          label="Dependents"
+          value={
+            data.dependentCount != null && !isNaN(data.dependentCount)
+              ? `${data.dependentCount}${data.dependentAges?.trim() ? ` (ages ${data.dependentAges.trim()})` : ""}`
+              : undefined
+          }
+        />
       </div>
 
       {data.coBorrower && (
@@ -165,6 +206,9 @@ export function StepReview({
             <Row label="Foreclosure" value={boolLabel(data.coBorrower.foreclosure)} />
             <Row label="Outstanding Judgments" value={boolLabel(data.coBorrower.outstandingJudgments)} />
             <Row label="Veteran" value={boolLabel(data.coBorrower.veteran)} />
+            <Row label="Primary Residence" value={boolLabel(data.coBorrower.primaryResidence)} />
+            <Row label="Other declarations answered Yes" value={yesAnswers(data.coBorrower).join(", ") || "None"} />
+            <Row label="Demographic Information" value={data.coBorrower.demographics?.sex ? "Provided" : "---"} />
           </div>
         </>
       )}
@@ -185,6 +229,11 @@ export function StepReview({
         {data.jobTitle && <Row label="Job Title" value={data.jobTitle} />}
         {data.yearsAtJob != null && (
           <Row label="Years at Job" value={data.yearsAtJob} />
+        )}
+        {data.employerPhone && <Row label="Employer Phone" value={data.employerPhone} />}
+        {data.employmentStartDate && <Row label="Start Date" value={data.employmentStartDate} />}
+        {data.yearsInLineOfWork != null && !isNaN(data.yearsInLineOfWork) && (
+          <Row label="Years in Line of Work" value={data.yearsInLineOfWork} />
         )}
         <Row label="Monthly Income" value={fmt(data.monthlyIncome)} />
         {data.otherIncome && data.otherIncome.length > 0 && (
@@ -250,7 +299,7 @@ export function StepReview({
           value={boolLabel(data.outstandingJudgments)}
         />
         <Row
-          label="Down Payment Borrowed"
+          label="Undisclosed Borrowed Funds"
           value={boolLabel(data.downPaymentBorrowed)}
         />
         <Row
@@ -259,6 +308,8 @@ export function StepReview({
         />
         <Row label="Veteran" value={boolLabel(data.veteran)} />
         <Row label="First-Time Buyer" value={boolLabel(data.firstTimeBuyer)} />
+        <Row label="Other declarations answered Yes" value={yesAnswers(data).join(", ") || "None"} />
+        <Row label="Demographic Information" value={data.demographics?.sex ? "Provided" : "---"} />
       </div>
 
       <Separator />

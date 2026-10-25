@@ -6,10 +6,13 @@ import { mapToDeal } from "./map";
 import {
   completeApplication,
   FIXTURE_OPTIONS,
+  fullJointApplication,
   refinanceApplication,
 } from "./__fixtures__/application";
 
-function build(app = completeApplication) {
+// The golden file and the default document are the fullest case: a joint
+// application where both borrowers answered everything.
+function build(app = fullJointApplication) {
   return buildMismoXml(mapToDeal(app, FIXTURE_OPTIONS));
 }
 
@@ -33,10 +36,12 @@ describe("buildMismoXml — golden file", () => {
 describe("buildMismoXml — document shape", () => {
   const xml = build();
 
-  it("declares the v3.4 reference model and the MISMO namespace", () => {
+  it("declares the reference model and namespaces ARIVE's own export uses", () => {
     expect(xml).toContain('<?xml version="1.0" encoding="UTF-8"?>');
     expect(xml).toContain('xmlns="http://www.mismo.org/residential/2009/schemas"');
-    expect(xml).toContain('MISMOReferenceModelIdentifier="3.4.0322"');
+    expect(xml).toContain('MISMOReferenceModelIdentifier="3.4.032420160128"');
+    expect(xml).toContain('xmlns:ULAD="http://www.datamodelextension.org/Schema/ULAD"');
+    expect(xml).toContain('xmlns:DU="http://www.datamodelextension.org/Schema/DU"');
   });
 
   it("nests the deal under the standard container chain", () => {
@@ -57,11 +62,34 @@ describe("buildMismoXml — document shape", () => {
     }
   });
 
-  it("links the borrower to the subject loan with an xlink arc", () => {
-    expect(xml).toContain('<PARTY xlink:label="Party1"');
-    expect(xml).toContain('LoanRoleType="SubjectLoan"');
-    expect(xml).toContain('xlink:from="Party1"');
-    expect(xml).toContain('xlink:to="Loan1"');
+  it("labels the subject loan the way ARIVE does, with no non-ULAD arcs", () => {
+    expect(xml).toContain('<LOAN LoanRoleType="SubjectLoan" xlink:label="LOAN_1" SequenceNumber="1">');
+    expect(xml).not.toContain("PartyToLoan");
+  });
+
+  it("orders the subject loan's containers alphabetically, as the schema requires", () => {
+    const order = [
+      "<AMORTIZATION>",
+      "<DOCUMENT_SPECIFIC_DATA_SETS>",
+      "<DOWN_PAYMENTS>",
+      "<LOAN_DETAIL>",
+      "<LOAN_IDENTIFIERS>",
+      "<TERMS_OF_LOAN>",
+    ];
+    const positions = order.map((token) => xml.indexOf(token));
+    expect(positions.every((p) => p > 0)).toBe(true);
+    expect([...positions].sort((a, b) => a - b)).toEqual(positions);
+  });
+
+  it("records an online application", () => {
+    expect(xml).toContain("<ApplicationTakenMethodType>Internet</ApplicationTakenMethodType>");
+    expect(xml).toContain("<ULAD:ApplicationTakenMethodType>Internet</ULAD:ApplicationTakenMethodType>");
+  });
+
+  it("names the loan originator and company so the LOS can assign the file", () => {
+    expect(xml).toContain("<PartyRoleType>LoanOriginationCompany</PartyRoleType>");
+    expect(xml).toContain("<PartyRoleType>LoanOriginator</PartyRoleType>");
+    expect(xml).toContain("<LicenseIdentifier>258624</LicenseIdentifier>");
   });
 
   it("carries the reference number as the lender loan identifier", () => {
@@ -81,6 +109,50 @@ describe("buildMismoXml — privacy", () => {
 
   it("marks the borrower as the primary borrower so importers can find them", () => {
     expect(build()).toContain("<BorrowerClassificationType>Primary</BorrowerClassificationType>");
+  });
+});
+
+describe("buildMismoXml — co-borrower", () => {
+  const xml = build();
+
+  it("emits the co-borrower as a second, Secondary borrower party", () => {
+    expect(xml).toContain('<PARTY SequenceNumber="2">');
+    expect(xml).toContain('xlink:label="BORROWER_2"');
+    expect(xml).toContain("<BorrowerClassificationType>Secondary</BorrowerClassificationType>");
+    expect(xml).toContain("<FullName>Carlos Omar Resto</FullName>");
+  });
+
+  it("puts both borrowers on one application with a joint credit arc", () => {
+    expect(xml).toContain(
+      'xlink:from="BORROWER_2" xlink:to="BORROWER_1" xlink:arcrole="urn:fdc:mismo.org:2009:residential/ROLE_SharesJointCreditReportWith_ROLE"'
+    );
+  });
+
+  it("numbers the co-borrower's employer and income after the primary borrower's", () => {
+    expect(xml).toContain('xlink:from="CURRENT_INCOME_ITEM_2" xlink:to="EMPLOYER_2"');
+  });
+
+  it("records a declined demographic answer as a refusal, not a blank", () => {
+    const coBorrower = xml.slice(xml.indexOf('xlink:label="BORROWER_2"'));
+    expect(coBorrower).toContain("<HMDAEthnicityRefusalIndicator>true</HMDAEthnicityRefusalIndicator>");
+    expect(coBorrower).toContain("<HMDARaceRefusalIndicator>true</HMDARaceRefusalIndicator>");
+  });
+
+  it("emits a single borrower when there is no co-borrower", () => {
+    const solo = build({ ...completeApplication, coBorrower: undefined });
+    expect(solo).not.toContain("BORROWER_2");
+    expect(solo).not.toContain("SharesJointCreditReport");
+  });
+});
+
+describe("buildMismoXml — stored applications", () => {
+  it("leaves out answers to questions an older application was never asked", () => {
+    const xml = build(refinanceApplication);
+    expect(xml).not.toContain("GOVERNMENT_MONITORING");
+    expect(xml).not.toContain("PartyToLawsuitIndicator");
+    expect(xml).not.toContain("<DEPENDENTS>");
+    expect(xml).not.toContain("MortgageType");
+    expect(xml).not.toContain("<REFINANCE>");
   });
 });
 
@@ -134,25 +206,38 @@ describe("buildMismoXml — escaping", () => {
 });
 
 describe("buildMismoXml — conditional blocks", () => {
-  it("emits a related loan for the balance being refinanced", () => {
+  it("carries the mortgage being refinanced as a liability paid off at closing", () => {
     const xml = build(refinanceApplication);
-    expect(xml).toContain('LoanRoleType="RelatedLoan"');
-    expect(xml).toContain("<NoteAmount>412000.00</NoteAmount>");
-    expect(xml).toContain('xlink:to="Loan2"');
+    expect(xml).not.toContain("RelatedLoan");
+    expect(xml).toContain("<LiabilityType>MortgageLoan</LiabilityType>");
+    expect(xml).toContain("<LiabilityUnpaidBalanceAmount>412000.00</LiabilityUnpaidBalanceAmount>");
+    expect(xml).toContain("<LiabilityPayoffStatusIndicator>true</LiabilityPayoffStatusIndicator>");
   });
 
-  it("omits the related loan when there is no existing balance", () => {
+  it("omits the mortgage liability when there is no existing balance", () => {
+    expect(build()).not.toContain("MortgageLoan");
+  });
+
+  it("puts rent on the LANDLORD, where ULAD reads it", () => {
     const xml = build();
-    expect(xml).not.toContain("RelatedLoan");
-    expect(xml).not.toContain('xlink:to="Loan2"');
+    expect(xml).toMatch(/<LANDLORD>\s*<LANDLORD_DETAIL>\s*<MonthlyRentAmount>1850.00<\/MonthlyRentAmount>/);
+  });
+
+  it("emits the previous residence when the applicant gave one", () => {
+    const xml = build({
+      ...completeApplication,
+      previousAddress: { street: "12 Old Rd", city: "Roy", state: "UT", zip: "84067" },
+    });
+    expect(xml).toContain("<AddressLineText>12 Old Rd</AddressLineText>");
+    expect(xml).toContain("<BorrowerResidencyType>Prior</BorrowerResidencyType>");
   });
 
   it("omits LIABILITIES entirely when the applicant reported no debts", () => {
-    expect(build(refinanceApplication)).not.toContain("<LIABILITIES>");
+    expect(build({ ...refinanceApplication, currentBalance: undefined })).not.toContain("<LIABILITIES>");
   });
 
   it("omits EMPLOYERS for a retired applicant", () => {
-    const retired = { ...completeApplication, employmentStatus: "retired" as const };
+    const retired = { ...completeApplication, employmentStatus: "retired" as const, coBorrower: undefined };
     expect(build(retired)).not.toContain("<EMPLOYERS>");
   });
 });

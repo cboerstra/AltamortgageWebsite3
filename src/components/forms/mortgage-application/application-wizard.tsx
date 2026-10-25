@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
-import { useForm, type FieldPath, type Resolver } from "react-hook-form";
+import { useForm, type FieldErrors, type FieldPath, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { applicationSchema, type ApplicationFormData } from "@/lib/schemas";
+import { applicationSubmissionSchema, type ApplicationFormData } from "@/lib/schemas";
+import { URLA_DECLARATION_FIELDS } from "./shared-fields";
 import { StepLoanInfo } from "./step-loan-info";
 import { StepPersonalInfo } from "./step-personal-info";
 import { StepEmployment } from "./step-employment";
@@ -55,6 +56,11 @@ const STEP_FIELDS: FieldPath<ApplicationFormData>[][] = [
     "loanAmount",
     "downPayment",
     "currentBalance",
+    "cashOut",
+    "loanProgram",
+    "loanTermYears",
+    "amortizationType",
+    "propertyAddress",
   ],
   // Step 1: Personal
   [
@@ -68,6 +74,8 @@ const STEP_FIELDS: FieldPath<ApplicationFormData>[][] = [
     "yearsAtAddress",
     "housingStatus",
     "monthlyHousingPayment",
+    "dependentCount",
+    "dependentAges",
     "coBorrower.relationship",
     "coBorrower.firstName",
     "coBorrower.lastName",
@@ -78,7 +86,20 @@ const STEP_FIELDS: FieldPath<ApplicationFormData>[][] = [
     "coBorrower.housingStatus",
   ],
   // Step 2: Employment
-  ["employmentStatus", "monthlyIncome", "coBorrower.employmentStatus", "coBorrower.monthlyIncome"],
+  [
+    "employmentStatus",
+    "employerPhone",
+    "employmentStartDate",
+    "yearsInLineOfWork",
+    "employedByPartyToTransaction",
+    "monthlyIncome",
+    "coBorrower.employmentStatus",
+    "coBorrower.employerPhone",
+    "coBorrower.employmentStartDate",
+    "coBorrower.yearsInLineOfWork",
+    "coBorrower.employedByPartyToTransaction",
+    "coBorrower.monthlyIncome",
+  ],
   // Step 3: Assets
   [
     "monthlyAutoLoan",
@@ -103,10 +124,51 @@ const STEP_FIELDS: FieldPath<ApplicationFormData>[][] = [
     "coBorrower.foreclosure",
     "coBorrower.outstandingJudgments",
     "coBorrower.veteran",
+    ...URLA_DECLARATION_FIELDS,
+    "demographics",
+    "coBorrower.primaryResidence",
+    "coBorrower.ownedHomePastThreeYears",
+    "coBorrower.downPaymentBorrowed",
+    ...URLA_DECLARATION_FIELDS.map((f) => `coBorrower.${f}` as const),
+    "coBorrower.demographics",
   ],
   // Step 5: Review & Consent
   ["consentAuthorization", "eSignatureName", "eSignatureDate", "coBorrower.eSignatureName"],
 ];
+
+/**
+ * The first step holding one of these errors. Submit validates everything; if
+ * something on an earlier step is missing (a draft saved before a question
+ * existed, say), the applicant is sent there rather than left on the review
+ * page with nothing to fix.
+ */
+function firstStepWithError(errors: FieldErrors<ApplicationFormData>): number | null {
+  const paths = Object.keys(errors).flatMap((key) =>
+    key === "coBorrower" && errors.coBorrower
+      ? Object.keys(errors.coBorrower).map((sub) => `coBorrower.${sub}`)
+      : [key]
+  );
+  const steps = paths.map((path) =>
+    STEP_FIELDS.findIndex((fields) => (fields as string[]).some((f) => path === f || path.startsWith(`${f}.`)))
+  );
+  const found = steps.filter((s) => s >= 0);
+  return found.length ? Math.min(...found) : null;
+}
+
+/** A fresh form. Saved drafts are laid over this, so it also fills gaps in older drafts. */
+function blankApplication(): Partial<ApplicationFormData> {
+  return {
+    monthlyAutoLoan: 0,
+    monthlyStudentLoan: 0,
+    monthlyCreditCards: 0,
+    monthlyChildSupport: 0,
+    monthlyOtherDebt: 0,
+    // An empty answer, so each unanswered part gets its own message rather
+    // than one error on the whole section.
+    demographics: { races: [] } as unknown as ApplicationFormData["demographics"],
+    eSignatureDate: new Date().toISOString().split("T")[0],
+  };
+}
 
 export function ApplicationWizard() {
   const [step, setStep] = useState(0);
@@ -114,6 +176,7 @@ export function ApplicationWizard() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [refNumber, setRefNumber] = useState("");
+  const [portalUrl, setPortalUrl] = useState("/portal/login");
   const [furthestStep, setFurthestStep] = useState(0);
   const [resumeNotice, setResumeNotice] = useState<"expired" | "unavailable" | null>(null);
 
@@ -124,16 +187,9 @@ export function ApplicationWizard() {
   );
 
   const form = useForm<ApplicationFormData>({
-    resolver: zodResolver(applicationSchema) as Resolver<ApplicationFormData>,
+    resolver: zodResolver(applicationSubmissionSchema) as Resolver<ApplicationFormData>,
     mode: "onTouched",
-    defaultValues: {
-      monthlyAutoLoan: 0,
-      monthlyStudentLoan: 0,
-      monthlyCreditCards: 0,
-      monthlyChildSupport: 0,
-      monthlyOtherDebt: 0,
-      eSignatureDate: new Date().toISOString().split("T")[0],
-    },
+    defaultValues: blankApplication(),
   });
 
   const { handleSubmit, trigger, getValues, getFieldState, reset, subscribe } = form;
@@ -167,7 +223,7 @@ export function ApplicationWizard() {
 
     if (!resumeToken) {
       const draft = readDraft();
-      if (draft) reset(draft);
+      if (draft) reset({ ...blankApplication(), ...draft });
       return;
     }
 
@@ -182,10 +238,10 @@ export function ApplicationWizard() {
       if (result.status !== "ok") {
         setResumeNotice(result.status);
         const local = readDraft();
-        if (local) reset(local);
+        if (local) reset({ ...blankApplication(), ...local });
         return;
       }
-      reset(result.draft.data);
+      reset({ ...blankApplication(), ...result.draft.data });
       writeDraft(getValues());
       writeDraftToken(resumeToken);
       setFurthestStep(result.draft.furthestStep);
@@ -227,6 +283,14 @@ export function ApplicationWizard() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const onInvalid = (errors: FieldErrors<ApplicationFormData>) => {
+    const first = firstStepWithError(errors);
+    if (first !== null && first !== step) {
+      setStep(first);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const goToStep = (target: number) => {
     saveProgress(step);
     setStep(target);
@@ -252,6 +316,7 @@ export function ApplicationWizard() {
       if (res.ok) {
         const result = await res.json();
         setRefNumber(result.referenceNumber || "");
+        if (typeof result.portalUrl === "string") setPortalUrl(result.portalUrl);
         setSubmitted(true);
         // The application is stored server-side; the local draft is now stale.
         clearDraft();
@@ -298,6 +363,20 @@ export function ApplicationWizard() {
           contact you within 1 business day to discuss next steps. Please save
           your reference number for your records.
         </p>
+        <div className="mt-8 max-w-md mx-auto rounded-lg border border-border-brand bg-surface px-5 py-4 text-left">
+          <p className="font-semibold text-navy">Next: upload your documents</p>
+          <p className="text-sm text-text-muted mt-1">
+            We&apos;ve emailed you the list of documents we need. Upload them securely in your
+            borrower portal — sign in with the email address on your application and we&apos;ll
+            send you a one-time code.
+          </p>
+          <a
+            href={portalUrl}
+            className="mt-3 inline-flex items-center rounded-md bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-navy-light"
+          >
+            Upload documents securely
+          </a>
+        </div>
       </div>
     );
   }
@@ -345,7 +424,7 @@ export function ApplicationWizard() {
             type="button"
             onClick={() => {
               clearDraft();
-              reset();
+              reset(blankApplication());
               setStep(0);
             }}
             className="font-medium text-navy underline underline-offset-2 hover:no-underline"
@@ -355,7 +434,7 @@ export function ApplicationWizard() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit, onInvalid)}>
         {step === 0 && <StepLoanInfo form={form} />}
         {step === 1 && <StepPersonalInfo form={form} />}
         {step === 2 && <StepEmployment form={form} />}
@@ -381,8 +460,11 @@ export function ApplicationWizard() {
             <div />
           )}
 
+          {/* Distinct keys: if React reused one button for both, the click on
+              Next that reaches the last step would also submit the form. */}
           {step < TOTAL_STEPS - 1 ? (
             <Button
+              key="next"
               type="button"
               onClick={goNext}
               className="bg-navy hover:bg-navy-light text-white"
@@ -391,6 +473,7 @@ export function ApplicationWizard() {
             </Button>
           ) : (
             <Button
+              key="submit"
               type="submit"
               disabled={submitting}
               className="bg-emerald hover:bg-emerald-light text-white px-8"

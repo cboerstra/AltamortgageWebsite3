@@ -11,7 +11,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import type { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { completeApplication } from "@/lib/mismo/__fixtures__/application";
+import { completeApplication, fullJointApplication, jointApplication } from "@/lib/mismo/__fixtures__/application";
 import { resetRateLimits } from "@/lib/rate-limit";
 import { POST } from "./route";
 
@@ -140,6 +140,20 @@ describe("POST /api/applications", () => {
   it("requires the consent checkbox", async () => {
     const res = await post({ ...VALID_BODY, consentAuthorization: false });
     expect(res.status).toBe(400);
+  });
+
+  it("requires the URLA declarations, dependents and demographic answers on a new submission", async () => {
+    for (const missing of ["partyToLawsuit", "dependentCount", "demographics"] as const) {
+      const body: Record<string, unknown> = { ...VALID_BODY };
+      delete body[missing];
+      const res = await post(body);
+      expect(res.status, missing).toBe(400);
+    }
+  });
+
+  it("accepts a joint application whose co-borrower answered everything, and rejects one who did not", async () => {
+    expect((await post({ ...fullJointApplication, source: "/apply" })).status).toBe(200);
+    expect((await post({ ...jointApplication, source: "/apply" })).status).toBe(400);
   });
 
   it("reports failure when the application could not be stored anywhere", async () => {

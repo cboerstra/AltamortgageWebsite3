@@ -14,7 +14,7 @@
 
 import path from "node:path";
 import { NextRequest, NextResponse } from "next/server";
-import { applicationSchema, type ApplicationFormData } from "@/lib/schemas";
+import { applicationSubmissionSchema, type ApplicationFormData } from "@/lib/schemas";
 import { buildApplicationSummary, summaryToText } from "@/lib/application-summary";
 import { forwardToCRM, LOAN_TYPE_LABELS } from "@/lib/crm";
 import {
@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const result = applicationSchema.safeParse(body);
+    const result = applicationSubmissionSchema.safeParse(body);
 
     if (!result.success) {
       return NextResponse.json(
@@ -195,8 +195,8 @@ export async function POST(request: NextRequest) {
         applicantName: `${app.firstName} ${app.lastName}`,
         attachments,
       }),
-      // The site has no document upload, so this is how the applicant learns
-      // what to send us and where. Best effort: a bounced confirmation must
+      // How the applicant learns what to send us, with the link to the
+      // portal where they upload it. Best effort: a bounced confirmation must
       // never fail a submission that is already stored.
       sendApplicantDocumentRequest({
         to: app.email,
@@ -252,6 +252,9 @@ export async function POST(request: NextRequest) {
       referenceNumber,
       stored: persisted,
       forwarded: crmResult.status === "sent",
+      // The confirmation screen links here too, so the upload link does not
+      // depend on the email arriving.
+      portalUrl: `${siteOrigin(request)}/portal/login`,
     });
   } catch (err) {
     // Never log the request body — it carries the SSN.

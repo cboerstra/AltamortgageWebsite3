@@ -23,6 +23,7 @@ export function StepPersonalInfo({
   } = form;
 
   const yearsAtAddress = watch("yearsAtAddress");
+  const dependentCount = watch("dependentCount");
 
   return (
     <div className="space-y-5">
@@ -247,6 +248,29 @@ export function StepPersonalInfo({
           <p className="text-xs text-error mt-1">
             {errors.monthlyHousingPayment.message}
           </p>
+        )}
+      </div>
+
+      <div className="grid sm:grid-cols-2 gap-4">
+        <div>
+          <Label>Number of Dependents</Label>
+          <Input
+            {...register("dependentCount", { valueAsNumber: true })}
+            type="number"
+            className="mt-1"
+            min={0}
+            placeholder="0"
+          />
+          <p className="text-xs text-text-muted mt-1">Not counting yourself or a co-borrower.</p>
+          {errors.dependentCount && (
+            <p className="text-xs text-error mt-1">{errors.dependentCount.message}</p>
+          )}
+        </div>
+        {typeof dependentCount === "number" && dependentCount > 0 && (
+          <div>
+            <Label>Dependents&apos; Ages</Label>
+            <Input {...register("dependentAges")} className="mt-1" placeholder="e.g. 3, 7" />
+          </div>
         )}
       </div>
 

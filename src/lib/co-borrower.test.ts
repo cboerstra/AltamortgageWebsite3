@@ -4,7 +4,7 @@
 // with the guarantee that an application WITHOUT one is unchanged.
 
 import { describe, expect, it } from "vitest";
-import { applicationSchema, coBorrowerSchema } from "@/lib/schemas";
+import { applicationSchema, applicationSubmissionSchema, coBorrowerSchema } from "@/lib/schemas";
 import { buildApplicationSummary } from "@/lib/application-summary";
 import { buildDocumentChecklist } from "@/lib/document-checklist";
 import { sanitizeDraft } from "@/lib/drafts/partial";
@@ -13,6 +13,7 @@ import { mapToDeal } from "@/lib/mismo/map";
 import {
   completeApplication,
   FIXTURE_OPTIONS,
+  fullJointApplication,
   jointApplication,
   refinanceApplication,
 } from "@/lib/mismo/__fixtures__/application";
@@ -53,6 +54,19 @@ describe("co-borrower — validation", () => {
     const unsigned = { ...jointApplication, coBorrower: { ...cb, eSignatureName: "" } };
     expect(applicationSchema.safeParse(unsigned).success).toBe(false);
   });
+
+  it("still accepts a co-borrower stored before the URLA questions and demographics were asked", () => {
+    expect(applicationSchema.safeParse(jointApplication).success).toBe(true);
+  });
+
+  it("requires those questions of a co-borrower on a new submission", () => {
+    expect(applicationSubmissionSchema.safeParse(fullJointApplication).success).toBe(true);
+    const result = applicationSubmissionSchema.safeParse(jointApplication);
+    const paths = result.error!.issues.map((i) => i.path.join("."));
+    expect(paths).toEqual(
+      expect.arrayContaining(["coBorrower.partyToLawsuit", "coBorrower.primaryResidence", "coBorrower.demographics"])
+    );
+  });
 });
 
 describe("co-borrower — drafts", () => {
@@ -69,12 +83,13 @@ describe("co-borrower — drafts", () => {
 });
 
 describe("co-borrower — MISMO", () => {
-  it("adds a second borrower party, classified Secondary, tied to the loan", () => {
+  it("adds a second borrower party, classified Secondary, on the same application", () => {
     const doc = xml();
-    expect(doc).toContain('<PARTY xlink:label="Party2" SequenceNumber="2">');
+    expect(doc).toContain('<PARTY SequenceNumber="2">');
     expect(doc).toContain("<BorrowerClassificationType>Secondary</BorrowerClassificationType>");
     expect(doc).toContain('xlink:label="BORROWER_2"');
-    expect(doc).toMatch(/xlink:from="Party2"[^>]*xlink:to="Loan1"/);
+    // ULAD's way of saying two borrowers share one URLA, as ARIVE exports it.
+    expect(doc).toMatch(/xlink:from="BORROWER_2" xlink:to="BORROWER_1"[^>]*ROLE_SharesJointCreditReportWith_ROLE/);
   });
 
   it("carries their name, employer, income and declarations", () => {
@@ -83,7 +98,7 @@ describe("co-borrower — MISMO", () => {
     expect(doc).toContain('xlink:label="EMPLOYER_2"');
     expect(doc).toContain("<FullName>Robin Designs LLC</FullName>");
     expect(doc).toContain("<CurrentIncomeMonthlyTotalAmount>5200.00</CurrentIncomeMonthlyTotalAmount>");
-    expect(doc).toMatch(/xlink:from="CO_BORROWER_INCOME_ITEM_1"[^>]*xlink:to="EMPLOYER_2"/);
+    expect(doc).toMatch(/xlink:from="CURRENT_INCOME_ITEM_2"[^>]*xlink:to="EMPLOYER_2"/);
     expect(doc).toContain("<PriorPropertyForeclosureCompletedIndicator>true</PriorPropertyForeclosureCompletedIndicator>");
     expect(doc).toContain("<CitizenshipResidencyType>PermanentResidentAlien</CitizenshipResidencyType>");
   });
@@ -94,11 +109,11 @@ describe("co-borrower — MISMO", () => {
       { ...jointApplication, coBorrower: { ...cb, sameAddress: true } },
       FIXTURE_OPTIONS
     );
-    expect(shared.coBorrower!.residence.address).toEqual(completeApplication.currentAddress);
+    expect(shared.borrowers[1].residence.address).toEqual(completeApplication.currentAddress);
   });
 
   it("omits the email contact point when the co-borrower gave none", () => {
-    const party2 = xml().split('<PARTY xlink:label="Party2"')[1].split("</PARTY>")[0];
+    const party2 = xml().split('<PARTY SequenceNumber="2">')[1].split("</PARTY>")[0];
     expect(party2).not.toContain("CONTACT_POINT_EMAIL");
     expect(party2).toContain('<CONTACT_POINT SequenceNumber="1">');
     expect(party2).toContain("<ContactPointTelephoneValue>8015550199</ContactPointTelephoneValue>");
@@ -110,14 +125,15 @@ describe("co-borrower — MISMO", () => {
     expect(doc).toContain("<alta:CoBorrowerElectronicSignatureName>Robin O'Brien</alta:CoBorrowerElectronicSignatureName>");
   });
 
-  it("links a refinance's existing loan to both borrowers", () => {
+  it("keeps a refinance's existing mortgage as a liability when there is a co-borrower", () => {
     const doc = xml({ ...refinanceApplication, coBorrower: { ...cb, sameAddress: true } });
-    expect(doc).toMatch(/xlink:from="Party2"[^>]*xlink:to="Loan2"/);
+    expect(doc).toContain("<LiabilityType>MortgageLoan</LiabilityType>");
+    expect(doc).toContain('xlink:label="BORROWER_2"');
   });
 
-  it("changes nothing for a single applicant", () => {
+  it("adds no second borrower for a single applicant", () => {
     const doc = xml(completeApplication);
-    expect(doc).not.toContain("Party2");
+    expect(doc).not.toContain("BORROWER_2");
     expect(doc).not.toContain("Secondary");
     expect(doc).not.toContain("CO_BORROWER");
   });

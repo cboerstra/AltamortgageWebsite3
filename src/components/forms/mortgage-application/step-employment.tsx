@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { ApplicationFormData } from "@/lib/schemas";
 import { Icons } from "@/lib/icons";
 import { CoBorrowerEmployment } from "./co-borrower";
+import { YesNoQuestion } from "./shared-fields";
 
 const selectClass =
   "mt-1 h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
@@ -91,6 +92,35 @@ export function StepEmployment({
           />
         </div>
       </div>
+
+      {showEmployer && (
+        <>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div>
+              <Label>{employmentStatus === "self-employed" ? "Business Phone" : "Employer Phone"}</Label>
+              <Input {...register("employerPhone")} type="tel" className="mt-1" />
+            </div>
+            <div>
+              <Label>Start Date</Label>
+              <Input {...register("employmentStartDate")} type="date" className="mt-1" />
+            </div>
+            <div>
+              <Label>Years in This Line of Work</Label>
+              <Input
+                {...register("yearsInLineOfWork", { valueAsNumber: true })}
+                type="number"
+                className="mt-1"
+                min={0}
+              />
+            </div>
+          </div>
+          <YesNoQuestion
+            form={form}
+            name="employedByPartyToTransaction"
+            label="Are you employed by a family member, the property seller, a real estate agent, or another party to this transaction?"
+          />
+        </>
+      )}
 
       <div>
         <Label>Monthly Gross Income ($)</Label>
