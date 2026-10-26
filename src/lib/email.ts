@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type Transporter } from "nodemailer";
 import type { SummarySection } from "@/lib/application-summary";
 import { checklistToText, type ChecklistGroup } from "@/lib/document-checklist";
 import { COMPANY } from "@/lib/constants";
@@ -6,7 +6,7 @@ import type { ReminderMessage } from "@/lib/drafts/reminders";
 // Applicant-supplied values end up inside HTML, so nothing goes in unescaped.
 import { escapeHtml } from "@/lib/html";
 
-let transporter: nodemailer.Transporter | null = null;
+let transporter: Transporter | null = null;
 
 export interface EmailResult {
   status: "sent" | "failed" | "skipped";
@@ -19,7 +19,7 @@ export interface EmailAttachment {
   contentType?: string;
 }
 
-function getTransporter(): nodemailer.Transporter | null {
+function getTransporter(): Transporter | null {
   if (transporter) return transporter;
   const host = process.env.SMTP_HOST;
   const port = parseInt(process.env.SMTP_PORT || "587", 10);

@@ -4,7 +4,7 @@
 // when the database is unset.
 
 import type { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { resetRateLimits } from "@/lib/rate-limit";
 import { POST as login } from "./login/route";
 import { POST as verify } from "./verify/route";
@@ -128,14 +128,15 @@ describe("sign-in outcomes are recorded for staff", () => {
 
   let identity: typeof import("@/lib/portal/identity");
   let mail: typeof import("@/lib/email");
-  let record: ReturnType<typeof vi.fn>;
+  type RecordLoginEvent = typeof import("@/lib/portal/login-events").recordLoginEvent;
+  let record: Mock<RecordLoginEvent>;
 
   beforeEach(async () => {
     process.env.DATABASE_URL = "postgres://u:p@db.invalid:5432/n";
     identity = await import("@/lib/portal/identity");
     mail = await import("@/lib/email");
     const events = await import("@/lib/portal/login-events");
-    record = vi.fn().mockResolvedValue(undefined);
+    record = vi.fn<RecordLoginEvent>().mockResolvedValue(undefined);
     vi.spyOn(events, "recordLoginEvent").mockImplementation(record);
   });
 
@@ -224,7 +225,7 @@ describe("sign-in outcomes are recorded for staff", () => {
     vi.spyOn(identity, "findEligibleIdentity").mockResolvedValue({ ok: false, reason: "no_match" });
     bodies.push((await attempt()).body);
     vi.restoreAllMocks();
-    record = vi.fn().mockResolvedValue(undefined);
+    record = vi.fn<RecordLoginEvent>().mockResolvedValue(undefined);
     vi.spyOn(await import("@/lib/portal/login-events"), "recordLoginEvent").mockImplementation(record);
 
     eligible();
