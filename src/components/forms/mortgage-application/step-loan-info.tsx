@@ -1,14 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  applyAmountEdit,
+  type AmountEditState,
+  type AmountField,
+} from "@/lib/loan-amounts";
 import type { ApplicationFormData } from "@/lib/schemas";
 import { YesNoQuestion, blankToUndefined } from "./shared-fields";
 
 const selectClass =
   "mt-1 h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm";
+
+const CALCULATED_FROM: Record<AmountField, string> = {
+  purchasePrice: "Calculated from the loan amount plus down payment. You can change it.",
+  loanAmount: "Calculated from the purchase price minus down payment. You can change it.",
+  downPayment: "Calculated from the purchase price minus loan amount. You can change it.",
+};
+
+function CalculatedNote({ field, calculated }: { field: AmountField; calculated: AmountField | null }) {
+  if (field !== calculated) return null;
+  return <p className="text-xs text-text-muted mt-1">{CALCULATED_FROM[field]}</p>;
+}
 
 export function StepLoanInfo({
   form,
@@ -18,11 +35,40 @@ export function StepLoanInfo({
   const {
     register,
     setValue,
+    getValues,
     watch,
     formState: { errors },
   } = form;
 
   const loanPurpose = watch("loanPurpose");
+
+  const [editState, setEditState] = useState<AmountEditState>({ calculated: null, typed: [] });
+  const { calculated } = editState;
+
+  // Down payment only exists for a purchase, so only a purchase fills in amounts.
+  const onAmountEdit = (edited: AmountField) => {
+    if (getValues("loanPurpose") !== "purchase") return;
+    const [purchasePrice, loanAmount, downPayment] = getValues([
+      "purchasePrice",
+      "loanAmount",
+      "downPayment",
+    ]);
+    const { update, state } = applyAmountEdit(
+      edited,
+      { purchasePrice, loanAmount, downPayment },
+      editState,
+    );
+    setEditState(state);
+    if (update) {
+      setValue(update.field, update.value ?? NaN, {
+        shouldDirty: true,
+        shouldValidate: Boolean(errors[update.field]),
+      });
+    }
+  };
+
+  const amountField = (field: AmountField) =>
+    register(field, { valueAsNumber: true, onChange: () => onAmountEdit(field) });
 
   return (
     <div className="space-y-5">
@@ -95,11 +141,12 @@ export function StepLoanInfo({
               : "Estimated Property Value ($)"}
           </Label>
           <Input
-            {...register("purchasePrice", { valueAsNumber: true })}
+            {...amountField("purchasePrice")}
             type="number"
             className="mt-1"
             placeholder="350000"
           />
+          <CalculatedNote field="purchasePrice" calculated={calculated} />
           {errors.purchasePrice && (
             <p className="text-xs text-error mt-1">{errors.purchasePrice.message}</p>
           )}
@@ -107,11 +154,12 @@ export function StepLoanInfo({
         <div>
           <Label>Loan Amount ($)</Label>
           <Input
-            {...register("loanAmount", { valueAsNumber: true })}
+            {...amountField("loanAmount")}
             type="number"
             className="mt-1"
             placeholder="280000"
           />
+          <CalculatedNote field="loanAmount" calculated={calculated} />
           {errors.loanAmount && (
             <p className="text-xs text-error mt-1">{errors.loanAmount.message}</p>
           )}
@@ -122,11 +170,12 @@ export function StepLoanInfo({
         <div>
           <Label>Down Payment ($)</Label>
           <Input
-            {...register("downPayment", { valueAsNumber: true })}
+            {...amountField("downPayment")}
             type="number"
             className="mt-1"
             placeholder="70000"
           />
+          <CalculatedNote field="downPayment" calculated={calculated} />
           {errors.downPayment && (
             <p className="text-xs text-error mt-1">{errors.downPayment.message}</p>
           )}
