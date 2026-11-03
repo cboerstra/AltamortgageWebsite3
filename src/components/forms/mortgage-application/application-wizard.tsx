@@ -359,7 +359,7 @@ export function ApplicationWizard() {
           </p>
         )}
         <p className="text-text-muted mt-2 max-w-md mx-auto">
-          Thank you for your mortgage application. A loan specialist will
+          Thank you for your mortgage application. Scott will
           contact you within 1 business day to discuss next steps. Please save
           your reference number for your records.
         </p>

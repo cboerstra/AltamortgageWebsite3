@@ -186,7 +186,7 @@ export async function sendApplicantDocumentRequest(input: {
         `Hi ${input.firstName},\n\n` +
         `We received your mortgage application. Your reference number is ${input.referenceNumber} — ` +
         `please keep it, and include it whenever you contact us.\n\n` +
-        `A loan specialist will call you within one business day. To keep things moving, ` +
+        `Scott will call you within one business day. To keep things moving, ` +
         `send us the documents below.\n\n` +
         `HOW TO SEND THEM\n` +
         `  Upload them securely at ${input.portalUrl}\n` +
@@ -209,7 +209,7 @@ export async function sendApplicantDocumentRequest(input: {
             <span style="font-size:14px;color:#4b5563">Please keep it and include it whenever you contact us.</span>
           </p>
 
-          <p>A loan specialist will call you within one business day. To keep things moving,
+          <p>Scott will call you within one business day. To keep things moving,
           send us the documents below.</p>
 
           <p style="margin:24px 0 8px">
@@ -224,7 +224,7 @@ export async function sendApplicantDocumentRequest(input: {
             <li style="margin:4px 0">Sign in with this email address — we send you a one-time code. No password needed.</li>
             <li style="margin:4px 0">PDF, JPG or PNG. Clear phone photos are fine, as long as the whole page is visible.</li>
             <li style="margin:4px 0">Upload what you have now; you can come back for the rest.</li>
-            <li style="margin:4px 0">Your files are encrypted when stored and visible only to you and your loan specialist.</li>
+            <li style="margin:4px 0">Your files are encrypted when stored and visible only to you and Scott.</li>
           </ul>
 
           <h2 style="color:#003087;margin:28px 0 0;font-size:18px">What we need</h2>

@@ -1,11 +1,11 @@
-import { COMPANY } from "@/lib/constants";
+import { COMPANY, yearsInBusiness } from "@/lib/constants";
 import { Icons } from "@/lib/icons";
 
 const stats = [
-  { icon: Icons.experience, value: "29", label: "Years in Business" },
+  { icon: Icons.experience, value: String(yearsInBusiness()), label: "Years in Business" },
   { icon: Icons.loansClosed, value: "2,500+", label: "Loans Closed" },
   { icon: Icons.citiesServed, value: "25+", label: "Utah Cities Served" },
-  { icon: Icons.rating, value: "4.9", label: "Star Reviews" },
+  { icon: Icons.rating, value: "4.9", label: "Stars on Google" },
 ];
 
 export function WhyAlta() {

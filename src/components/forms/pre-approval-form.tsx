@@ -66,7 +66,7 @@ export function PreApprovalForm() {
         <Icons.success className="w-16 h-16 text-emerald mx-auto" />
         <h2 className="text-2xl font-bold text-navy mt-4">Request Received</h2>
         <p className="text-text-muted mt-2 max-w-md mx-auto">
-          Thank you. A loan specialist will contact you within one business day to review your
+          Thank you. Scott will contact you within one business day to review your
           information and go over your pre-approval options.
         </p>
       </div>

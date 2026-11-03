@@ -15,8 +15,8 @@ export async function RateTeaser() {
           <div className="flex items-center gap-3">
             <Icons.rateDrop className="w-6 h-6 text-gold-light" />
             <div>
-              <div className="font-semibold text-lg">Today&apos;s Rate Averages</div>
-              <div className="text-xs text-white/60">National averages, {formatRateDate(asOf)}</div>
+              <div className="font-semibold text-lg">Latest Rate Averages</div>
+              <div className="text-xs text-white/60">National averages, not our rates · {formatRateDate(asOf)}</div>
             </div>
           </div>
           <div className="flex items-center gap-6 sm:gap-10">

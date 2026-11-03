@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { LinkedText } from "@/components/layout/linked-text";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -32,7 +33,7 @@ const steps = [
     icon: Icons.preApproval,
     title: "2. Get Pre-Approved",
     body:
-      "Pre-approval is a written commitment from a lender stating how much you can borrow. It signals to sellers that you're a serious buyer and gives you a clear price range to shop in. With Alta Mortgage Group, this is a free, low-pressure conversation — usually 15 minutes on the phone.",
+      "A pre-approval is a letter stating how much you're likely to qualify to borrow, based on a review of your credit, income and assets. It isn't a final loan approval. It signals to sellers that you're a serious buyer and gives you a clear price range to shop in. With Alta Mortgage Group, getting started is a free, low-pressure conversation.",
   },
   {
     icon: Icons.shopping,
@@ -44,7 +45,7 @@ const steps = [
     icon: Icons.offer,
     title: "4. Make an Offer & Underwrite",
     body:
-      "Once your offer is accepted, we lock your rate and begin underwriting — the formal review of your finances. We'll order an appraisal and title work. This phase typically takes 25–35 days.",
+      "Once your offer is accepted, we lock your rate with the lender, and the lender's underwriter begins the formal review of your finances. We'll order an appraisal and title work. Most loans close 30–45 days after your offer is accepted.",
   },
   {
     icon: Icons.closing,
@@ -68,11 +69,11 @@ const programs = [
   {
     icon: Icons.va,
     name: "VA Loan",
-    summary: "Exclusive to veterans, active military, and eligible spouses.",
+    summary: "For eligible veterans, active-duty service members and surviving spouses.",
     perks: [
       "0% down payment",
       "No private mortgage insurance",
-      "Competitive interest rates",
+      "Funding fee can be rolled into the loan",
     ],
   },
   {
@@ -82,7 +83,7 @@ const programs = [
     perks: [
       "0% down payment",
       "Low mortgage insurance rates",
-      "Plenty of eligible Weber/Davis County areas",
+      "Many parts of Box Elder and Morgan counties, and some areas of Weber and Davis, qualify (eligibility is by address)",
     ],
   },
   {
@@ -101,7 +102,7 @@ const faqs = [
   {
     question: "How much money do I need to buy a house in Utah?",
     answer:
-      "Less than you might think. With FHA you can buy with 3.5% down. With VA or USDA, you can buy with 0% down. Plan to also have 2–4% of the price available for closing costs, though some of that can be rolled into the loan or covered by seller concessions.",
+      "Less than you might think. With FHA you can buy with 3.5% down. With VA or USDA, you can buy with 0% down. Plan to also have closing costs of about 2–5% of the loan amount, though some of that can be rolled into the loan or paid by the seller (seller concessions).",
   },
   {
     question: "What credit score do I need as a first-time buyer?",
@@ -111,17 +112,17 @@ const faqs = [
   {
     question: "Is renting cheaper than buying right now?",
     answer:
-      "It depends on your timeframe. If you plan to stay 5+ years, buying almost always wins financially because each payment builds equity. If you might move in 1–2 years, renting may make more sense. We're happy to run the numbers with you.",
+      "It depends on your timeframe. If you plan to stay 5+ years, buying is often worth considering because each payment builds equity. If you might move in 1–2 years, renting may make more sense. We're happy to run the numbers with you.",
   },
   {
     question: "How long does the homebuying process take?",
     answer:
-      "From pre-approval to keys in hand, plan on 45–60 days for most buyers. Pre-approval is fast — usually same-day. Finding the right home is the variable: it can take weeks or months. Once you're under contract, closing is typically 30 days.",
+      "We'll contact you within one business day, and once we have your documents, pre-approval is often same-day. Finding the right home is the variable: it can take weeks or months. Most loans close 30–45 days after your offer is accepted.",
   },
   {
     question: "What does Alta Mortgage Group charge first-time buyers?",
     answer:
-      "Our pre-approval is free with no obligation. Loan origination fees and closing costs are similar to other lenders — we walk you through every cost so there are no surprises.",
+      "Our pre-approval is free with no obligation. We walk you through every fee and closing cost up front, in writing, in your Loan Estimate.",
   },
 ];
 
@@ -184,7 +185,7 @@ export default function FirstTimeHomebuyerPage() {
                   </div>
                   <h3 className="mt-4 text-lg font-bold text-text">{step.title}</h3>
                   <p className="mt-2 text-sm text-text-muted leading-relaxed">
-                    {step.body}
+                    <LinkedText text={step.body} />
                   </p>
                 </CardContent>
               </Card>
@@ -247,7 +248,7 @@ export default function FirstTimeHomebuyerPage() {
               className="border-b border-border-brand pb-6 last:border-0"
             >
               <h3 className="text-lg font-semibold text-text">{faq.question}</h3>
-              <p className="mt-2 text-text-muted leading-relaxed">{faq.answer}</p>
+              <p className="mt-2 text-text-muted leading-relaxed"><LinkedText text={faq.answer} /></p>
             </div>
           ))}
         </div>
@@ -257,8 +258,8 @@ export default function FirstTimeHomebuyerPage() {
       <section className="mt-16 bg-navy text-white rounded-2xl p-8 lg:p-12 text-center">
         <h2 className="text-3xl font-bold">Ready to start?</h2>
         <p className="mt-3 text-white/80 max-w-xl mx-auto">
-          Free pre-approval, no obligation. We&apos;ll tell you in 15 minutes
-          what programs you qualify for and what your monthly payment would
+          Free pre-approval, no obligation. We&apos;ll go over
+          which programs you qualify for and what your monthly payment would
           look like.
         </p>
         <div className="mt-6 flex flex-wrap gap-3 justify-center">

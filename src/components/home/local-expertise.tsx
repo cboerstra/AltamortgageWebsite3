@@ -13,9 +13,9 @@ export function LocalExpertise() {
               Proudly Serving Northern Utah
             </h2>
             <p className="mt-4 text-text-muted text-lg leading-relaxed">
-              We&apos;re not just another national lender — we live and work in northern Utah.
-              Our deep knowledge of the local housing market means better guidance, faster closings,
-              and a team that understands your community.
+              We&apos;re not a national call center — we live and work in northern Utah.
+              Our deep knowledge of the local housing market means better guidance from someone
+              who understands your community.
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8">

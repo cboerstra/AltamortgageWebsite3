@@ -23,8 +23,8 @@ const tools = [
   },
   {
     icon: Icons.rateComparison,
-    title: "Rate Comparison",
-    description: "See today's mortgage rates for all loan types and find the best deal for your situation.",
+    title: "Latest Rates",
+    description: "See today's national average rates by loan type, updated every business day.",
     href: "/rates",
   },
 ];

@@ -4,7 +4,7 @@ import { COMPANY } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
-  description: `Terms of Service for ${COMPANY.name}. Please review these terms before using our website and mortgage lending services.`,
+  description: `Terms of Service for ${COMPANY.name}. Please review these terms before using our website and mortgage services.`,
 };
 
 export default function TermsPage() {
@@ -51,14 +51,13 @@ export default function TermsPage() {
             Rate and Product Disclaimers
           </h2>
           <p className="text-text-muted leading-relaxed">
-            Interest rates, annual percentage rates (APRs), and loan programs
-            displayed on this website are for informational purposes only and are
-            subject to change without notice. Rates shown may include discount
-            points and are based on specific assumptions that may not apply to
-            your situation. Your actual rate, payment, and costs may differ based
-            on your credit profile, loan amount, property type, occupancy, and
-            other factors. A rate quote is not a guarantee or commitment to lend
-            at a specific rate.
+            Rates shown on this website are national average rates published by
+            third parties, provided for information only. They are not rates
+            offered by {COMPANY.name}, do not include points, fees or an APR, and
+            are not a commitment to lend. Loan programs described on this website
+            are subject to change without notice. Your actual rate and terms
+            depend on your credit, loan amount, down payment, property and market
+            conditions when you lock.
           </p>
         </section>
 

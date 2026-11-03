@@ -9,7 +9,7 @@ export function CTASection() {
           Ready to Start Your Home Loan Journey?
         </h2>
         <p className="mt-4 text-text-muted max-w-2xl mx-auto">
-          Get a free consultation with one of our Utah mortgage experts. No obligation, no pressure — just honest guidance.
+          Get a free consultation with Scott Boerstra, your local Utah mortgage broker. No obligation, no pressure — just honest guidance.
         </p>
         <div className="mt-8 max-w-4xl mx-auto">
           <MiniLeadForm variant="light" />

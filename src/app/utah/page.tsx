@@ -9,9 +9,9 @@ import { generateLocalBusinessSchema } from "@/lib/seo";
 import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
-  title: "Utah Mortgage Lender",
+  title: "Utah Mortgage Broker",
   description:
-    "Alta Mortgage Group is a trusted Utah mortgage lender serving Weber, Davis, Box Elder and Morgan counties. Purchase, refinance, and home equity loans with competitive rates.",
+    "Alta Mortgage Group is a local Utah mortgage broker serving Weber, Davis, Box Elder and Morgan counties. Purchase, refinance, and home equity loans with competitive rates.",
   keywords: [
     "Utah mortgage lender",
     "home loans Utah",
@@ -31,19 +31,19 @@ const benefits = [
     icon: Icons.faceToFace,
     title: "Face-to-Face Service",
     description:
-      "Meet with a real person at our Ogden office. We believe in building relationships, not just processing paperwork. Your questions deserve real answers from someone who cares.",
+      "Meet with a real person at our Hooper office, minutes from Ogden. We believe in building relationships, not just processing paperwork. Your questions deserve real answers from someone who cares.",
   },
   {
     icon: Icons.fasterClosings,
     title: "Faster Closings",
     description:
-      "Local lenders close faster. Our relationships with Utah title companies, appraisers, and real estate agents help streamline the process so you can move in sooner.",
+      "Our relationships with Utah title companies, appraisers, and real estate agents help keep your loan on track from contract to closing.",
   },
   {
     icon: Icons.utahPrograms,
     title: "Utah-Specific Programs",
     description:
-      "We specialize in programs designed for Utah buyers, including Utah Housing Corporation down payment assistance, USDA loans for rural areas, and first-time buyer grants.",
+      "We specialize in programs designed for Utah buyers, including Utah Housing Corporation down payment assistance, USDA loans for rural areas, and 0% interest down payment assistance loans for qualified buyers.",
   },
 ];
 
@@ -59,9 +59,9 @@ export default function UtahPage() {
       <Breadcrumbs items={[{ label: "Utah" }]} />
 
       <div className="mt-6 max-w-3xl">
-        <h1 className="text-4xl font-bold text-navy">Utah Mortgage Lender</h1>
+        <h1 className="text-4xl font-bold text-navy">Utah Mortgage Broker</h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
-          {COMPANY.name} is a trusted mortgage lender based in{" "}
+          {COMPANY.name} is a local mortgage broker based in{" "}
           {COMPANY.address.city}, Utah, serving homebuyers and homeowners across
           Weber, Davis, Box Elder and Morgan counties. Whether you&apos;re purchasing your first
           home, refinancing for a better rate, or tapping into your home equity,
@@ -70,13 +70,13 @@ export default function UtahPage() {
         </p>
       </div>
 
-      {/* Why Choose a Local Utah Lender */}
+      {/* Why Choose a Local Utah Mortgage Broker */}
       <div className="mt-16">
         <h2 className="text-3xl font-bold text-navy">
-          Why Choose a Local Utah Lender
+          Why Choose a Local Utah Mortgage Broker
         </h2>
         <p className="mt-2 text-text-muted">
-          Working with a local lender means more than just competitive rates. It
+          Working with a local broker means more than comparing rates. It
           means partnering with someone who understands your market.
         </p>
         <div className="mt-8 grid sm:grid-cols-2 gap-6">
@@ -103,8 +103,8 @@ export default function UtahPage() {
       <div className="mt-16">
         <h2 className="text-3xl font-bold text-navy">Areas We Serve</h2>
         <p className="mt-2 text-text-muted">
-          We proudly serve homebuyers and homeowners across two of Utah&apos;s
-          most vibrant counties.
+          We proudly serve homebuyers and homeowners across four northern Utah
+          counties.
         </p>
         <div className="mt-8 grid md:grid-cols-2 gap-6">
           {SERVICE_AREAS.counties.map((county) => (
@@ -145,7 +145,7 @@ export default function UtahPage() {
           <div className="bg-surface rounded-xl p-6">
             <h3 className="font-semibold text-text">USDA Rural Loans</h3>
             <p className="text-sm text-text-muted mt-2 leading-relaxed">
-              Many areas in Box Elder, Morgan, Weber, Davis, Box Elder and Morgan counties qualify for USDA financing,
+              Many areas in Weber, Davis, Box Elder and Morgan counties qualify for USDA financing,
               offering zero-down-payment mortgages for eligible buyers in
               designated rural communities.
             </p>
@@ -164,8 +164,9 @@ export default function UtahPage() {
             <h3 className="font-semibold text-text">FHA &amp; VA Loans</h3>
             <p className="text-sm text-text-muted mt-2 leading-relaxed">
               FHA loans provide flexible credit requirements with down payments
-              as low as 3.5%. VA loans offer zero-down financing for veterans
-              and active-duty military members stationed in or near Utah.
+              as low as 3.5%. VA loans offer zero-down financing for eligible
+              veterans, active-duty service members and surviving spouses,
+              including families at Hill Air Force Base.
             </p>
           </div>
         </div>
@@ -189,7 +190,7 @@ export default function UtahPage() {
         </h2>
         <p className="mt-3 text-text-muted max-w-xl mx-auto">
           Whether you&apos;re buying your first home or refinancing your current
-          mortgage, our Utah lending experts are here to help every step of the
+          mortgage, Scott is here to help every step of the
           way.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">

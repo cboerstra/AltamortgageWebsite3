@@ -12,12 +12,12 @@ export const metadata: Metadata = {
 };
 
 const benefits = [
-  "Borrow against your home's equity at competitive rates",
+  "Borrow against your home's equity, with rates from multiple lenders",
   "Fixed-rate home equity loans for predictable payments",
   "HELOC for flexible, revolving access to funds",
   "Use funds for renovations, debt consolidation, education, or more",
   "Potential tax deductibility on interest (consult your tax advisor)",
-  "Fast approvals for Utah homeowners",
+  "A straightforward process for Utah homeowners",
 ];
 
 export default function HomeEquityPage() {
@@ -62,7 +62,7 @@ export default function HomeEquityPage() {
                 "border-navy text-navy hover:bg-navy hover:text-white",
               )}
             >
-              Calculate Equity
+              Estimate a Payment
             </Link>
           </div>
         </div>

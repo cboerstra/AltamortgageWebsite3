@@ -43,7 +43,7 @@ export default async function PortalDocumentsPage() {
           <Icons.success className="mx-auto h-14 w-14 text-emerald" aria-hidden />
           <h1 className="mt-3 text-2xl font-bold text-navy">All required documents received</h1>
           <p className="mx-auto mt-2 max-w-md text-sm text-text-muted">
-            Thank you. Your loan specialist can see everything below and will contact you if
+            Thank you. Scott can see everything below and will contact you if
             anything else is needed.
           </p>
         </div>

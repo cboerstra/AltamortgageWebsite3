@@ -8,7 +8,7 @@ import { SERVICE_AREAS, COMPANY } from "@/lib/constants";
 import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Morgan County Mortgage Lender",
+  title: "Morgan County Mortgage Broker",
   description:
     "Alta Mortgage Group serves Morgan, Mountain Green and all Morgan County communities. Local mortgage expertise for home purchase, refinance, construction and equity loans.",
   keywords: [
@@ -57,11 +57,11 @@ export default function MorganCountyPage() {
       <Breadcrumbs items={[{ label: "Utah", href: "/utah" }, { label: "Morgan County" }]} />
 
       <div className="mt-6 max-w-3xl">
-        <h1 className="text-4xl font-bold text-navy">Morgan County Mortgage Lender</h1>
+        <h1 className="text-4xl font-bold text-navy">Morgan County Mortgage Broker</h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           Morgan County sits just over the ridge from {COMPANY.name}&apos;s Weber County home, up
           Weber Canyon along I-84. It is one of Utah&apos;s smallest counties by population and one
-          of its most sought-after: mountain views, room to build, Snowbasin and Pineview minutes
+          of its most scenic: mountain views, room to build, Snowbasin and Pineview minutes
           away, and Ogden or Salt Lake within commuting distance.
         </p>
       </div>
@@ -69,7 +69,7 @@ export default function MorganCountyPage() {
       <div className="mt-16">
         <h2 className="text-3xl font-bold text-navy">Cities We Serve in Morgan County</h2>
         <p className="mt-2 text-text-muted">
-          We provide mortgage lending across {county.cities.length} communities in Morgan County.
+          We provide mortgage services across {county.cities.length} communities in Morgan County.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {county.cities.map((city) => (

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
 import { PreApprovalForm } from "@/components/forms/pre-approval-form";
 import { COMPANY } from "@/lib/constants";
@@ -6,7 +7,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Get Pre-Approved",
-  description: "Get pre-approved for a mortgage in minutes. Contact Alta Mortgage Group for a free consultation on home purchase, refinance, or home equity loans in Utah.",
+  description: "Start your mortgage pre-approval online. Contact Alta Mortgage Group for a free consultation on home purchase, refinance, or home equity loans in Utah.",
 };
 
 export default function ContactPage() {
@@ -18,7 +19,8 @@ export default function ContactPage() {
         <div className="lg:col-span-2">
           <h1 className="text-4xl font-bold text-navy">Get Pre-Approved</h1>
           <p className="mt-2 text-text-muted text-lg">
-            Fill out the form below and a mortgage specialist will reach out within 24 hours.
+            Fill out the form below and Scott will reach out within one business day. Once we have your documents, pre-approval is often same-day. Not ready for the full application? Start here and Scott will call you. Ready now?{" "}
+            <Link href="/apply" className="text-navy underline underline-offset-2">Apply online</Link>.
           </p>
           <div className="mt-8 bg-white border border-border rounded-xl p-6 lg:p-8">
             <PreApprovalForm />
@@ -56,9 +58,9 @@ export default function ContactPage() {
             <h2 className="font-semibold mb-2">What Happens Next?</h2>
             <ol className="space-y-3 text-sm text-white/80">
               <li className="flex gap-3"><span className="font-bold text-emerald-light">1.</span> We review your information</li>
-              <li className="flex gap-3"><span className="font-bold text-emerald-light">2.</span> A specialist contacts you within 24 hours</li>
+              <li className="flex gap-3"><span className="font-bold text-emerald-light">2.</span> Scott contacts you within one business day</li>
               <li className="flex gap-3"><span className="font-bold text-emerald-light">3.</span> We discuss options and next steps</li>
-              <li className="flex gap-3"><span className="font-bold text-emerald-light">4.</span> You receive your pre-approval letter</li>
+              <li className="flex gap-3"><span className="font-bold text-emerald-light">4.</span> If you qualify, you receive a pre-approval letter</li>
             </ol>
           </div>
         </div>

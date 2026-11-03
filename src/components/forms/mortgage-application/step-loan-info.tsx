@@ -248,7 +248,9 @@ export function StepLoanInfo({
         <p className="text-xs text-text-muted">
           {loanPurpose === "purchase"
             ? "If you have a home under contract or picked out. Leave blank if you're still looking."
-            : "Leave blank if it's the home you live in now."}
+            : loanPurpose
+              ? "Leave blank if it's the home you live in now."
+              : "If you have a property in mind, or it's the one you're refinancing, enter it here. Otherwise leave it blank."}
         </p>
         <div>
           <Label>Street Address</Label>

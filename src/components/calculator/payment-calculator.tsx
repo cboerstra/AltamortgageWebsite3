@@ -33,6 +33,8 @@ export function PaymentCalculator({ defaultRate = 6.625 }: { defaultRate?: numbe
     { name: "Insurance", value: Math.round(breakdown.monthlyInsurance), color: "#1a4a9e" },
     { name: "HOA", value: Math.round(breakdown.monthlyHOA), color: "#6B7280" },
   ];
+  // The sum of the rounded parts, so the headline matches the chart and its legend.
+  const totalMonthly = chartData.reduce((sum, d) => sum + d.value, 0);
 
   return (
     <div className="grid lg:grid-cols-2 gap-8 lg:gap-12">
@@ -105,8 +107,9 @@ export function PaymentCalculator({ defaultRate = 6.625 }: { defaultRate?: numbe
         <div className="text-center mb-6">
           <p className="text-sm text-text-muted">Estimated Monthly Payment</p>
           <p className="text-5xl font-bold font-display text-navy mt-2">
-            {formatCurrency(Math.round(breakdown.totalMonthly))}
+            {formatCurrency(totalMonthly)}
           </p>
+          <p className="mt-2 text-xs text-text-muted">Estimate only. Not a loan offer or rate quote.</p>
         </div>
         <CalculatorPieChart data={chartData} />
       </div>

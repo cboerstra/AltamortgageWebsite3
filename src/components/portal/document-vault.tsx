@@ -354,7 +354,7 @@ export function DocumentVault({
                 <span>
                   <span className="font-medium">{success.filename}</span> uploaded.{" "}
                   {slot.required === 0
-                    ? "Your loan specialist can see it now."
+                    ? "Scott can see it now."
                     : complete
                       ? `All ${slot.required} ${slot.label.toLowerCase()} received.`
                       : `${slot.label}: ${counted} of ${slot.required} received — ${remaining} more to go.`}

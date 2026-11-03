@@ -12,11 +12,11 @@ export const metadata: Metadata = {
 };
 
 const benefits = [
-  "Competitive rates on all loan types",
+  "Competitive rates from multiple lenders",
   "Down payments as low as 0% for eligible buyers",
-  "First-time homebuyer programs and grants",
+  "Down payment assistance, including 0% interest loans for qualified buyers",
   "Local expertise in Weber, Davis, Box Elder and Morgan county markets",
-  "Fast pre-approvals — often same day",
+  "Pre-approval often same-day once we have your documents",
   "Personalized guidance from application to closing",
 ];
 
@@ -35,8 +35,8 @@ export default function PurchasePage() {
           <p className="mt-4 text-text-muted text-lg leading-relaxed">
             Whether you&apos;re buying your first home in Ogden or upgrading in
             Kaysville, Alta Mortgage Group will guide you through every step. We
-            offer a full range of purchase loan programs with competitive rates
-            and personalized service.
+            offer a full range of purchase loan programs and personalized
+            service.
           </p>
           <ul className="mt-8 space-y-3">
             {benefits.map((b, i) => (
@@ -74,7 +74,7 @@ export default function PurchasePage() {
               {
                 step: "1",
                 title: "Get Pre-Approved",
-                desc: "Tell us about your finances and goals. We'll determine how much you can afford and provide a pre-approval letter.",
+                desc: "Tell us about your finances and goals. We'll determine how much you can afford and, if you qualify, provide a pre-approval letter.",
               },
               {
                 step: "2",

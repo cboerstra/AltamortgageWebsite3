@@ -10,6 +10,7 @@ export const COMPANY = {
   nmlsId: "565137",
   stateLicenseId: "5452345-NMLM",
   broker: { name: "Scott Boerstra", title: "Broker/Manager", nmlsId: "258624" },
+  foundedYear: 1997,
   address: { street: "4824 S 6150 W", city: "Hooper", state: "UT", zip: "84315" },
   hours: { weekdays: "9:00 AM - 6:00 PM", saturday: "10:00 AM - 2:00 PM", sunday: "Closed" },
   social: {
@@ -17,6 +18,11 @@ export const COMPANY = {
     instagram: "https://www.instagram.com/alta_mortgage_group/",
   },
 } as const;
+
+/** Whole years since the company opened; pages recompute it when they rebuild. */
+export function yearsInBusiness(now = new Date()): number {
+  return now.getFullYear() - COMPANY.foundedYear;
+}
 
 export const SERVICE_AREAS = {
   state: "Utah",
@@ -45,13 +51,13 @@ export const SERVICE_AREAS = {
 } as const;
 
 export const LOAN_TYPES = [
-  { id: "conventional", name: "Conventional", shortDescription: "Traditional mortgage with competitive rates for qualified borrowers.", icon: "conventional", features: ["Down payments as low as 3%", "No upfront mortgage insurance fee", "Available for primary, secondary, and investment properties", "Fixed and adjustable rate options"] },
-  { id: "fha", name: "FHA", shortDescription: "Government-backed loans with flexible credit requirements and low down payments.", icon: "fha", features: ["Down payments as low as 3.5%", "Credit scores as low as 580", "Gift funds allowed for down payment", "Competitive interest rates"] },
-  { id: "va", name: "VA", shortDescription: "Exclusive benefits for veterans, active military, and eligible surviving spouses.", icon: "va", features: ["No down payment required", "No private mortgage insurance", "Competitive interest rates", "Limited closing costs"] },
-  { id: "usda", name: "USDA", shortDescription: "Zero-down-payment loans for eligible rural and suburban homebuyers.", icon: "usda", features: ["No down payment required", "Low mortgage insurance rates", "Below-market interest rates", "Available in eligible rural areas of Utah"] },
-  { id: "jumbo", name: "Jumbo", shortDescription: "Financing for homes that exceed conventional loan limits.", icon: "jumbo", features: ["Loan amounts above conforming limits", "Competitive rates for high-value properties", "Fixed and adjustable rate options", "Flexible terms"] },
-  { id: "arm", name: "Adjustable Rate (ARM)", shortDescription: "Lower initial rates that adjust after a fixed period.", icon: "arm", features: ["Lower initial monthly payments", "5/1, 7/1, and 10/1 ARM options", "Rate caps limit payment increases", "Ideal for shorter-term homeownership"] },
-  { id: "fixed", name: "Fixed Rate", shortDescription: "Predictable payments that never change over the life of your loan.", icon: "fixed", features: ["Rate stays the same for the entire term", "15, 20, and 30-year terms available", "Predictable monthly payments", "Protection from rising interest rates"] },
+  { id: "conventional", name: "Conventional", shortDescription: "Not government-backed. Competitive rates from multiple lenders for borrowers with solid credit.", icon: "conventional", features: ["Down payments as low as 3%", "No upfront mortgage insurance fee", "Available for primary, secondary, and investment properties", "Fixed and adjustable rate options"] },
+  { id: "fha", name: "FHA", shortDescription: "Insured by the Federal Housing Administration, with flexible credit requirements and low down payments.", icon: "fha", features: ["Down payments as low as 3.5%", "Credit scores as low as 580", "Gift funds allowed for down payment", "Available to first-time and repeat buyers"] },
+  { id: "va", name: "VA", shortDescription: "Guaranteed by the U.S. Department of Veterans Affairs for eligible veterans, active-duty service members and surviving spouses.", icon: "va", features: ["No down payment required", "No private mortgage insurance", "Funding fee can be rolled into the loan", "Limited closing costs"] },
+  { id: "usda", name: "USDA", shortDescription: "Backed by the U.S. Department of Agriculture: zero-down loans for eligible rural and suburban homebuyers.", icon: "usda", features: ["No down payment required", "Low mortgage insurance costs", "Eligibility based on property address and household income", "Available in eligible rural areas of Utah"] },
+  { id: "jumbo", name: "Jumbo", shortDescription: "For loan amounts above the conforming loan limit, the most Fannie Mae and Freddie Mac will buy.", icon: "jumbo", features: ["Loan amounts above the conforming limit", "For higher-priced homes", "Fixed and adjustable rate options", "Typically needs a larger down payment and cash reserves"] },
+  { id: "arm", name: "Adjustable Rate (ARM)", shortDescription: "The rate is fixed for the first 5, 7 or 10 years, then can adjust once a year, within set limits.", icon: "arm", features: ["Lower initial monthly payments", "5/1, 7/1 and 10/1 options (a 5/1 is fixed for 5 years, then adjusts yearly)", "Rate caps limit how much the rate can rise", "Ideal for shorter-term homeownership"] },
+  { id: "fixed", name: "Fixed Rate", shortDescription: "Principal and interest stay the same for the life of the loan.", icon: "fixed", features: ["Rate stays the same for the entire term", "15, 20, and 30-year terms available", "Predictable principal and interest payment", "Protection from rising interest rates"] },
 ] as const;
 
 export const NAV_LINKS = [

@@ -20,7 +20,7 @@ export default function PrivacyPage() {
           {COMPANY.name} (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;)
           is committed to protecting your privacy. This Privacy Policy explains
           how we collect, use, disclose, and safeguard your information when you
-          visit our website or use our mortgage lending services.
+          visit our website or use our mortgage services.
         </p>
 
         <section>

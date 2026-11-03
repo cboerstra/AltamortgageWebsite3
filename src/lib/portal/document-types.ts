@@ -21,7 +21,7 @@ export const SLOTS: readonly SlotSpec[] = [
   { id: "w2", label: "W-2 forms", required: 2, hint: "The last two years." },
   { id: "paystub", label: "Pay stubs", required: 2, hint: "Covering the most recent 30 days." },
   { id: "tax_return", label: "Tax returns", required: 2, hint: "The last two years, all pages and schedules." },
-  { id: "other", label: "Other documents", required: 0, hint: "Anything else your loan specialist has asked for." },
+  { id: "other", label: "Other documents", required: 0, hint: "Anything else Scott has asked for." },
 ];
 
 // ---- Tailoring --------------------------------------------------------------
@@ -86,7 +86,7 @@ export function documentSlots(applicants: readonly PlanApplicant[] | null): Slot
         ...slot,
         label: "Income documents",
         required: required.other,
-        hint: `${otherIncome.join(" ")} Anything else your loan specialist asks for can go here too.`,
+        hint: `${otherIncome.join(" ")} Anything else Scott asks for can go here too.`,
       };
     }
     // With two applicants, say whose these are.

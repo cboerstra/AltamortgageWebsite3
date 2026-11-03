@@ -55,7 +55,7 @@ export function MiniLeadForm({ variant = "dark" }: { variant?: "dark" | "light" 
       <div className="flex items-center gap-3 py-4">
         <Icons.success className={`w-6 h-6 ${variant === "dark" ? "text-emerald-light" : "text-emerald"}`} />
         <p className={variant === "dark" ? "text-white" : "text-text"}>
-          Thank you! A loan specialist will contact you within 24 hours.
+          Thank you! Scott will contact you within one business day.
         </p>
       </div>
     );

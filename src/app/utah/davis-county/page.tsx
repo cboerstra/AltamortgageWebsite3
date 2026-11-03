@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { LinkedText } from "@/components/layout/linked-text";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,9 +12,9 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Davis County Mortgage Lender",
+  title: "Davis County Mortgage Broker",
   description:
-    "Alta Mortgage Group serves Layton, Bountiful, Kaysville, and all Davis County communities. Expert mortgage lending for home purchase, refinance, and equity loans.",
+    "Alta Mortgage Group serves Layton, Bountiful, Kaysville, and all Davis County communities. Local mortgage expertise for home purchase, refinance, and equity loans.",
   keywords: [
     "Davis County mortgage",
     "Layton home loans",
@@ -38,7 +39,7 @@ const faqs = [
   {
     question: "How long does it take to close on a home in Davis County?",
     answer:
-      "Most home purchases in Davis County close within 30 to 45 days from accepted offer. As a local lender with strong relationships with Davis County title companies and appraisers, we work to keep the process on track and moving efficiently.",
+      "Most home purchases in Davis County close within 30 to 45 days from accepted offer. As a local broker with strong relationships with Davis County title companies and appraisers, we work to keep the process on track and moving efficiently.",
   },
   {
     question: "What types of home loans are available in Davis County?",
@@ -76,14 +77,13 @@ export default function DavisCountyPage() {
 
       <div className="mt-6 max-w-3xl">
         <h1 className="text-4xl font-bold text-navy">
-          Davis County Mortgage Lender
+          Davis County Mortgage Broker
         </h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           Davis County sits between Salt Lake City and Ogden along the Wasatch
-          Front, making it one of Utah&apos;s most desirable places to live.
-          With family-friendly communities like Layton, Bountiful, and
-          Kaysville, excellent schools, and easy access to both major employment
-          centers, Davis County continues to attract homebuyers of all types.{" "}
+          Front, with FrontRunner access and a mix of established neighborhoods
+          and new construction in communities like Layton, Bountiful, and
+          Kaysville, plus easy access to both major employment centers.{" "}
           {COMPANY.name} brings local expertise and personalized service to every
           Davis County borrower.
         </p>
@@ -95,8 +95,8 @@ export default function DavisCountyPage() {
           Cities We Serve in Davis County
         </h2>
         <p className="mt-2 text-text-muted">
-          We provide mortgage lending services across all {county.cities.length}{" "}
-          cities and communities in Davis County.
+          We provide mortgage services across cities and communities throughout
+          Davis County, including unincorporated areas.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {county.cities.map((city) => (
@@ -133,13 +133,12 @@ export default function DavisCountyPage() {
           <Card className="bg-white border-border">
             <CardContent className="p-6">
               <h3 className="font-semibold text-text">
-                Family-Friendly Communities
+                Established Communities
               </h3>
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
-                Davis County is consistently ranked among Utah&apos;s best
-                places to raise a family. Cities like Kaysville, Bountiful, and
-                Farmington offer top-rated school districts, safe neighborhoods,
-                and abundant parks and recreation.
+                Cities like Bountiful, Centerville, Kaysville, and Farmington
+                offer established neighborhoods, parks and trail access, with
+                FrontRunner stations along the corridor.
               </p>
             </CardContent>
           </Card>
@@ -163,9 +162,7 @@ export default function DavisCountyPage() {
               </h3>
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
                 Steady population growth and a strong local economy continue to
-                drive demand for housing in Davis County. Properties in
-                desirable neighborhoods tend to hold their value well, making
-                homeownership here a solid long-term investment.
+                drive demand for housing in Davis County.
               </p>
             </CardContent>
           </Card>
@@ -182,7 +179,7 @@ export default function DavisCountyPage() {
             <div key={i} className="bg-surface rounded-xl p-6">
               <h3 className="font-semibold text-text">{faq.question}</h3>
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
-                {faq.answer}
+                <LinkedText text={faq.answer} />
               </p>
             </div>
           ))}
@@ -195,7 +192,7 @@ export default function DavisCountyPage() {
           Ready to Buy in Davis County?
         </h2>
         <p className="mt-3 text-text-muted max-w-xl mx-auto">
-          From Layton to Bountiful and everywhere in between, our team is ready
+          From Layton to Bountiful and everywhere in between, Scott is ready
           to help you secure the right mortgage for your Davis County home.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">

@@ -8,7 +8,7 @@ import { SERVICE_AREAS, COMPANY } from "@/lib/constants";
 import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Box Elder County Mortgage Lender",
+  title: "Box Elder County Mortgage Broker",
   description:
     "Alta Mortgage Group serves Brigham City, Tremonton, Perry, Willard and all Box Elder County communities. Local mortgage expertise for home purchase, refinance, USDA and equity loans.",
   keywords: [
@@ -57,7 +57,7 @@ export default function BoxElderCountyPage() {
       <Breadcrumbs items={[{ label: "Utah", href: "/utah" }, { label: "Box Elder County" }]} />
 
       <div className="mt-6 max-w-3xl">
-        <h1 className="text-4xl font-bold text-navy">Box Elder County Mortgage Lender</h1>
+        <h1 className="text-4xl font-bold text-navy">Box Elder County Mortgage Broker</h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           {COMPANY.name} is based just south of the county line in Hooper, and Box Elder County
           buyers have been part of our business since 1997. From Brigham City and Perry along the
@@ -70,7 +70,7 @@ export default function BoxElderCountyPage() {
       <div className="mt-16">
         <h2 className="text-3xl font-bold text-navy">Cities We Serve in Box Elder County</h2>
         <p className="mt-2 text-text-muted">
-          We provide mortgage lending across {county.cities.length} cities and communities in Box Elder County.
+          We provide mortgage services across {county.cities.length} cities and communities in Box Elder County.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {county.cities.map((city) => (
@@ -110,7 +110,7 @@ export default function BoxElderCountyPage() {
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
                 New subdivisions in Perry, Willard and west Brigham City are adding homes for families
                 priced out further south, while Tremonton&apos;s growth follows the employers along
-                I-15. Established neighborhoods in Brigham City hold their value well.
+                I-15. Brigham City offers established neighborhoods close to downtown.
               </p>
             </CardContent>
           </Card>

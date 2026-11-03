@@ -47,9 +47,9 @@ const topics = [
   },
   {
     icon: Icons.rates,
-    title: "Today's Rates",
+    title: "Rate Averages",
     summary:
-      "Current interest rates for 30-year fixed, 15-year fixed, FHA, VA, and more. Updated regularly.",
+      "National average rates for 30-year fixed, 15-year fixed, FHA, VA, and more. Updated every business day.",
     href: "/rates",
     cta: "See current rates",
   },
@@ -57,7 +57,7 @@ const topics = [
     icon: Icons.refinanceGuide,
     title: "Refinancing 101",
     summary:
-      "When refinancing makes sense, what it costs, and how much you could save on your monthly payment.",
+      "When refinancing makes sense and how it could change your monthly payment.",
     href: "/refinance",
     cta: "Learn about refinancing",
   },
@@ -82,7 +82,7 @@ const glossary = [
   },
   {
     term: "Down Payment",
-    def: "The portion of the home price you pay upfront in cash. Varies from 0% (VA/USDA) to 20%+ (conventional, to avoid PMI).",
+    def: "The portion of the home price you pay upfront in cash. As little as 3% on some conventional loans (20% or more avoids PMI), 3.5% for FHA, and 0% for VA and USDA.",
   },
   {
     term: "Equity",
@@ -94,11 +94,39 @@ const glossary = [
   },
   {
     term: "PMI (Private Mortgage Insurance)",
-    def: "Insurance you pay monthly if your down payment is under 20% on a conventional loan. It protects the lender if you default. Can be canceled once you reach 20% equity.",
+    def: "Insurance you pay monthly if your down payment is under 20% on a conventional loan. It protects the lender if you default. On most conventional loans, you can ask to remove PMI once you reach 20% equity based on the home's original value, and it ends automatically at 22%. FHA mortgage insurance follows different rules.",
   },
   {
     term: "Pre-Approval",
     def: "A lender's written statement of how much you qualify to borrow, based on a review of your finances. Stronger than pre-qualification and signals to sellers you're serious.",
+  },
+  {
+    term: "ARM (Adjustable-Rate Mortgage)",
+    def: "A loan whose rate is fixed for an initial period, then can change once a year. A 5/1 ARM is fixed for 5 years, then adjusts yearly; 7/1 and 10/1 work the same way. Rate caps limit how much the rate can rise at each adjustment and over the life of the loan.",
+  },
+  {
+    term: "Conforming Loan Limit",
+    def: "The largest loan Fannie Mae and Freddie Mac will buy, set each year by county. Loans above it are jumbo loans, which usually need more down payment and reserves.",
+  },
+  {
+    term: "Mortgage Insurance",
+    def: "Insurance that protects the lender if a borrower stops paying. Conventional loans with under 20% down carry PMI; FHA loans carry an upfront and a monthly mortgage insurance premium; VA loans have a one-time funding fee instead; USDA loans have a guarantee fee.",
+  },
+  {
+    term: "Points (Discount Points)",
+    def: "An optional upfront fee paid at closing to lower your interest rate. One point costs 1% of the loan amount.",
+  },
+  {
+    term: "Reserves",
+    def: "Savings left over after your down payment and closing costs, measured in months of mortgage payments. Some loans, like jumbo loans, require them.",
+  },
+  {
+    term: "Seller Concessions",
+    def: "Closing costs the seller agrees to pay on your behalf, up to a limit set by the loan program.",
+  },
+  {
+    term: "Streamline Refinance",
+    def: "A simplified refinance of an existing FHA or VA loan into a lower rate, often with less paperwork and no new appraisal.",
   },
   {
     term: "Principal & Interest",
@@ -215,7 +243,7 @@ export default function LearningCenterPage() {
       </section>
 
       {/* Glossary */}
-      <section className="mt-16">
+      <section id="glossary" className="mt-16 scroll-mt-24">
         <div className="flex items-center gap-3">
           <Icons.faq className="w-6 h-6 text-navy" />
           <h2 className="text-3xl font-bold text-text">Mortgage Glossary</h2>
@@ -243,7 +271,7 @@ export default function LearningCenterPage() {
         <h2 className="text-3xl font-bold">Still have questions?</h2>
         <p className="mt-3 text-white/80 max-w-xl mx-auto">
           We&apos;d rather you ask than guess. A 15-minute conversation with
-          one of our loan specialists is the fastest way to see what makes
+          Scott is the fastest way to see what makes
           sense for your situation — and it&apos;s free.
         </p>
         <div className="mt-6 flex flex-wrap gap-3 justify-center">

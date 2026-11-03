@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { LinkedText } from "@/components/layout/linked-text";
 import { Card, CardContent } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,7 @@ import {
 } from "@/lib/seo";
 
 export const metadata: Metadata = {
-  title: "Weber County Mortgage Lender",
+  title: "Weber County Mortgage Broker",
   description:
     "Alta Mortgage Group serves Ogden, Roy, North Ogden, and all Weber County communities. Local mortgage expertise for home purchase, refinance, and equity loans.",
   keywords: [
@@ -38,17 +39,17 @@ const faqs = [
   {
     question: "How long does it take to close on a home in Weber County?",
     answer:
-      "Most home purchases in Weber County close within 30 to 45 days from the time an offer is accepted. The timeline depends on factors like loan type, appraisal scheduling, and title processing. As a local lender, our relationships with Weber County service providers often help streamline the process.",
+      "Most home purchases in Weber County close within 30 to 45 days from the time an offer is accepted. The timeline depends on factors like loan type, appraisal scheduling, and title processing. As a local broker, our relationships with Weber County service providers often help streamline the process.",
   },
   {
-    question: "What is the median home price in Weber County?",
+    question: "What are home prices like in Weber County?",
     answer:
       "Median home prices in Weber County vary by city and neighborhood. Ogden tends to offer more affordable options compared to foothill communities like Huntsville or Pleasant View. Contact us for current market data and to discuss what you can afford.",
   },
   {
     question: "Does Alta Mortgage Group serve all of Weber County?",
     answer:
-      "Yes. We serve all 13 cities and communities in Weber County, including Ogden, Roy, North Ogden, South Ogden, Riverdale, Pleasant View, Harrisville, Farr West, West Haven, Plain City, Washington Terrace, Hooper, and Huntsville.",
+      "Yes. We serve cities and communities across Weber County, including unincorporated areas: Ogden, Roy, North Ogden, South Ogden, Riverdale, Pleasant View, Harrisville, Farr West, West Haven, Plain City, Washington Terrace, Hooper, and Huntsville.",
   },
 ];
 
@@ -76,7 +77,7 @@ export default function WeberCountyPage() {
 
       <div className="mt-6 max-w-3xl">
         <h1 className="text-4xl font-bold text-navy">
-          Weber County Mortgage Lender
+          Weber County Mortgage Broker
         </h1>
         <p className="mt-4 text-text-muted text-lg leading-relaxed">
           {COMPANY.name} is headquartered in Hooper, in the heart of Weber
@@ -84,7 +85,7 @@ export default function WeberCountyPage() {
           since 1997. Weber County&apos;s housing market continues to grow, offering
           everything from historic Ogden bungalows to new construction in
           communities like Farr West and West Haven. Whether you&apos;re a
-          first-time buyer or looking to refinance, our team knows this market
+          first-time buyer or looking to refinance, Scott knows this market
           inside and out.
         </p>
       </div>
@@ -95,8 +96,8 @@ export default function WeberCountyPage() {
           Cities We Serve in Weber County
         </h2>
         <p className="mt-2 text-text-muted">
-          We provide mortgage lending services across all {county.cities.length}{" "}
-          cities and communities in Weber County.
+          We provide mortgage services across cities and communities throughout
+          Weber County, including unincorporated areas.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">
           {county.cities.map((city) => (
@@ -137,8 +138,8 @@ export default function WeberCountyPage() {
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
                 New development in West Haven, Farr West, and Plain City is
                 expanding housing options. Meanwhile, established neighborhoods
-                in North Ogden, Pleasant View, and Riverdale continue to see
-                steady appreciation and demand.
+                in North Ogden, Pleasant View, and Riverdale offer established
+                homes close to the foothills.
               </p>
             </CardContent>
           </Card>
@@ -181,7 +182,7 @@ export default function WeberCountyPage() {
             <div key={i} className="bg-surface rounded-xl p-6">
               <h3 className="font-semibold text-text">{faq.question}</h3>
               <p className="mt-2 text-sm text-text-muted leading-relaxed">
-                {faq.answer}
+                <LinkedText text={faq.answer} />
               </p>
             </div>
           ))}
@@ -194,7 +195,7 @@ export default function WeberCountyPage() {
           Ready to Buy in Weber County?
         </h2>
         <p className="mt-3 text-text-muted max-w-xl mx-auto">
-          Our Ogden-based team is ready to help you find the right mortgage for
+          Scott, based in Hooper, is ready to help you find the right mortgage for
           your Weber County home purchase or refinance.
         </p>
         <div className="mt-6 flex flex-col sm:flex-row gap-4 justify-center">

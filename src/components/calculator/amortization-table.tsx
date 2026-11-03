@@ -10,7 +10,21 @@ export function AmortizationTable({ schedule }: { schedule: AmortizationRow[] })
   const [expanded, setExpanded] = useState(false);
   const [showMonthly, setShowMonthly] = useState(false);
 
-  const yearlyData = schedule.filter((_, i) => (i + 1) % 12 === 0 || i === schedule.length - 1);
+  // One row per year: what was paid over those 12 months, and the balance left
+  // at the end of the year.
+  const yearlyData = schedule.reduce<AmortizationRow[]>((years, row) => {
+    const year = Math.ceil(row.month / 12);
+    const current = years[year - 1];
+    if (!current) {
+      years.push({ ...row, month: year });
+    } else {
+      current.payment += row.payment;
+      current.principal += row.principal;
+      current.interest += row.interest;
+      current.balance = row.balance;
+    }
+    return years;
+  }, []);
   const displayData = showMonthly ? schedule : yearlyData;
   const visibleData = expanded ? displayData : displayData.slice(0, 5);
 
@@ -43,16 +57,16 @@ export function AmortizationTable({ schedule }: { schedule: AmortizationRow[] })
           <thead>
             <tr className="bg-surface">
               <th className="text-left p-3 font-medium text-text-muted">{showMonthly ? "Month" : "Year"}</th>
-              <th className="text-right p-3 font-medium text-text-muted">Payment</th>
+              <th className="text-right p-3 font-medium text-text-muted">{showMonthly ? "Payment" : "Paid this year"}</th>
               <th className="text-right p-3 font-medium text-text-muted">Principal</th>
               <th className="text-right p-3 font-medium text-text-muted">Interest</th>
-              <th className="text-right p-3 font-medium text-text-muted">Balance</th>
+              <th className="text-right p-3 font-medium text-text-muted">{showMonthly ? "Balance" : "Balance at year end"}</th>
             </tr>
           </thead>
           <tbody>
             {visibleData.map((row) => (
               <tr key={row.month} className="border-t border-border">
-                <td className="p-3 text-text">{showMonthly ? row.month : Math.ceil(row.month / 12)}</td>
+                <td className="p-3 text-text">{row.month}</td>
                 <td className="p-3 text-right text-text">{formatCurrency(row.payment)}</td>
                 <td className="p-3 text-right text-emerald">{formatCurrency(row.principal)}</td>
                 <td className="p-3 text-right text-text-muted">{formatCurrency(row.interest)}</td>

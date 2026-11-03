@@ -87,7 +87,7 @@ export default function LicensingPage() {
             Equal Housing Opportunity
           </h2>
           <p className="text-text-muted leading-relaxed">
-            {COMPANY.name} is an Equal Housing Opportunity lender. We are
+            {COMPANY.name} supports Equal Housing Opportunity. We are
             committed to providing equal access to housing and mortgage services
             regardless of race, color, religion, national origin, sex, familial
             status, or disability, in accordance with the Fair Housing Act.

@@ -33,9 +33,9 @@ export default function RefinancePage() {
             Refinance Your Utah Mortgage
           </h1>
           <p className="mt-4 text-text-muted text-lg leading-relaxed">
-            Refinancing could save you hundreds per month or help you reach your
-            financial goals faster. Alta Mortgage Group makes the process simple
-            with competitive rates and fast closings.
+            Refinancing could lower your monthly payment, depending on your rate,
+            closing costs and new loan term, or help you reach your financial goals. Alta Mortgage Group makes the process simple
+            with competitive rates from multiple lenders and clear timelines.
           </p>
           <ul className="mt-8 space-y-3">
             {benefits.map((b, i) => (
@@ -74,7 +74,7 @@ export default function RefinancePage() {
             {[
               {
                 title: "Rates Have Dropped",
-                desc: "If current rates are lower than your existing rate, refinancing could save you significantly over the life of the loan.",
+                desc: "If current rates are lower than your existing rate, refinancing could lower your monthly payment, depending on your closing costs and new loan term.",
               },
               {
                 title: "Your Credit Has Improved",
@@ -86,7 +86,7 @@ export default function RefinancePage() {
               },
               {
                 title: "You Want Payment Stability",
-                desc: "Switching from an adjustable-rate to a fixed-rate mortgage locks in predictable payments.",
+                desc: "Switching from an adjustable-rate to a fixed-rate mortgage locks in your principal and interest payment.",
               },
             ].map((item) => (
               <div

@@ -52,7 +52,12 @@ export default function LoanOptionsPage() {
       </h1>
       <p className="mt-2 text-text-muted text-lg max-w-3xl">
         Every homebuyer&apos;s situation is different. Explore our loan programs
-        to find the right fit for your goals, budget, and timeline.
+        to find the right fit for your goals, budget, and timeline. New to the
+        terms?{" "}
+        <Link href="/learning-center#glossary" className="text-navy underline underline-offset-2">
+          See the glossary
+        </Link>
+        .
       </p>
 
       <div className="mt-10 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -85,7 +90,7 @@ export default function LoanOptionsPage() {
                   ))}
                 </ul>
                 <Link
-                  href="/contact"
+                  href="/apply"
                   className={cn(
                     buttonVariants(),
                     "mt-6 w-full bg-navy hover:bg-navy-light text-white",
@@ -120,7 +125,7 @@ export default function LoanOptionsPage() {
           Not Sure Which Loan Is Right for You?
         </h2>
         <p className="mt-2 text-text-muted">
-          Our Utah mortgage experts will help you find the best program for your
+          Scott will help you find the best program for your
           situation.
         </p>
         <Link

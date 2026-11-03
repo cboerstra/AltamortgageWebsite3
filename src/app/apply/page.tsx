@@ -17,7 +17,10 @@ export default function ApplyPage() {
       </h1>
       <p className="mt-2 text-text-muted">
         Complete the application below. Your information is secure and
-        encrypted. You can save your progress and return later.
+        encrypted. Your progress saves on this device, and after step 2 we&apos;ll
+        also email you a link to finish on any device. Already applied? Choose
+        Your Application at the bottom of any page and sign in with your email;
+        we&apos;ll send a one-time code (no password needed).
       </p>
       <div className="mt-8">
         <ApplicationWizard />

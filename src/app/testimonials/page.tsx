@@ -23,6 +23,10 @@ export default function TestimonialsPage() {
           Nothing pleases us more than helping a family into an affordable home. These are the words of
           clients who have worked with {COMPANY.broker.name} on a purchase or refinance.
         </p>
+        <p className="mt-3 text-sm text-text-muted">
+          Real reviews from our clients. Individual results vary; your rate, approval and timeline
+          depend on your situation.
+        </p>
       </div>
 
       <div className="mt-12 columns-1 md:columns-2 gap-6 [&>*]:break-inside-avoid">

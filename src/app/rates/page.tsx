@@ -31,7 +31,7 @@ export default async function RatesPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Breadcrumbs items={[{ label: "Rates" }]} />
       <h1 className="mt-6 text-4xl font-bold text-navy">
-        Today&apos;s Mortgage Rates
+        Latest Mortgage Rate Averages
       </h1>
       <p className="mt-2 text-text-muted">
         National average rates as of {formatRateDate(asOf)}, updated every business day.
@@ -88,7 +88,7 @@ export default async function RatesPage() {
           Get Your Personalized Rate
         </h2>
         <p className="mt-2 text-text-muted">
-          Talk to a Utah mortgage expert and find the best rate for your
+          Talk to Scott and find the best rate for your
           situation. Estimate a payment with our{" "}
           <Link href="/mortgage-calculator" className="text-navy underline underline-offset-2">
             mortgage calculator

@@ -99,7 +99,7 @@ export default async function PortalPage() {
                     </div>
                   </div>
                 </div>
-                <span className="text-xs text-text-muted">A loan specialist will contact you within one business day.</span>
+                <span className="text-xs text-text-muted">Scott will contact you within one business day.</span>
               </li>
             ))}
           </ul>
@@ -118,7 +118,7 @@ export default async function PortalPage() {
         <h2 className="text-lg font-semibold text-navy">Your documents</h2>
         <p className="mt-1 text-sm text-text-muted">
           Upload the items below so we can move your application forward. Files are encrypted
-          when stored and are only visible to you and your loan specialist. PDF, JPG or PNG,
+          when stored and are only visible to you and Scott. PDF, JPG or PNG,
           up to 25 MB each. Clear phone photos are fine as long as the whole page is visible.
         </p>
         <div className="mt-5">

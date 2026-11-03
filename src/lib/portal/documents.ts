@@ -248,7 +248,7 @@ export async function startDocument(
       return {
         ok: false,
         status: 503,
-        error: "This document type can't be uploaded yet. Please email it to your loan specialist for now.",
+        error: "This document type can't be uploaded yet. Please email it to Scott for now.",
       };
     }
     console.error("startDocument error:", err);

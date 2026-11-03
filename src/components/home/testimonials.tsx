@@ -32,6 +32,9 @@ export function Testimonials() {
         <p className="mt-4 text-text-muted text-center">
           In their own words, from families across northern Utah.
         </p>
+        <p className="mt-2 text-xs text-text-muted text-center">
+          Individual results vary; your rate, approval and timeline depend on your situation.
+        </p>
 
         <div className="mt-12 relative">
           <div className="grid md:grid-cols-3 gap-6">
