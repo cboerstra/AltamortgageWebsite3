@@ -4,13 +4,20 @@ import { PaymentCalculator } from "@/components/calculator/payment-calculator";
 import { AffordabilityCalculator } from "@/components/calculator/affordability-calculator";
 import { RefinanceCalculator } from "@/components/calculator/refinance-calculator";
 import { Breadcrumbs } from "@/components/layout/breadcrumbs";
+import { getMarketRates } from "@/lib/rates-data";
+
+// The calculators start at today's 30-year average; re-check every six hours.
+export const revalidate = 21600;
 
 export const metadata: Metadata = {
   title: "Mortgage Calculator",
   description: "Calculate your monthly mortgage payment, see how much home you can afford, or estimate your refinance savings. Free mortgage calculators from Alta Mortgage Group.",
 };
 
-export default function MortgageCalculatorPage() {
+export default async function MortgageCalculatorPage() {
+  const { rates } = await getMarketRates();
+  const thirtyYear = rates.find((r) => r.seriesId === "OBMMIC30YF")?.rate;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <Breadcrumbs items={[{ label: "Mortgage Calculator" }]} />
@@ -30,9 +37,9 @@ export default function MortgageCalculatorPage() {
             <TabsTrigger value="refinance">Refinance</TabsTrigger>
           </TabsList>
           <div className="mt-8">
-            <TabsContent value="payment"><PaymentCalculator /></TabsContent>
-            <TabsContent value="affordability"><AffordabilityCalculator /></TabsContent>
-            <TabsContent value="refinance"><RefinanceCalculator /></TabsContent>
+            <TabsContent value="payment"><PaymentCalculator defaultRate={thirtyYear} /></TabsContent>
+            <TabsContent value="affordability"><AffordabilityCalculator defaultRate={thirtyYear} /></TabsContent>
+            <TabsContent value="refinance"><RefinanceCalculator defaultRate={thirtyYear} /></TabsContent>
           </div>
         </Tabs>
       </div>

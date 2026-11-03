@@ -9,10 +9,10 @@ import { AmortizationTable } from "./amortization-table";
 import { calculatePaymentBreakdown, generateAmortizationSchedule } from "@/lib/calculator-utils";
 import { formatCurrency } from "@/lib/utils";
 
-export function PaymentCalculator() {
+export function PaymentCalculator({ defaultRate = 6.625 }: { defaultRate?: number }) {
   const [homePrice, setHomePrice] = useState(400000);
   const [downPaymentPct, setDownPaymentPct] = useState(20);
-  const [rate, setRate] = useState(6.625);
+  const [rate, setRate] = useState(defaultRate);
   const [term, setTerm] = useState(30);
   const [annualTax, setAnnualTax] = useState(3200);
   const [annualInsurance, setAnnualInsurance] = useState(1800);

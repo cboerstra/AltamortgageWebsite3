@@ -7,11 +7,11 @@ import { Slider } from "@/components/ui/slider";
 import { calculateAffordability } from "@/lib/calculator-utils";
 import { formatCurrency } from "@/lib/utils";
 
-export function AffordabilityCalculator() {
+export function AffordabilityCalculator({ defaultRate = 6.625 }: { defaultRate?: number }) {
   const [income, setIncome] = useState(85000);
   const [debts, setDebts] = useState(500);
   const [downPayment, setDownPayment] = useState(60000);
-  const [rate, setRate] = useState(6.625);
+  const [rate, setRate] = useState(defaultRate);
   const [term, setTerm] = useState(30);
 
   const result = calculateAffordability(income, debts, downPayment, rate, term);

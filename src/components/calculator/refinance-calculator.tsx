@@ -6,11 +6,11 @@ import { Label } from "@/components/ui/label";
 import { calculateRefinanceSavings } from "@/lib/calculator-utils";
 import { formatCurrency } from "@/lib/utils";
 
-export function RefinanceCalculator() {
+export function RefinanceCalculator({ defaultRate = 6.625 }: { defaultRate?: number }) {
   const [balance, setBalance] = useState(300000);
   const [currentRate, setCurrentRate] = useState(7.5);
   const [currentPayment, setCurrentPayment] = useState(2098);
-  const [newRate, setNewRate] = useState(6.625);
+  const [newRate, setNewRate] = useState(defaultRate);
   const [newTerm, setNewTerm] = useState(30);
   const [closingCosts, setClosingCosts] = useState(6000);
 

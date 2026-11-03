@@ -8,6 +8,9 @@ import { WhyAlta } from "@/components/home/why-alta";
 import { CTASection } from "@/components/home/cta-section";
 import { generateOrganizationSchema, generateLocalBusinessSchema } from "@/lib/seo";
 
+// The rate bar shows the daily market averages; re-check every six hours.
+export const revalidate = 21600;
+
 export default function HomePage() {
   return (
     <>
