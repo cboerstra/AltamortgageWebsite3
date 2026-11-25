@@ -5,9 +5,13 @@ import { COMPANY } from "@/lib/constants";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileCTABar } from "@/components/layout/mobile-cta-bar";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 const nunitoSans = Nunito_Sans({ subsets: ["latin"], variable: "--font-sans-var", weight: ["400", "600", "700"], display: "swap" });
 const lora = Lora({ subsets: ["latin"], variable: "--font-display-var", weight: ["600", "700"], display: "swap" });
+
+// Production builds only, so local development doesn't add visits to the reports.
+const GA_ID = process.env.NODE_ENV === "production" ? process.env.NEXT_PUBLIC_GA_ID || "G-20310CDH2P" : undefined;
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://altamortgagegroup.net"),
@@ -33,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main-content" className="pb-20 lg:pb-0">{children}</main>
         <Footer />
         <MobileCTABar />
+        {GA_ID && <GoogleAnalytics id={GA_ID} />}
       </body>
     </html>
   );
