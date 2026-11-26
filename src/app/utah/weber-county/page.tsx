@@ -13,6 +13,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Weber County Mortgage Broker",
+  alternates: { canonical: "/utah/weber-county" },
   description:
     "Alta Mortgage Group serves Ogden, Roy, North Ogden, and all Weber County communities. Local mortgage expertise for home purchase, refinance, and equity loans.",
   keywords: [

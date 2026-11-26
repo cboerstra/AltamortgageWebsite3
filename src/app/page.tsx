@@ -7,6 +7,12 @@ import { Testimonials } from "@/components/home/testimonials";
 import { WhyAlta } from "@/components/home/why-alta";
 import { CTASection } from "@/components/home/cta-section";
 import { generateOrganizationSchema, generateLocalBusinessSchema } from "@/lib/seo";
+import type { Metadata } from "next";
+
+// Title and description come from the root layout.
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // The rate bar shows the daily market averages; re-check every six hours.
 export const revalidate = 21600;

@@ -4,6 +4,7 @@ import { COMPANY } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Licensing Information",
+  alternates: { canonical: "/licensing" },
   description: `${COMPANY.name} licensing and regulatory information. NMLS registration, Utah state licensing, and Equal Housing Opportunity details.`,
 };
 

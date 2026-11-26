@@ -7,6 +7,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Refinance Your Mortgage",
+  alternates: { canonical: "/refinance" },
   description:
     "Lower your monthly payment, shorten your loan term, or access cash from your home equity. Refinance options from Alta Mortgage Group in Utah.",
 };

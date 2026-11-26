@@ -9,6 +9,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Mortgage Learning Center",
+  alternates: { canonical: "/learning-center" },
   description:
     "Learn about mortgages, interest rates, refinancing, and home equity. Free guides and resources from Alta Mortgage Group, your local Utah mortgage expert.",
   keywords: [

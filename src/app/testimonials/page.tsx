@@ -9,6 +9,7 @@ import { TESTIMONIALS } from "@/lib/testimonials";
 
 export const metadata: Metadata = {
   title: "Client Reviews",
+  alternates: { canonical: "/testimonials" },
   description: `What clients say about working with ${COMPANY.broker.name} and ${COMPANY.name} on their Utah home purchase or refinance.`,
 };
 

@@ -9,6 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Box Elder County Mortgage Broker",
+  alternates: { canonical: "/utah/box-elder-county" },
   description:
     "Alta Mortgage Group serves Brigham City, Tremonton, Perry, Willard and all Box Elder County communities. Local mortgage expertise for home purchase, refinance, USDA and equity loans.",
   keywords: [

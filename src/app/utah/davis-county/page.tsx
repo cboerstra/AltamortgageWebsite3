@@ -13,6 +13,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Davis County Mortgage Broker",
+  alternates: { canonical: "/utah/davis-county" },
   description:
     "Alta Mortgage Group serves Layton, Bountiful, Kaysville, and all Davis County communities. Local mortgage expertise for home purchase, refinance, and equity loans.",
   keywords: [

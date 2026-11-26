@@ -9,6 +9,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "About Us",
+  alternates: { canonical: "/about" },
   description: `Learn about ${COMPANY.name}, a local Utah mortgage broker serving Weber, Davis, Box Elder and Morgan counties. Our mission, values, and team.`,
 };
 

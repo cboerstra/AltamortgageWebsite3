@@ -4,6 +4,7 @@ import { COMPANY } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Accessibility Statement",
+  alternates: { canonical: "/accessibility" },
   description: `${COMPANY.name} is committed to ensuring digital accessibility for all users. Learn about our WCAG 2.1 AA compliance efforts.`,
 };
 

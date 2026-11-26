@@ -7,6 +7,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Home Equity Loans & HELOC",
+  alternates: { canonical: "/home-equity" },
   description:
     "Access your home's equity with a home equity loan or HELOC from Alta Mortgage Group. Competitive rates for Utah homeowners in Weber, Davis, Box Elder and Morgan counties.",
 };

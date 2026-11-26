@@ -11,6 +11,7 @@ export const revalidate = 21600;
 
 export const metadata: Metadata = {
   title: "Today's Mortgage Rates",
+  alternates: { canonical: "/rates" },
   description:
     "Today's average mortgage rates for 30-year fixed, 15-year fixed, FHA, VA, USDA and jumbo loans, updated every business day. Get your personalized Utah rate from Alta Mortgage Group.",
 };

@@ -4,6 +4,7 @@ import { COMPANY } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
+  alternates: { canonical: "/terms" },
   description: `Terms of Service for ${COMPANY.name}. Please review these terms before using our website and mortgage services.`,
 };
 

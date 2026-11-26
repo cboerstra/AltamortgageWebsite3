@@ -10,6 +10,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Mortgage Loan Options",
+  alternates: { canonical: "/loan-options" },
   description:
     "Compare mortgage loan programs: Conventional, FHA, VA, USDA, Jumbo, ARM, and Fixed Rate. Find the right Utah home loan for your situation with Alta Mortgage Group.",
 };

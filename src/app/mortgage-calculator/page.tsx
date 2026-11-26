@@ -11,6 +11,7 @@ export const revalidate = 21600;
 
 export const metadata: Metadata = {
   title: "Mortgage Calculator",
+  alternates: { canonical: "/mortgage-calculator" },
   description: "Calculate your monthly mortgage payment, see how much home you can afford, or estimate your refinance savings. Free mortgage calculators from Alta Mortgage Group.",
 };
 
