@@ -12,7 +12,7 @@ export const COMPANY = {
   broker: { name: "Scott Boerstra", title: "Broker/Manager", nmlsId: "258624" },
   foundedYear: 1997,
   address: { street: "4824 S 6150 W", city: "Hooper", state: "UT", zip: "84315" },
-  hours: { weekdays: "9:00 AM - 6:00 PM", saturday: "10:00 AM - 2:00 PM", sunday: "Closed" },
+  hours: { weekdays: "9:00 AM - 8:00 PM", saturday: "Closed", sunday: "Closed" },
   social: {
     facebook: "https://www.facebook.com/AltaMortgageGroupUtah/",
     instagram: "https://www.instagram.com/alta_mortgage_group/",
