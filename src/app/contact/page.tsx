@@ -7,6 +7,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Get Pre-Approved",
+  alternates: { canonical: "/contact" },
   description: "Start your mortgage pre-approval online. Contact Alta Mortgage Group for a free consultation on home purchase, refinance, or home equity loans in Utah.",
 };
 

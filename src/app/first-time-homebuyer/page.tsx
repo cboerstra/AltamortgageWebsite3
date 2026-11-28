@@ -11,6 +11,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "First-Time Homebuyer Guide",
+  alternates: { canonical: "/first-time-homebuyer" },
   description:
     "Buying your first home in Utah? Alta Mortgage Group walks you through every step — programs with low or no down payment, what to expect at closing, and how to qualify in Weber, Davis, Box Elder and Morgan counties.",
   keywords: [

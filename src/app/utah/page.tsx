@@ -10,6 +10,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Utah Mortgage Broker",
+  alternates: { canonical: "/utah" },
   description:
     "Alta Mortgage Group is a local Utah mortgage broker serving Weber, Davis, Box Elder and Morgan counties. Purchase, refinance, and home equity loans with competitive rates.",
   keywords: [

@@ -4,6 +4,7 @@ import { ApplicationWizard } from "@/components/forms/mortgage-application/appli
 
 export const metadata: Metadata = {
   title: "Apply for a Mortgage",
+  alternates: { canonical: "/apply" },
   description:
     "Apply for a mortgage online with Alta Mortgage Group. Complete our secure application for home purchase, refinance, or home equity loans in Utah.",
 };

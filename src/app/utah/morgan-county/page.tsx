@@ -9,6 +9,7 @@ import { generateLocalBusinessSchema, generateFAQSchema } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Morgan County Mortgage Broker",
+  alternates: { canonical: "/utah/morgan-county" },
   description:
     "Alta Mortgage Group serves Morgan, Mountain Green and all Morgan County communities. Local mortgage expertise for home purchase, refinance, construction and equity loans.",
   keywords: [

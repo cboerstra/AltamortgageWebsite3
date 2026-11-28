@@ -7,6 +7,7 @@ import { Icons } from "@/lib/icons";
 
 export const metadata: Metadata = {
   title: "Home Purchase Loans",
+  alternates: { canonical: "/purchase" },
   description:
     "Buy your dream home in Utah with competitive mortgage rates. First-time buyer programs, FHA, VA, Conventional, and more from Alta Mortgage Group.",
 };
